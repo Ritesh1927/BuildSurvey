@@ -1,0 +1,1078 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- ENUMS ---
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  ENGINEER
+  SURVEYOR
+  CLIENT
+  ACCOUNTANT
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  PROPOSAL
+  NEGOTIATION
+  WON
+  LOST
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum ProjectType {
+  RESIDENTIAL
+  COMMERCIAL
+  INDUSTRIAL
+  INFRASTRUCTURE
+  INTERIOR
+  MEP
+  RENOVATION
+}
+
+enum SurveyStatus {
+  DRAFT
+  ASSIGNED
+  IN_PROGRESS
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum SurveyType {
+  INITIAL
+  DETAILED
+  FOLLOW_UP
+  FINAL
+  AS_BUILT
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REVISION_REQUIRED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum DocumentType {
+  DRAWING
+  SPECIFICATION
+  CONTRACT
+  INVOICE
+  REPORT
+  CORRESPONDENCE
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  PARTIAL
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum NotificationType {
+  INFO
+  WARNING
+  SUCCESS
+  ERROR
+}
+
+enum MediaType {
+  PHOTO
+  VIDEO
+  VOICE_NOTE
+  DRAWING
+  SKETCH
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum WorkflowStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  BLOCKED
+}
+
+enum ActivityType {
+  CREATED
+  UPDATED
+  DELETED
+  APPROVED
+  REJECTED
+  ASSIGNED
+  COMMENTED
+  UPLOADED
+}
+
+// --- MODELS ---
+
+model User {
+  id          String    @id @default(uuid())
+  email       String    @unique
+  password    String
+  firstName   String
+  lastName    String
+  phone       String?
+  avatar      String?
+  role        UserRole  @default(ENGINEER)
+  isActive    Boolean   @default(true)
+  lastLoginAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  isDeleted   Boolean   @default(false)
+  version     Int       @default(1)
+
+  ledProjects               Project[]          @relation("LedProjects")
+  managedProjects           Project[]          @relation("ManagedProjects")
+  assignedSurveys           Survey[]           @relation("SurveyEngineer")
+  auditLogs                 AuditLog[]
+  notifications             Notification[]
+  signatures                DigitalSignature[]
+  workflowSteps             WorkflowStep[]     @relation("WorkflowStepAssignee")
+  approvalsRequested        Approval[]         @relation("ApprovalRequester")
+  approvalsGiven            Approval[]         @relation("ApprovalApprover")
+  activities                Activity[]
+  reports                   Report[]           @relation("ReportGenerator")
+  documentsUploaded         Document[]         @relation("DocumentUploader")
+  gpsTracking               GpsTracking[]
+  riskAssessmentsIdentified RiskAssessment[]   @relation("RiskIdentifier")
+  changeOrdersRequested     ChangeOrder[]      @relation("COResuestedBy")
+  changeOrdersApproved      ChangeOrder[]      @relation("COApprovedBy")
+  leadsAssigned             Lead[]             @relation("LeadAssignee")
+
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+}
+
+model Client {
+  id            String   @id @default(uuid())
+  companyName   String
+  contactPerson String
+  email         String
+  phone         String
+  address       String?
+  city          String?
+  state         String?
+  zipCode       String?
+  country       String?
+  gstNumber     String?
+  panNumber     String?
+  website       String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  isDeleted     Boolean  @default(false)
+  version       Int      @default(1)
+
+  projects Project[]
+  leads    Lead[]
+
+  @@index([companyName])
+  @@index([email])
+}
+
+model Lead {
+  id             String     @id @default(uuid())
+  name           String
+  email          String?
+  phone          String?
+  company        String?
+  source         String?
+  status         LeadStatus @default(NEW)
+  priority       Priority   @default(MEDIUM)
+  estimatedValue Float?
+  notes          String?
+  convertedAt    DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  isDeleted      Boolean    @default(false)
+  version        Int        @default(1)
+
+  clientId     String?
+  client       Client? @relation(fields: [clientId], references: [id])
+  assignedToId String?
+  assignedTo   User?   @relation("LeadAssignee", fields: [assignedToId], references: [id])
+
+  @@index([status])
+  @@index([assignedToId])
+  @@index([clientId])
+  @@index([createdAt])
+}
+
+model Project {
+  id          String        @id @default(uuid())
+  name        String
+  code        String        @unique
+  description String?
+  type        ProjectType   @default(RESIDENTIAL)
+  status      ProjectStatus @default(PLANNING)
+  startDate   DateTime?
+  endDate     DateTime?
+  budget      Float?
+  actualCost  Float?        @default(0)
+  address     String?
+  city        String?
+  state       String?
+  latitude    Float?
+  longitude   Float?
+  area        Float?
+  floors      Int?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  isDeleted   Boolean       @default(false)
+  version     Int           @default(1)
+
+  clientId   String
+  client     Client  @relation(fields: [clientId], references: [id])
+  managerId  String?
+  manager    User?   @relation("ManagedProjects", fields: [managerId], references: [id])
+  leadUserId String?
+  leadUser   User?   @relation("LedProjects", fields: [leadUserId], references: [id])
+
+  surveys         Survey[]
+  boqItems        BOQItem[]
+  costEstimations CostEstimation[]
+  quotations      Quotation[]
+  documents       Document[]
+  workflows       Workflow[]
+  activities      Activity[]
+  reports         Report[]
+  gpsTracking     GpsTracking[]
+  meetings        Meeting[]
+  changeOrders    ChangeOrder[]
+
+  @@index([code])
+  @@index([clientId])
+  @@index([managerId])
+  @@index([leadUserId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model Survey {
+  id               String       @id @default(uuid())
+  title            String
+  description      String?
+  type             SurveyType   @default(INITIAL)
+  status           SurveyStatus @default(DRAFT)
+  scheduledDate    DateTime?
+  completedDate    DateTime?
+  gpsLatitude      Float?
+  gpsLongitude     Float?
+  weatherCondition String?
+  siteCondition    String?
+  accessDetails    String?
+  notes            String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  isDeleted        Boolean      @default(false)
+  version          Int          @default(1)
+
+  projectId  String
+  project    Project @relation(fields: [projectId], references: [id])
+  engineerId String?
+  engineer   User?   @relation("SurveyEngineer", fields: [engineerId], references: [id])
+
+  checklistItems       SurveyChecklistItem[]
+  photos               Photo[]
+  videos               Video[]
+  voiceNotes           VoiceNote[]
+  sketches             Sketch[]
+  measurements         Measurement[]
+  riskAssessments      RiskAssessment[]
+  materialRequirements MaterialRequirement[]
+
+  @@index([projectId])
+  @@index([engineerId])
+  @@index([status])
+  @@index([type])
+  @@index([scheduledDate])
+  @@index([createdAt])
+}
+
+model SurveyChecklistItem {
+  id          String   @id @default(uuid())
+  category    String
+  item        String
+  isCompleted Boolean  @default(false)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  isDeleted   Boolean  @default(false)
+  version     Int      @default(1)
+
+  surveyId String
+  survey   Survey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+
+  @@index([surveyId])
+  @@index([isCompleted])
+}
+
+model Photo {
+  id        String    @id @default(uuid())
+  url       String
+  filename  String
+  caption   String?
+  latitude  Float?
+  longitude Float?
+  takenAt   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  isDeleted Boolean   @default(false)
+  version   Int       @default(1)
+
+  surveyId String
+  survey   Survey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+
+  @@index([surveyId])
+  @@index([takenAt])
+}
+
+model Video {
+  id        String   @id @default(uuid())
+  url       String
+  filename  String
+  caption   String?
+  duration  Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  isDeleted Boolean  @default(false)
+  version   Int      @default(1)
+
+  surveyId String
+  survey   Survey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+
+  @@index([surveyId])
+}
+
+model VoiceNote {
+  id            String   @id @default(uuid())
+  url           String
+  filename      String
+  duration      Float?
+  transcription String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  isDeleted     Boolean  @default(false)
+  version       Int      @default(1)
+
+  surveyId String
+  survey   Survey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+
+  @@index([surveyId])
+}
+
+model Sketch {
+  id        String   @id @default(uuid())
+  title     String
+  data      Json?
+  url       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  isDeleted Boolean  @default(false)
+  version   Int      @default(1)
+
+  surveyId String
+  survey   Survey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+
+  @@index([surveyId])
+}
+
+model Measurement {
+  id          String   @id @default(uuid())
+  category    String
+  description String?
+  length      Float?
+  width       Float?
+  height      Float?
+  area        Float?
+  volume      Float?
+  unit        String   @default("m")
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  isDeleted   Boolean  @default(false)
+  version     Int      @default(1)
+
+  surveyId String
+  survey   Survey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+
+  @@index([surveyId])
+  @@index([category])
+}
+
+model RiskAssessment {
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  level       RiskLevel @default(MEDIUM)
+  mitigation  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  isDeleted   Boolean   @default(false)
+  version     Int       @default(1)
+
+  surveyId       String
+  survey         Survey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  identifiedById String
+  identifiedBy   User   @relation("RiskIdentifier", fields: [identifiedById], references: [id])
+
+  @@index([surveyId])
+  @@index([level])
+  @@index([identifiedById])
+}
+
+model MaterialRequirement {
+  id            String   @id @default(uuid())
+  materialName  String
+  specification String?
+  quantity      Float
+  unit          String
+  estimatedCost Float?
+  supplier      String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  isDeleted     Boolean  @default(false)
+  version       Int      @default(1)
+
+  surveyId String
+  survey   Survey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+
+  @@index([surveyId])
+  @@index([materialName])
+}
+
+model BOQItem {
+  id           String   @id @default(uuid())
+  serialNumber Int
+  description  String
+  category     String
+  unit         String
+  quantity     Float
+  unitRate     Float
+  amount       Float
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  createdBy    String?
+  updatedBy    String?
+  isDeleted    Boolean  @default(false)
+  version      Int      @default(1)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([category])
+  @@index([serialNumber])
+}
+
+model CostEstimation {
+  id              String   @id @default(uuid())
+  category        String
+  description     String?
+  estimatedAmount Float
+  actualAmount    Float?
+  variance        Float?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  isDeleted       Boolean  @default(false)
+  version         Int      @default(1)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([category])
+}
+
+model Quotation {
+  id              String        @id @default(uuid())
+  quotationNumber String        @unique
+  title           String
+  totalAmount     Float
+  taxAmount       Float         @default(0)
+  discountAmount  Float         @default(0)
+  grandTotal      Float
+  validUntil      DateTime?
+  terms           String?
+  notes           String?
+  status          PaymentStatus @default(PENDING)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  isDeleted       Boolean       @default(false)
+  version         Int           @default(1)
+
+  projectId String
+  project   Project         @relation(fields: [projectId], references: [id])
+  items     QuotationItem[]
+
+  @@index([quotationNumber])
+  @@index([projectId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model QuotationItem {
+  id          String   @id @default(uuid())
+  description String
+  unit        String
+  quantity    Float
+  unitRate    Float
+  amount      Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  isDeleted   Boolean  @default(false)
+  version     Int      @default(1)
+
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  @@index([quotationId])
+}
+
+model Workflow {
+  id          String         @id @default(uuid())
+  name        String
+  description String?
+  status      WorkflowStatus @default(DRAFT)
+  currentStep Int            @default(1)
+  totalSteps  Int            @default(1)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  isDeleted   Boolean        @default(false)
+  version     Int            @default(1)
+
+  projectId String
+  project   Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  steps     WorkflowStep[]
+
+  @@index([projectId])
+  @@index([status])
+}
+
+model WorkflowStep {
+  id          String     @id @default(uuid())
+  stepNumber  Int
+  name        String
+  description String?
+  status      TaskStatus @default(TODO)
+  comments    String?
+  completedAt DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  isDeleted   Boolean    @default(false)
+  version     Int        @default(1)
+
+  workflowId   String
+  workflow     Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  assignedToId String?
+  assignedTo   User?    @relation("WorkflowStepAssignee", fields: [assignedToId], references: [id])
+
+  @@index([workflowId])
+  @@index([assignedToId])
+  @@index([status])
+}
+
+model Approval {
+  id          String         @id @default(uuid())
+  entityType  String
+  entityId    String
+  status      ApprovalStatus @default(PENDING)
+  comments    String?
+  requestedAt DateTime       @default(now())
+  respondedAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  isDeleted   Boolean        @default(false)
+  version     Int            @default(1)
+
+  requestedById String
+  requestedBy   User    @relation("ApprovalRequester", fields: [requestedById], references: [id])
+  approvedById  String?
+  approvedBy    User?   @relation("ApprovalApprover", fields: [approvedById], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([requestedById])
+  @@index([approvedById])
+  @@index([status])
+}
+
+model DigitalSignature {
+  id            String   @id @default(uuid())
+  entityType    String
+  entityId      String
+  signatureData String   @db.Text
+  signedAt      DateTime @default(now())
+  ipAddress     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  isDeleted     Boolean  @default(false)
+  version       Int      @default(1)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entityType, entityId])
+}
+
+model Notification {
+  id         String           @id @default(uuid())
+  title      String
+  message    String
+  type       NotificationType @default(INFO)
+  isRead     Boolean          @default(false)
+  entityType String?
+  entityId   String?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  createdBy  String?
+  updatedBy  String?
+  isDeleted  Boolean          @default(false)
+  version    Int              @default(1)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model EmailLog {
+  id        String    @id @default(uuid())
+  to        String
+  from      String
+  subject   String
+  body      String    @db.Text
+  status    String
+  sentAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  isDeleted Boolean   @default(false)
+  version   Int       @default(1)
+
+  @@index([to])
+  @@index([status])
+  @@index([sentAt])
+}
+
+model WhatsAppLog {
+  id        String    @id @default(uuid())
+  to        String
+  from      String
+  message   String    @db.Text
+  status    String
+  sentAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  isDeleted Boolean   @default(false)
+  version   Int       @default(1)
+
+  @@index([to])
+  @@index([status])
+  @@index([sentAt])
+}
+
+model Report {
+  id          String   @id @default(uuid())
+  title       String
+  content     Json?
+  type        String?
+  format      String?
+  fileUrl     String?
+  generatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  isDeleted   Boolean  @default(false)
+  version     Int      @default(1)
+
+  projectId     String
+  project       Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  generatedById String
+  generatedBy   User    @relation("ReportGenerator", fields: [generatedById], references: [id])
+
+  @@index([projectId])
+  @@index([generatedById])
+  @@index([type])
+  @@index([generatedAt])
+}
+
+model Document {
+  id          String       @id @default(uuid())
+  title       String
+  description String?
+  type        DocumentType @default(OTHER)
+  fileUrl     String
+  filename    String
+  fileSize    Int?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  isDeleted   Boolean      @default(false)
+  version     Int          @default(1)
+
+  projectId    String
+  project      Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploadedById String
+  uploadedBy   User    @relation("DocumentUploader", fields: [uploadedById], references: [id])
+
+  @@index([projectId])
+  @@index([uploadedById])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id         String       @id @default(uuid())
+  action     ActivityType
+  entityType String
+  entityId   String
+  oldValues  Json?
+  newValues  Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  createdBy  String?
+  updatedBy  String?
+  isDeleted  Boolean      @default(false)
+  version    Int          @default(1)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model Activity {
+  id          String       @id @default(uuid())
+  action      ActivityType
+  description String?
+  entityType  String?
+  entityId    String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  isDeleted   Boolean      @default(false)
+  version     Int          @default(1)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model MasterCategory {
+  id          String   @id @default(uuid())
+  name        String
+  code        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  isDeleted   Boolean  @default(false)
+  version     Int      @default(1)
+
+  parentId String?
+  parent   MasterCategory?  @relation("MasterCategoryTree", fields: [parentId], references: [id])
+  children MasterCategory[] @relation("MasterCategoryTree")
+  items    MasterItem[]
+
+  @@index([parentId])
+  @@index([code])
+  @@index([isActive])
+}
+
+model MasterItem {
+  id          String   @id @default(uuid())
+  name        String
+  code        String
+  description String?
+  unit        String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  isDeleted   Boolean  @default(false)
+  version     Int      @default(1)
+
+  categoryId String
+  category   MasterCategory @relation(fields: [categoryId], references: [id])
+
+  @@index([categoryId])
+  @@index([code])
+  @@index([isActive])
+}
+
+model Setting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String   @db.Text
+  group       String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  isDeleted   Boolean  @default(false)
+  version     Int      @default(1)
+
+  @@index([key])
+  @@index([group])
+}
+
+model ApiKey {
+  id          String    @id @default(uuid())
+  name        String
+  key         String    @unique
+  permissions Json?
+  isActive    Boolean   @default(true)
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  isDeleted   Boolean   @default(false)
+  version     Int       @default(1)
+
+  @@index([key])
+  @@index([isActive])
+}
+
+model GpsTracking {
+  id        String   @id @default(uuid())
+  latitude  Float
+  longitude Float
+  accuracy  Float?
+  timestamp DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  isDeleted Boolean  @default(false)
+  version   Int      @default(1)
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([timestamp])
+}
+
+model Meeting {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  location    String?
+  scheduledAt DateTime
+  duration    Int?
+  attendees   Json?
+  minutes     String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  isDeleted   Boolean  @default(false)
+  version     Int      @default(1)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([scheduledAt])
+}
+
+model ChangeOrder {
+  id          String         @id @default(uuid())
+  title       String
+  description String?
+  amount      Float
+  status      ApprovalStatus @default(PENDING)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  isDeleted   Boolean        @default(false)
+  version     Int            @default(1)
+
+  projectId     String
+  project       Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requestedById String
+  requestedBy   User    @relation("COResuestedBy", fields: [requestedById], references: [id])
+  approvedById  String?
+  approvedBy    User?   @relation("COApprovedBy", fields: [approvedById], references: [id])
+
+  @@index([projectId])
+  @@index([requestedById])
+  @@index([approvedById])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AuditTrail {
+  id        String   @id @default(uuid())
+  tableName String
+  recordId  String
+  action    String
+  oldValues Json?
+  newValues Json?
+  changedBy String?
+  changedAt DateTime @default(now())
+  ipAddress String?
+
+  @@index([tableName, recordId])
+  @@index([changedAt])
+}
+
+model NotificationTemplate {
+  id        String   @id @default(uuid())
+  name      String
+  type      String
+  subject   String?
+  body      String   @db.Text
+  variables Json?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+}
+
+model ReportTemplate {
+  id        String   @id @default(uuid())
+  name      String
+  type      String
+  format    String
+  content   Json
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+}
+
+model OfflineSync {
+  id         String    @id @default(uuid())
+  userId     String
+  entityType String
+  entityId   String
+  action     String
+  data       Json
+  synced     Boolean   @default(false)
+  syncedAt   DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+  @@index([synced])
+  @@index([entityType])
+}
