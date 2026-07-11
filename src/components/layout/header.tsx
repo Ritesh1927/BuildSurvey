@@ -11,6 +11,7 @@ import {
   LogOut,
   Moon,
   Sun,
+  BookOpen,
 } from 'lucide-react'
 import { useUIStore } from '@/stores/ui-store'
 import { useAuthStore } from '@/stores/auth-store'
@@ -88,6 +89,15 @@ export default function Header() {
           aria-label="Toggle theme"
         >
           {mounted ? (resolvedTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />) : <Moon className="h-5 w-5" />}
+        </button>
+
+        {/* Help */}
+        <button
+          onClick={() => router.push('/help')}
+          className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          aria-label="User Manual"
+        >
+          <BookOpen className="h-5 w-5" />
         </button>
 
         {/* Notifications */}

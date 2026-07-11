@@ -143,6 +143,12 @@ export const SIDEBAR_NAV_ITEMS = [
       { label: 'OCR Scanner', href: '/ai/ocr', icon: 'ScanLine' },
     ],
   },
+  {
+    group: 'Help & Manual',
+    items: [
+      { label: 'User Manual', href: '/help', icon: 'BookOpen' },
+    ],
+  },
 ] as const
 
 export const ITEMS_PER_PAGE = 25

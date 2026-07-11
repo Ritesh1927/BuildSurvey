@@ -51,6 +51,7 @@ const routeLabels: Record<string, string> = {
   settings: 'Settings',
   integrations: 'Integrations',
   ai: 'AI Assistant',
+  help: 'User Manual',
   predictions: 'Predictions',
   export: 'Export',
   custom: 'Custom Reports',
