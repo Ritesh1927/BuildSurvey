@@ -40,7 +40,7 @@ export default function Header() {
   }, [logout, router])
 
   return (
-    <header className="no-print sticky top-0 z-30 flex h-16 items-center border-b border-border/80 bg-background/80 px-4 backdrop-blur-md sm:px-6">
+    <header className="no-print sticky top-0 z-30 flex h-16 items-center border-b border-border bg-background px-4 sm:px-6">
       {/* Left: Mobile menu + Breadcrumbs */}
       <div className="flex flex-1 items-center gap-3">
         <button

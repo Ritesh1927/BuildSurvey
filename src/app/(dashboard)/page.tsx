@@ -348,21 +348,21 @@ const quickStats = [
 ]
 
 const activityIconMap: Record<string, { icon: React.ElementType; color: string }> = {
-  survey_completed: { icon: CheckCircle, color: 'bg-emerald-100 text-emerald-600' },
-  payment_received: { icon: DollarSign, color: 'bg-emerald-100 text-emerald-600' },
-  report_submitted: { icon: FileText, color: 'bg-blue-100 text-blue-600' },
-  file_uploaded: { icon: Upload, color: 'bg-amber-100 text-amber-600' },
-  alert: { icon: AlertTriangle, color: 'bg-red-100 text-red-600' },
-  proposal_sent: { icon: Send, color: 'bg-violet-100 text-violet-600' },
-  lead_created: { icon: UserPlus, color: 'bg-blue-100 text-blue-600' },
-  task_completed: { icon: CheckCircle, color: 'bg-emerald-100 text-emerald-600' },
+  survey_completed: { icon: CheckCircle, color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400' },
+  payment_received: { icon: DollarSign, color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400' },
+  report_submitted: { icon: FileText, color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400' },
+  file_uploaded: { icon: Upload, color: 'bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400' },
+  alert: { icon: AlertTriangle, color: 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400' },
+  proposal_sent: { icon: Send, color: 'bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-400' },
+  lead_created: { icon: UserPlus, color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400' },
+  task_completed: { icon: CheckCircle, color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400' },
 }
 
 const priorityStyles: Record<string, string> = {
-  critical: 'bg-red-100 text-red-800 border-red-300',
-  high: 'bg-orange-100 text-orange-800 border-orange-300',
-  medium: 'bg-blue-100 text-blue-800 border-blue-300',
-  low: 'bg-gray-100 text-gray-700 border-gray-300',
+  critical: 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900/40 dark:text-red-400 dark:border-red-800',
+  high: 'bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900/40 dark:text-orange-400 dark:border-orange-800',
+  medium: 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/40 dark:text-blue-400 dark:border-blue-800',
+  low: 'bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700',
 }
 
 const priorityDot: Record<string, string> = {
@@ -394,7 +394,7 @@ export default function DashboardPage() {
       {/* Header Section */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             {greeting}, Rajesh Kumar
           </h1>
           <p className="text-muted-foreground">{today} — Here&apos;s what&apos;s happening with your projects.</p>
@@ -629,7 +629,7 @@ export default function DashboardPage() {
                 {engineerPerformanceData.map((engineer) => (
                   <div key={engineer.name} className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-blue-100 text-blue-700 text-xs font-semibold">
+                      <AvatarFallback className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 text-xs font-semibold">
                         {engineer.avatar}
                       </AvatarFallback>
                     </Avatar>
@@ -638,7 +638,7 @@ export default function DashboardPage() {
                         <span className="text-sm font-medium truncate">{engineer.name}</span>
                         <span className="text-sm font-semibold text-blue-600">{engineer.surveys}</span>
                       </div>
-                      <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                      <div className="h-2 rounded-full bg-muted overflow-hidden">
                         <div
                           className="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-400 transition-all"
                           style={{ width: `${(engineer.surveys / 42) * 100}%` }}
@@ -766,7 +766,7 @@ export default function DashboardPage() {
                         <span className="text-[10px] text-muted-foreground truncate">{project.client}</span>
                       </div>
                     </div>
-                    <Badge className={cn('text-[10px] shrink-0', project.status === 'In Progress' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800')}>
+                    <Badge className={cn('text-[10px] shrink-0', project.status === 'In Progress' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-400' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-400')}>
                       {project.status}
                     </Badge>
                   </div>
@@ -775,7 +775,7 @@ export default function DashboardPage() {
                       <span className="text-muted-foreground">Progress</span>
                       <span className="font-semibold">{project.progress}%</span>
                     </div>
-                    <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                    <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                       <div
                         className={cn(
                           'h-full rounded-full transition-all',
@@ -813,7 +813,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-2 gap-3">
               {quickStats.map((stat) => (
                 <div key={stat.label} className="flex items-center gap-3 rounded-lg border p-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
                     {stat.icon}
                   </div>
                   <div>
@@ -849,7 +849,7 @@ export default function DashboardPage() {
                 >
                   <div className={cn(
                     'mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full',
-                    notif.type === 'urgent' ? 'bg-red-100 text-red-600' : notif.type === 'success' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'
+                    notif.type === 'urgent' ? 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400' : notif.type === 'success' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400'
                   )}>
                     {notif.type === 'urgent' ? <AlertTriangle className="h-3 w-3" /> : notif.type === 'success' ? <CheckCircle className="h-3 w-3" /> : <Bell className="h-3 w-3" />}
                   </div>
@@ -870,7 +870,7 @@ export default function DashboardPage() {
             <CardTitle className="text-base font-semibold">Site Locations Map</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="relative h-[320px] bg-gradient-to-br from-blue-100 via-blue-50 to-emerald-50 flex items-center justify-center">
+            <div className="relative h-[320px] bg-gradient-to-br from-blue-100 via-blue-50 to-emerald-50 dark:from-blue-950/50 dark:via-blue-900/30 dark:to-emerald-950/50 flex items-center justify-center">
               <div className="absolute inset-0 opacity-10">
                 <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
                   <defs>
@@ -885,7 +885,7 @@ export default function DashboardPage() {
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-500/10 mx-auto mb-3">
                   <MapPin className="h-7 w-7 text-blue-600" />
                 </div>
-                <p className="text-sm font-semibold text-gray-700">Site Locations Map</p>
+                <p className="text-sm font-semibold text-foreground">Site Locations Map</p>
                 <p className="text-xs text-muted-foreground mt-1">12 active project sites</p>
                 <div className="flex items-center justify-center gap-2 mt-3">
                   <div className="flex items-center gap-1">
