@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import {
   PieChart,
@@ -373,16 +373,21 @@ const priorityDot: Record<string, string> = {
 }
 
 export default function DashboardPage() {
-  const [currentTime] = useState(new Date())
+  const [currentTime, setCurrentTime] = useState<Date | null>(null)
+
+  useEffect(() => {
+    setCurrentTime(new Date())
+  }, [])
 
   const greeting = useMemo(() => {
+    if (!currentTime) return 'Good morning'
     const hour = currentTime.getHours()
     if (hour < 12) return 'Good morning'
     if (hour < 17) return 'Good afternoon'
     return 'Good evening'
   }, [currentTime])
 
-  const today = currentTime.toLocaleDateString('en-IN', {
+  const today = (currentTime ?? new Date()).toLocaleDateString('en-IN', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',

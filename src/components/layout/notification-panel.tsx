@@ -18,10 +18,10 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 type NotificationFilter = 'all' | 'unread' | 'mentions'
 
 const NOTIFICATION_ICONS = {
-  INFO: { icon: Info, color: 'text-blue-500', bg: 'bg-blue-50' },
-  SUCCESS: { icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-  WARNING: { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50' },
-  ERROR: { icon: XCircle, color: 'text-red-500', bg: 'bg-red-50' },
+  INFO: { icon: Info, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/30' },
+  SUCCESS: { icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/30' },
+  WARNING: { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/30' },
+  ERROR: { icon: XCircle, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/30' },
 } as const
 
 const FILTER_OPTIONS: { value: NotificationFilter; label: string }[] = [
@@ -84,7 +84,7 @@ export default function NotificationPanel() {
         role="dialog"
         aria-label="Notifications"
         className={cn(
-          'fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-white shadow-2xl transition-transform duration-300 ease-in-out sm:w-[420px]',
+          'fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-background shadow-2xl transition-transform duration-300 ease-in-out sm:w-[420px]',
           notificationsOpen ? 'translate-x-0' : 'translate-x-full',
         )}
       >
@@ -92,7 +92,7 @@ export default function NotificationPanel() {
         <div className="flex items-center justify-between border-b px-5 py-4">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <Bell className="h-5 w-5 text-slate-700" />
+              <Bell className="h-5 w-5 text-foreground" />
               {unreadCount > 0 && (
                 <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">
                   {unreadCount > 9 ? '9+' : unreadCount}
@@ -100,15 +100,15 @@ export default function NotificationPanel() {
               )}
             </div>
             <div>
-              <h2 className="text-base font-semibold text-slate-900">Notifications</h2>
+              <h2 className="text-base font-semibold text-foreground">Notifications</h2>
               {unreadCount > 0 && (
-                <p className="text-xs text-slate-500">{unreadCount} unread</p>
+                <p className="text-xs text-muted-foreground">{unreadCount} unread</p>
               )}
             </div>
           </div>
           <button
             onClick={() => setNotificationsOpen(false)}
-            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           >
             <X className="h-5 w-5" />
           </button>
@@ -124,8 +124,8 @@ export default function NotificationPanel() {
                 className={cn(
                   'rounded-md px-3 py-1 text-xs font-medium transition-colors',
                   filter === opt.value
-                    ? 'bg-slate-900 text-white'
-                    : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700',
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                 )}
               >
                 {opt.label}
@@ -147,11 +147,11 @@ export default function NotificationPanel() {
         <ScrollArea className="flex-1">
           {filteredNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
-                <BellOff className="h-7 w-7 text-slate-300" />
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+                <BellOff className="h-7 w-7 text-muted-foreground" />
               </div>
-              <p className="text-sm font-medium text-slate-700">No notifications</p>
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="text-sm font-medium text-foreground">No notifications</p>
+              <p className="mt-1 text-xs text-muted-foreground">
                 {filter === 'unread'
                   ? "You're all caught up!"
                   : filter === 'mentions'
@@ -170,8 +170,8 @@ export default function NotificationPanel() {
                     key={notification.id}
                     onClick={() => markNotificationRead(notification.id)}
                     className={cn(
-                      'flex w-full gap-3 px-5 py-4 text-left transition-colors hover:bg-slate-50',
-                      !notification.isRead && 'bg-blue-50/30',
+                      'flex w-full gap-3 px-5 py-4 text-left transition-colors hover:bg-accent/50',
+                      !notification.isRead && 'bg-blue-50/30 dark:bg-blue-950/20',
                     )}
                   >
                     <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', iconConfig.bg)}>
@@ -179,15 +179,15 @@ export default function NotificationPanel() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
-                        <p className={cn('text-sm font-medium truncate', notification.isRead ? 'text-slate-700' : 'text-slate-900')}>
+                        <p className={cn('text-sm font-medium truncate', notification.isRead ? 'text-muted-foreground' : 'text-foreground')}>
                           {notification.title}
                         </p>
                         {!notification.isRead && (
                           <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-blue-600" />
                         )}
                       </div>
-                      <p className="mt-0.5 text-xs text-slate-500 line-clamp-2">{notification.message}</p>
-                      <p className="mt-1 text-[11px] text-slate-400">{timeAgo(notification.createdAt)}</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{notification.message}</p>
+                      <p className="mt-1 text-[11px] text-muted-foreground">{timeAgo(notification.createdAt)}</p>
                     </div>
                   </button>
                 )

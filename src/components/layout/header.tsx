@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Menu,
@@ -31,6 +31,9 @@ export default function Header() {
   const { setSidebarOpen, setNotificationsOpen, notifications } = useUIStore()
   const { user, logout } = useAuthStore()
   const { setTheme, resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => setMounted(true), [])
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
 
@@ -84,7 +87,7 @@ export default function Header() {
           className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           aria-label="Toggle theme"
         >
-          {resolvedTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          {mounted ? (resolvedTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />) : <Moon className="h-5 w-5" />}
         </button>
 
         {/* Notifications */}
