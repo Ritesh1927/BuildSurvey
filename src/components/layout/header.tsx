@@ -40,12 +40,12 @@ export default function Header() {
   }, [logout, router])
 
   return (
-    <header className="no-print sticky top-0 z-30 flex h-16 items-center border-b border-slate-200/80 bg-white/80 px-4 backdrop-blur-md sm:px-6">
+    <header className="no-print sticky top-0 z-30 flex h-16 items-center border-b border-border/80 bg-background/80 px-4 backdrop-blur-md sm:px-6">
       {/* Left: Mobile menu + Breadcrumbs */}
       <div className="flex flex-1 items-center gap-3">
         <button
           onClick={() => setSidebarOpen(true)}
-          className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 lg:hidden"
+          className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground lg:hidden"
           aria-label="Open menu"
         >
           <Menu className="h-5 w-5" />
@@ -57,11 +57,11 @@ export default function Header() {
       <div className="hidden md:block flex-shrink-0 px-4">
         <button
           onClick={() => {}}
-          className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-400 transition-colors hover:border-slate-300 hover:bg-white"
+          className="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-border hover:bg-background"
         >
           <Search className="h-4 w-4" />
           <span className="hidden lg:inline">Search...</span>
-          <kbd className="ml-2 hidden rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-400 lg:inline">
+          <kbd className="ml-2 hidden rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground lg:inline">
             {'\u2318'}K
           </kbd>
         </button>
@@ -72,7 +72,7 @@ export default function Header() {
         {/* Mobile search */}
         <button
           onClick={() => {}}
-          className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 md:hidden"
+          className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground md:hidden"
           aria-label="Search"
         >
           <Search className="h-5 w-5" />
@@ -81,7 +81,7 @@ export default function Header() {
         {/* Theme toggle */}
         <button
           onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-          className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+          className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           aria-label="Toggle theme"
         >
           {resolvedTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -90,7 +90,7 @@ export default function Header() {
         {/* Notifications */}
         <button
           onClick={() => setNotificationsOpen(true)}
-          className="relative rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+          className="relative rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           aria-label="Notifications"
         >
           <Bell className="h-5 w-5" />
@@ -104,7 +104,7 @@ export default function Header() {
         {/* User Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-slate-100 ml-1">
+            <button className="flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-accent ml-1">
               <Avatar className="h-8 w-8">
                 <AvatarImage src={user?.avatar ?? undefined} alt={user?.name ?? ''} />
                 <AvatarFallback className="bg-blue-600 text-xs font-semibold text-white">
@@ -116,8 +116,8 @@ export default function Header() {
                 </AvatarFallback>
               </Avatar>
               <div className="hidden text-left xl:block">
-                <p className="text-sm font-medium text-slate-700 leading-tight">{user?.name ?? 'Guest'}</p>
-                <p className="text-[11px] text-slate-400 leading-tight">
+                <p className="text-sm font-medium text-foreground leading-tight">{user?.name ?? 'Guest'}</p>
+                <p className="text-[11px] text-muted-foreground leading-tight">
                   {user?.role?.replace(/_/g, ' ') ?? 'Viewer'}
                 </p>
               </div>
@@ -127,7 +127,7 @@ export default function Header() {
             <DropdownMenuLabel>
               <div className="flex flex-col">
                 <span className="text-sm font-medium">{user?.name ?? 'Guest User'}</span>
-                <span className="text-xs font-normal text-slate-500">{user?.email ?? ''}</span>
+                <span className="text-xs font-normal text-muted-foreground">{user?.email ?? ''}</span>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
