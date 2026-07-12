@@ -3,6 +3,7 @@
 import { useEffect, useCallback, createElement } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import {
   X,
   HardHat,
@@ -63,6 +64,8 @@ function MobileNavItem({
 
 export default function MobileSidebar() {
   const pathname = usePathname()
+  const { data: session } = useSession()
+  const userRole = (session?.user as any)?.role as string | undefined
   const { sidebarOpen, setSidebarOpen } = useUIStore()
   const { user, logout } = useAuthStore()
 
@@ -145,16 +148,22 @@ export default function MobileSidebar() {
         <ScrollArea className="flex-1 py-3">
           <nav className="space-y-1 px-3">
             {SIDEBAR_NAV_ITEMS.map((group) => {
+              const visibleItems = group.items.filter((item) => {
+                if (!item.roles) return true
+                if (!userRole) return false
+                return (item.roles as readonly string[]).includes(userRole)
+              })
+              if (visibleItems.length === 0) return null
               return (
                 <div key={group.group} className="mb-1">
                   <div className="mb-1 flex items-center gap-2 px-3 pt-3 pb-1">
-                    <NavIcon name={group.items[0]?.icon ?? ''} className="h-3.5 w-3.5 text-slate-500" />
+                    <NavIcon name={visibleItems[0]?.icon ?? ''} className="h-3.5 w-3.5 text-slate-500" />
                     <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                       {group.group}
                     </span>
                   </div>
                   <div className="space-y-0.5">
-                    {group.items.map((item) => (
+                    {visibleItems.map((item) => (
                       <MobileNavItem
                         key={item.href}
                         href={item.href}

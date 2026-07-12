@@ -51,7 +51,17 @@ export const PRIORITIES = [
   { value: 'CRITICAL', label: 'Critical', color: 'bg-red-100 text-red-700 border-red-300' },
 ] as const
 
-export const SIDEBAR_NAV_ITEMS = [
+type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'ENGINEER' | 'SURVEYOR' | 'CLIENT' | 'ACCOUNTANT'
+
+export const SIDEBAR_NAV_ITEMS: readonly {
+  group: string
+  items: readonly {
+    label: string
+    href: string
+    icon: string
+    roles?: readonly UserRole[]
+  }[]
+}[] = [
   {
     group: 'Dashboard',
     items: [
@@ -61,8 +71,8 @@ export const SIDEBAR_NAV_ITEMS = [
   {
     group: 'CRM',
     items: [
-      { label: 'Leads', href: '/leads', icon: 'Users' },
-      { label: 'Clients', href: '/clients', icon: 'Building2' },
+      { label: 'Leads', href: '/leads', icon: 'Users', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
+      { label: 'Clients', href: '/clients', icon: 'Building2', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
     ],
   },
   {
@@ -75,7 +85,7 @@ export const SIDEBAR_NAV_ITEMS = [
     group: 'Survey & Field',
     items: [
       { label: 'Surveys', href: '/surveys', icon: 'ClipboardList' },
-      { label: 'Assignments', href: '/surveys/assignments', icon: 'UserCheck' },
+      { label: 'Assignments', href: '/surveys/assignments', icon: 'UserCheck', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
       { label: 'Checklists', href: '/surveys/checklist', icon: 'ListChecks' },
       { label: 'GPS Tracking', href: '/surveys/gps', icon: 'MapPin' },
       { label: 'Measurements', href: '/measurements', icon: 'Ruler' },
@@ -91,22 +101,22 @@ export const SIDEBAR_NAV_ITEMS = [
   {
     group: 'Risk & Materials',
     items: [
-      { label: 'Risk Assessment', href: '/risks', icon: 'ShieldAlert' },
-      { label: 'Materials', href: '/materials', icon: 'Package' },
+      { label: 'Risk Assessment', href: '/risks', icon: 'ShieldAlert', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER'] },
+      { label: 'Materials', href: '/materials', icon: 'Package', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER'] },
     ],
   },
   {
     group: 'Finance',
     items: [
-      { label: 'BOQ', href: '/boq', icon: 'Calculator' },
-      { label: 'Cost Estimation', href: '/estimation', icon: 'TrendingUp' },
-      { label: 'Quotations', href: '/quotations', icon: 'FileText' },
+      { label: 'BOQ', href: '/boq', icon: 'Calculator', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT'] },
+      { label: 'Cost Estimation', href: '/estimation', icon: 'TrendingUp', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT'] },
+      { label: 'Quotations', href: '/quotations', icon: 'FileText', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT'] },
     ],
   },
   {
     group: 'Workflow',
     items: [
-      { label: 'Workflows', href: '/workflows', icon: 'GitBranch' },
+      { label: 'Workflows', href: '/workflows', icon: 'GitBranch', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
       { label: 'Digital Signatures', href: '/signatures', icon: 'PenTool' },
     ],
   },
@@ -114,33 +124,33 @@ export const SIDEBAR_NAV_ITEMS = [
     group: 'Communication',
     items: [
       { label: 'Notifications', href: '/notifications', icon: 'Bell' },
-      { label: 'Email', href: '/email', icon: 'Mail' },
-      { label: 'WhatsApp', href: '/whatsapp', icon: 'MessageSquare' },
+      { label: 'Email', href: '/email', icon: 'Mail', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
+      { label: 'WhatsApp', href: '/whatsapp', icon: 'MessageSquare', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
     ],
   },
   {
     group: 'Reports & Analytics',
     items: [
       { label: 'Reports', href: '/reports', icon: 'FileBarChart' },
-      { label: 'Analytics', href: '/analytics', icon: 'BarChart3' },
+      { label: 'Analytics', href: '/analytics', icon: 'BarChart3', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
     ],
   },
   {
     group: 'Administration',
     items: [
-      { label: 'Users', href: '/users', icon: 'Users' },
-      { label: 'Roles', href: '/roles', icon: 'Lock' },
-      { label: 'Masters', href: '/masters', icon: 'Database' },
-      { label: 'Audit Log', href: '/audit', icon: 'ScrollText' },
-      { label: 'API Manager', href: '/api-manager', icon: 'Globe' },
-      { label: 'Settings', href: '/settings', icon: 'Settings' },
+      { label: 'Users', href: '/users', icon: 'Users', roles: ['SUPER_ADMIN', 'ADMIN'] },
+      { label: 'Roles', href: '/roles', icon: 'Lock', roles: ['SUPER_ADMIN', 'ADMIN'] },
+      { label: 'Masters', href: '/masters', icon: 'Database', roles: ['SUPER_ADMIN', 'ADMIN'] },
+      { label: 'Audit Log', href: '/audit', icon: 'ScrollText', roles: ['SUPER_ADMIN', 'ADMIN'] },
+      { label: 'API Manager', href: '/api-manager', icon: 'Globe', roles: ['SUPER_ADMIN', 'ADMIN'] },
+      { label: 'Settings', href: '/settings', icon: 'Settings', roles: ['SUPER_ADMIN', 'ADMIN'] },
     ],
   },
   {
     group: 'AI & Automation',
     items: [
-      { label: 'AI Hub', href: '/ai', icon: 'Bot' },
-      { label: 'OCR Scanner', href: '/ai/ocr', icon: 'ScanLine' },
+      { label: 'AI Hub', href: '/ai', icon: 'Bot', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
+      { label: 'OCR Scanner', href: '/ai/ocr', icon: 'ScanLine', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
     ],
   },
   {
