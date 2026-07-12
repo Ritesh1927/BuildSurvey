@@ -1,9 +1,13 @@
+import 'dotenv/config'
 import { PrismaClient } from '../src/generated/prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import bcrypt from 'bcryptjs'
 
 async function main() {
-  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
+  const url = process.env.DATABASE_URL
+  if (!url) { console.error('DATABASE_URL not found'); process.exit(1) }
+  console.log('Connecting to Neon...')
+  const adapter = new PrismaPg({ connectionString: url })
   const prisma = new PrismaClient({ adapter })
 
   const users = [
@@ -18,15 +22,15 @@ async function main() {
     const hashedPassword = await bcrypt.hash(u.password, 12)
     if (existing) {
       await prisma.user.update({ where: { id: existing.id }, data: { password: hashedPassword, isActive: true } })
-      console.log(`Updated: ${u.email}`)
+      console.log('Updated:', u.email)
     } else {
       await prisma.user.create({ data: { email: u.email, password: hashedPassword, firstName: u.firstName, lastName: u.lastName, phone: u.phone, role: u.role, isActive: true } })
-      console.log(`Created: ${u.email}`)
+      console.log('Created:', u.email)
     }
   }
 
-  console.log('\nAdmin: admin@buildsurvey.in / Admin@123')
+  console.log('\nDone! Login: admin@buildsurvey.in / Admin@123')
   await prisma.$disconnect()
 }
 
-main().catch(console.error)
+main().catch((e) => { console.error(e); process.exit(1) })
