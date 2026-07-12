@@ -78,7 +78,9 @@ export default function NewUserPage() {
     if (!form.phone || form.phone === "+91" || form.phone.length <= 3)
       newErrors.phone = "Phone number is required"
     else {
-      const digits = form.phone.replace(/^\+\d+/, "")
+      const codes = ['+880','+971','+977','+94','+92','+61','+49','+33','+81','+86','+65','+91','+44','+1']
+      const matchedCode = codes.find(c => form.phone.startsWith(c)) || '+91'
+      const digits = form.phone.slice(matchedCode.length)
       if (digits.length < 6) newErrors.phone = "Phone number is too short"
     }
     if (!form.role) newErrors.role = "Role is required"
