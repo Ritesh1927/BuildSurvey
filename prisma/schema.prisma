@@ -947,17 +947,20 @@ model ApiKey {
 }
 
 model GpsTracking {
-  id        String   @id @default(uuid())
-  latitude  Float
-  longitude Float
-  accuracy  Float?
-  timestamp DateTime @default(now())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  createdBy String?
-  updatedBy String?
-  isDeleted Boolean  @default(false)
-  version   Int      @default(1)
+  id           String   @id @default(uuid())
+  latitude     Float
+  longitude    Float
+  accuracy     Float?
+  speed        Float?
+  batteryLevel Int?
+  isMoving     Boolean  @default(false)
+  timestamp    DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  createdBy    String?
+  updatedBy    String?
+  isDeleted    Boolean  @default(false)
+  version      Int      @default(1)
 
   userId    String
   user      User     @relation(fields: [userId], references: [id])
