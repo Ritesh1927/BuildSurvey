@@ -2,6 +2,7 @@
 
 import { useCallback, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession, signOut } from 'next-auth/react'
 import {
   Menu,
   Search,
@@ -14,7 +15,6 @@ import {
   BookOpen,
 } from 'lucide-react'
 import { useUIStore } from '@/stores/ui-store'
-import { useAuthStore } from '@/stores/auth-store'
 import { useTheme } from '@/components/layout/providers'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -29,19 +29,24 @@ import Breadcrumbs from '@/components/layout/breadcrumbs'
 
 export default function Header() {
   const router = useRouter()
+  const { data: session } = useSession()
   const { setSidebarOpen, setNotificationsOpen, notifications } = useUIStore()
-  const { user, logout } = useAuthStore()
   const { setTheme, resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => setMounted(true), [])
 
+  const sessionUser = session?.user as any
+  const userName = sessionUser?.name || 'Guest'
+  const userEmail = sessionUser?.email || ''
+  const userRole = sessionUser?.role?.replace(/_/g, ' ') || 'Viewer'
+  const userInitials = userName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
+
   const unreadCount = notifications.filter((n) => !n.isRead).length
 
   const handleLogout = useCallback(() => {
-    logout()
-    router.push('/login')
-  }, [logout, router])
+    signOut({ callbackUrl: '/login' })
+  }, [])
 
   return (
     <header className="no-print sticky top-0 z-30 flex h-16 items-center border-b border-border bg-background px-4 sm:px-6">
@@ -119,19 +124,14 @@ export default function Header() {
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-accent ml-1">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.avatar ?? undefined} alt={user?.name ?? ''} />
                 <AvatarFallback className="bg-blue-600 text-xs font-semibold text-white">
-                  {user?.name
-                    ?.split(' ')
-                    .map((n) => n[0])
-                    .join('')
-                    .toUpperCase() ?? '?'}
+                  {userInitials}
                 </AvatarFallback>
               </Avatar>
               <div className="hidden text-left xl:block">
-                <p className="text-sm font-medium text-foreground leading-tight">{user?.name ?? 'Guest'}</p>
+                <p className="text-sm font-medium text-foreground leading-tight">{userName}</p>
                 <p className="text-[11px] text-muted-foreground leading-tight">
-                  {user?.role?.replace(/_/g, ' ') ?? 'Viewer'}
+                  {userRole}
                 </p>
               </div>
             </button>
@@ -139,8 +139,8 @@ export default function Header() {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>
               <div className="flex flex-col">
-                <span className="text-sm font-medium">{user?.name ?? 'Guest User'}</span>
-                <span className="text-xs font-normal text-muted-foreground">{user?.email ?? ''}</span>
+                <span className="text-sm font-medium">{userName}</span>
+                <span className="text-xs font-normal text-muted-foreground">{userEmail}</span>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
