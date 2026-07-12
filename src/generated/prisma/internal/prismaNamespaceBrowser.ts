@@ -89,7 +89,8 @@ export const ModelName = {
   AuditTrail: 'AuditTrail',
   NotificationTemplate: 'NotificationTemplate',
   ReportTemplate: 'ReportTemplate',
-  OfflineSync: 'OfflineSync'
+  OfflineSync: 'OfflineSync',
+  AccessRequest: 'AccessRequest'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -887,6 +888,21 @@ export const OfflineSyncScalarFieldEnum = {
 } as const
 
 export type OfflineSyncScalarFieldEnum = (typeof OfflineSyncScalarFieldEnum)[keyof typeof OfflineSyncScalarFieldEnum]
+
+
+export const AccessRequestScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  company: 'company',
+  phone: 'phone',
+  message: 'message',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AccessRequestScalarFieldEnum = (typeof AccessRequestScalarFieldEnum)[keyof typeof AccessRequestScalarFieldEnum]
 
 
 export const SortOrder = {

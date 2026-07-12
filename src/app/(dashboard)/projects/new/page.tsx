@@ -127,6 +127,7 @@ export default function NewProjectPage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const [formData, setFormData] = useState<FormData>({
     name: "",
     code: `PRJ-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 999)).padStart(3, "0")}`,
@@ -180,12 +181,41 @@ export default function NewProjectPage() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsSubmitting(false)
-    setShowSuccess(true)
-    setTimeout(() => {
-      router.push("/projects")
-    }, 2000)
+    try {
+      const res = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          code: formData.code.trim() || undefined,
+          description: formData.description.trim() || undefined,
+          type: formData.type,
+          clientId: formData.clientId,
+          managerId: formData.managerId || undefined,
+          startDate: formData.startDate || undefined,
+          endDate: formData.endDate || undefined,
+          budget: formData.budget ? Number(formData.budget) : undefined,
+          address: formData.address.trim() || undefined,
+          city: formData.city.trim() || undefined,
+          state: formData.state.trim() || undefined,
+          latitude: formData.latitude || undefined,
+          longitude: formData.longitude || undefined,
+          area: formData.area ? Number(formData.area) : undefined,
+          floors: formData.floors ? Number(formData.floors) : undefined,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setErrors({ submit: data.error || 'Failed to create project' })
+        setIsSubmitting(false)
+        return
+      }
+      setShowSuccess(true)
+      setTimeout(() => router.push('/projects'), 2000)
+    } catch {
+      setErrors({ submit: 'Network error. Please try again.' })
+      setIsSubmitting(false)
+    }
   }
 
   return (

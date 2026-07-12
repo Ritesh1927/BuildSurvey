@@ -212,3 +212,8 @@ export type ReportTemplate = Prisma.ReportTemplateModel
  * 
  */
 export type OfflineSync = Prisma.OfflineSyncModel
+/**
+ * Model AccessRequest
+ * 
+ */
+export type AccessRequest = Prisma.AccessRequestModel

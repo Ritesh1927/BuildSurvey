@@ -2,6 +2,7 @@
 
 import { type ReactNode, createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 import { Toaster } from 'sonner'
+import { SessionProvider as NextAuthSessionProvider } from 'next-auth/react'
 
 type Theme = 'light' | 'dark' | 'system'
 
@@ -95,16 +96,18 @@ function ThemeProvider({ children }: { children: ReactNode }) {
 
 export default function Providers({ children }: { children: ReactNode }) {
   return (
-    <ThemeProvider>
-      {children}
-      <Toaster
-        position="top-right"
-        richColors
-        closeButton
-        toastOptions={{
-          className: 'font-sans text-sm',
-        }}
-      />
-    </ThemeProvider>
+    <NextAuthSessionProvider>
+      <ThemeProvider>
+        {children}
+        <Toaster
+          position="top-right"
+          richColors
+          closeButton
+          toastOptions={{
+            className: 'font-sans text-sm',
+          }}
+        />
+      </ThemeProvider>
+    </NextAuthSessionProvider>
   )
 }

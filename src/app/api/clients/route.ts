@@ -1,79 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateId } from '@/lib/utils'
-
-interface Client {
-  id: string
-  name: string
-  email: string
-  phone: string
-  company: string
-  address: string
-  type: string
-  status: string
-  totalProjects: number
-  totalRevenue: number
-  createdAt: string
-  updatedAt: string
-}
-
-const mockClients: Client[] = [
-  {
-    id: 'CLIENT-2026-001',
-    name: 'Rajesh Kumar',
-    email: 'rajesh@buildtech.in',
-    phone: '+91 98765 43210',
-    company: 'BuildTech Construction',
-    address: 'Mumbai, Maharashtra',
-    type: 'contractor',
-    status: 'active',
-    totalProjects: 12,
-    totalRevenue: 45000000,
-    createdAt: '2025-06-15T10:00:00Z',
-    updatedAt: '2026-01-10T08:00:00Z',
-  },
-  {
-    id: 'CLIENT-2026-002',
-    name: 'Priya Sharma',
-    email: 'priya@urbaninfra.com',
-    phone: '+91 87654 32109',
-    company: 'Urban Infrastructure Ltd',
-    address: 'Pune, Maharashtra',
-    type: 'developer',
-    status: 'active',
-    totalProjects: 8,
-    totalRevenue: 32000000,
-    createdAt: '2025-08-20T10:00:00Z',
-    updatedAt: '2026-01-12T09:00:00Z',
-  },
-  {
-    id: 'CLIENT-2026-003',
-    name: 'Amit Patel',
-    email: 'amit@greenhomes.co',
-    phone: '+91 76543 21098',
-    company: 'Green Homes Pvt Ltd',
-    address: 'Nashik, Maharashtra',
-    type: 'developer',
-    status: 'active',
-    totalProjects: 5,
-    totalRevenue: 18000000,
-    createdAt: '2025-10-05T10:00:00Z',
-    updatedAt: '2026-01-08T11:00:00Z',
-  },
-  {
-    id: 'CLIENT-2026-004',
-    name: 'Neha Gupta',
-    email: 'neha@skylinegroup.in',
-    phone: '+91 65432 10987',
-    company: 'Skyline Group',
-    address: 'Thane, Maharashtra',
-    type: 'builder',
-    status: 'inactive',
-    totalProjects: 3,
-    totalRevenue: 12000000,
-    createdAt: '2025-04-10T10:00:00Z',
-    updatedAt: '2025-12-15T10:00:00Z',
-  },
-]
+import { db } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   try {
@@ -81,33 +7,52 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || ''
     const status = searchParams.get('status') || ''
     const type = searchParams.get('type') || ''
+    const page = parseInt(searchParams.get('page') || '1', 10)
+    const limit = parseInt(searchParams.get('limit') || '25', 10)
 
-    let filteredClients = [...mockClients]
+    const where: any = { isDeleted: false }
 
     if (search) {
       const searchLower = search.toLowerCase()
-      filteredClients = filteredClients.filter(
-        (client) =>
-          client.name.toLowerCase().includes(searchLower) ||
-          client.email.toLowerCase().includes(searchLower) ||
-          client.company.toLowerCase().includes(searchLower)
-      )
+      where.OR = [
+        { companyName: { contains: searchLower, mode: 'insensitive' } },
+        { contactPerson: { contains: searchLower, mode: 'insensitive' } },
+        { email: { contains: searchLower, mode: 'insensitive' } },
+      ]
     }
 
-    if (status) {
-      filteredClients = filteredClients.filter((client) => client.status === status)
-    }
+    if (status === 'active') where.isActive = true
+    if (status === 'inactive') where.isActive = false
 
     if (type) {
-      filteredClients = filteredClients.filter((client) => client.type === type)
+      where.projects = { some: { type } }
     }
+
+    const [clients, total] = await Promise.all([
+      db.client.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: { _count: { select: { projects: true, leads: true } } },
+      }),
+      db.client.count({ where }),
+    ])
 
     return NextResponse.json({
       success: true,
-      data: filteredClients,
-      total: filteredClients.length,
+      data: clients.map((c: any) => ({
+        ...c,
+        totalProjects: c._count.projects,
+        totalLeads: c._count.leads,
+      })),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
     })
   } catch (error) {
+    console.error('Failed to fetch clients:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to fetch clients' },
       { status: 500 }
@@ -118,37 +63,58 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, email, phone, company, address, type } = body
+    const {
+      companyName,
+      contactPerson,
+      email,
+      phone,
+      address,
+      city,
+      state,
+      zipCode,
+      country,
+      gstNumber,
+      panNumber,
+      website,
+      notes,
+    } = body
 
-    if (!name || !email || !company) {
+    if (!companyName || !contactPerson || !email || !phone) {
       return NextResponse.json(
-        { success: false, error: 'Name, email, and company are required' },
+        { success: false, error: 'Company name, contact person, email, and phone are required' },
         { status: 400 }
       )
     }
 
-    const newClient: Client = {
-      id: generateId('CLIENT'),
-      name,
-      email,
-      phone: phone || '',
-      company,
-      address: address || '',
-      type: type || 'contractor',
-      status: 'active',
-      totalProjects: 0,
-      totalRevenue: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+    const existing = await db.client.findFirst({ where: { email, isDeleted: false } })
+    if (existing) {
+      return NextResponse.json(
+        { success: false, error: 'A client with this email already exists' },
+        { status: 409 }
+      )
     }
 
-    mockClients.push(newClient)
+    const client = await db.client.create({
+      data: {
+        companyName,
+        contactPerson,
+        email,
+        phone,
+        address: address || null,
+        city: city || null,
+        state: state || null,
+        zipCode: zipCode || null,
+        country: country || 'India',
+        gstNumber: gstNumber || null,
+        panNumber: panNumber || null,
+        website: website || null,
+        notes: notes || null,
+      },
+    })
 
-    return NextResponse.json(
-      { success: true, data: newClient },
-      { status: 201 }
-    )
+    return NextResponse.json({ success: true, data: client }, { status: 201 })
   } catch (error) {
+    console.error('Failed to create client:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to create client' },
       { status: 500 }

@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { PageHeader } from "@/components/ui/page-header"
+import { PhoneInput } from "@/components/ui/phone-input"
 
 const departments = [
   "Administration",
@@ -37,24 +38,25 @@ const departments = [
 ]
 
 const roles = [
-  "Super Admin",
-  "Admin",
-  "Manager",
-  "Engineer",
-  "Surveyor",
-  "Client",
-  "Accountant",
+  { value: "SUPER_ADMIN", label: "Super Admin" },
+  { value: "ADMIN", label: "Admin" },
+  { value: "MANAGER", label: "Manager" },
+  { value: "ENGINEER", label: "Engineer" },
+  { value: "SURVEYOR", label: "Surveyor" },
+  { value: "CLIENT", label: "Client" },
+  { value: "ACCOUNTANT", label: "Accountant" },
 ]
 
 export default function NewUserPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState("")
 
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
     email: "",
-    phone: "",
+    phone: "+91",
     employeeId: "",
     department: "",
     designation: "",
@@ -72,15 +74,16 @@ export default function NewUserPage() {
     if (!form.lastName.trim()) newErrors.lastName = "Last name is required"
     if (!form.email.trim()) newErrors.email = "Email is required"
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-      newErrors.email = "Invalid email format"
-    if (!form.phone.trim()) newErrors.phone = "Phone is required"
-    if (!form.employeeId.trim()) newErrors.employeeId = "Employee ID is required"
-    if (!form.department) newErrors.department = "Department is required"
-    if (!form.designation.trim()) newErrors.designation = "Designation is required"
-    if (!form.dateOfJoining) newErrors.dateOfJoining = "Date of joining is required"
+      newErrors.email = "Please enter a valid email address"
+    if (!form.phone || form.phone === "+91" || form.phone.length <= 3)
+      newErrors.phone = "Phone number is required"
+    else {
+      const digits = form.phone.replace(/^\+\d+/, "")
+      if (digits.length < 6) newErrors.phone = "Phone number is too short"
+    }
     if (!form.role) newErrors.role = "Role is required"
     if (!form.initialPassword.trim())
-      newErrors.initialPassword = "Initial password is required"
+      newErrors.initialPassword = "Password is required"
     else if (form.initialPassword.length < 8)
       newErrors.initialPassword = "Password must be at least 8 characters"
 
@@ -88,15 +91,41 @@ export default function NewUserPage() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!validate()) return
 
     setIsSubmitting(true)
-    setTimeout(() => {
-      setIsSubmitting(false)
+    setSubmitError("")
+
+    try {
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: form.firstName.trim(),
+          lastName: form.lastName.trim(),
+          email: form.email.trim().toLowerCase(),
+          phone: form.phone,
+          role: form.role,
+          initialPassword: form.initialPassword,
+          isActive: form.isActive,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setSubmitError(data.error || "Failed to create user")
+        return
+      }
+
       router.push("/users")
-    }, 1500)
+    } catch (err) {
+      setSubmitError("Network error. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const updateField = (field: string, value: string | boolean) => {
@@ -191,14 +220,12 @@ export default function NewUserPage() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">
+                  <Label>
                     Phone Number <span className="text-destructive">*</span>
                   </Label>
-                  <Input
-                    id="phone"
-                    placeholder="+91 98765 43210"
+                  <PhoneInput
                     value={form.phone}
-                    onChange={(e) => updateField("phone", e.target.value)}
+                    onChange={(val) => updateField("phone", val)}
                     error={!!errors.phone}
                   />
                   {errors.phone && (
@@ -219,24 +246,16 @@ export default function NewUserPage() {
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="employeeId">
-                      Employee ID <span className="text-destructive">*</span>
-                    </Label>
+                    <Label htmlFor="employeeId">Employee ID</Label>
                     <Input
                       id="employeeId"
                       placeholder="EMP-XXX"
                       value={form.employeeId}
                       onChange={(e) => updateField("employeeId", e.target.value)}
-                      error={!!errors.employeeId}
                     />
-                    {errors.employeeId && (
-                      <p className="text-sm text-destructive">{errors.employeeId}</p>
-                    )}
                   </div>
                   <div className="space-y-2">
-                    <Label>
-                      Department <span className="text-destructive">*</span>
-                    </Label>
+                    <Label>Department</Label>
                     <Select
                       value={form.department}
                       onValueChange={(value) => updateField("department", value)}
@@ -252,41 +271,26 @@ export default function NewUserPage() {
                         ))}
                       </SelectContent>
                     </Select>
-                    {errors.department && (
-                      <p className="text-sm text-destructive">{errors.department}</p>
-                    )}
                   </div>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="designation">
-                      Designation <span className="text-destructive">*</span>
-                    </Label>
+                    <Label htmlFor="designation">Designation</Label>
                     <Input
                       id="designation"
                       placeholder="e.g. Senior Civil Engineer"
                       value={form.designation}
                       onChange={(e) => updateField("designation", e.target.value)}
-                      error={!!errors.designation}
                     />
-                    {errors.designation && (
-                      <p className="text-sm text-destructive">{errors.designation}</p>
-                    )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="dateOfJoining">
-                      Date of Joining <span className="text-destructive">*</span>
-                    </Label>
+                    <Label htmlFor="dateOfJoining">Date of Joining</Label>
                     <Input
                       id="dateOfJoining"
                       type="date"
                       value={form.dateOfJoining}
                       onChange={(e) => updateField("dateOfJoining", e.target.value)}
-                      error={!!errors.dateOfJoining}
                     />
-                    {errors.dateOfJoining && (
-                      <p className="text-sm text-destructive">{errors.dateOfJoining}</p>
-                    )}
                   </div>
                 </div>
               </CardContent>
@@ -315,8 +319,8 @@ export default function NewUserPage() {
                       </SelectTrigger>
                       <SelectContent>
                         {roles.map((role) => (
-                          <SelectItem key={role} value={role}>
-                            {role}
+                          <SelectItem key={role.value} value={role.value}>
+                            {role.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -381,6 +385,11 @@ export default function NewUserPage() {
 
             <Card>
               <CardContent className="pt-6 space-y-3">
+                {submitError && (
+                  <div className="rounded-md bg-red-50 dark:bg-red-950/30 p-3 text-sm text-red-600 dark:text-red-400">
+                    {submitError}
+                  </div>
+                )}
                 <Button
                   type="submit"
                   className="w-full"

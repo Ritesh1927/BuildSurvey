@@ -1,99 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateId } from '@/lib/utils'
-
-interface Project {
-  id: string
-  name: string
-  clientId: string
-  clientName: string
-  type: string
-  status: string
-  priority: string
-  budget: number
-  spent: number
-  progress: number
-  startDate: string
-  endDate: string
-  location: string
-  description: string
-  createdAt: string
-  updatedAt: string
-}
-
-const mockProjects: Project[] = [
-  {
-    id: 'PROJ-2026-001',
-    name: 'Green Valley Residency - Phase 2',
-    clientId: 'CLIENT-2026-001',
-    clientName: 'BuildTech Construction',
-    type: 'residential',
-    status: 'in_progress',
-    priority: 'high',
-    budget: 45000000,
-    spent: 18000000,
-    progress: 35,
-    startDate: '2026-01-01',
-    endDate: '2026-08-30',
-    location: 'Pune, Maharashtra',
-    description: 'Multi-story residential complex with 120 units',
-    createdAt: '2025-12-15T10:00:00Z',
-    updatedAt: '2026-01-15T08:00:00Z',
-  },
-  {
-    id: 'PROJ-2026-002',
-    name: 'Metro Station Rehabilitation',
-    clientId: 'CLIENT-2026-002',
-    clientName: 'Urban Infrastructure Ltd',
-    type: 'infrastructure',
-    status: 'in_progress',
-    priority: 'critical',
-    budget: 120000000,
-    spent: 78000000,
-    progress: 65,
-    startDate: '2025-06-01',
-    endDate: '2026-06-30',
-    location: 'Mumbai, Maharashtra',
-    description: 'Structural assessment and rehabilitation of metro station',
-    createdAt: '2025-05-20T10:00:00Z',
-    updatedAt: '2026-01-14T10:00:00Z',
-  },
-  {
-    id: 'PROJ-2026-003',
-    name: 'Commercial Office Tower',
-    clientId: 'CLIENT-2026-003',
-    clientName: 'Green Homes Pvt Ltd',
-    type: 'commercial',
-    status: 'planning',
-    priority: 'medium',
-    budget: 85000000,
-    spent: 0,
-    progress: 5,
-    startDate: '2026-03-01',
-    endDate: '2027-03-31',
-    location: 'Nashik, Maharashtra',
-    description: 'G+15 premium office tower with smart building systems',
-    createdAt: '2026-01-10T10:00:00Z',
-    updatedAt: '2026-01-13T12:00:00Z',
-  },
-  {
-    id: 'PROJ-2026-004',
-    name: 'Industrial Warehouse Complex',
-    clientId: 'CLIENT-2026-001',
-    clientName: 'BuildTech Construction',
-    type: 'industrial',
-    status: 'completed',
-    priority: 'low',
-    budget: 28000000,
-    spent: 26500000,
-    progress: 100,
-    startDate: '2025-03-01',
-    endDate: '2025-12-31',
-    location: 'Aurangabad, Maharashtra',
-    description: 'Warehousing facility with loading docks',
-    createdAt: '2025-02-15T10:00:00Z',
-    updatedAt: '2025-12-31T10:00:00Z',
-  },
-]
+import { db } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   try {
@@ -102,37 +8,79 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') || ''
     const type = searchParams.get('type') || ''
     const clientId = searchParams.get('clientId') || ''
+    const page = parseInt(searchParams.get('page') || '1', 10)
+    const limit = parseInt(searchParams.get('limit') || '25', 10)
 
-    let filteredProjects = [...mockProjects]
+    const where: any = { isDeleted: false }
 
     if (search) {
-      const searchLower = search.toLowerCase()
-      filteredProjects = filteredProjects.filter(
-        (project) =>
-          project.name.toLowerCase().includes(searchLower) ||
-          project.clientName.toLowerCase().includes(searchLower) ||
-          project.location.toLowerCase().includes(searchLower)
-      )
+      const s = search.toLowerCase()
+      where.OR = [
+        { name: { contains: s, mode: 'insensitive' } },
+        { code: { contains: s, mode: 'insensitive' } },
+        { address: { contains: s, mode: 'insensitive' } },
+        { city: { contains: s, mode: 'insensitive' } },
+      ]
     }
 
-    if (status) {
-      filteredProjects = filteredProjects.filter((project) => project.status === status)
-    }
+    if (status) where.status = status
+    if (type) where.type = type
+    if (clientId) where.clientId = clientId
 
-    if (type) {
-      filteredProjects = filteredProjects.filter((project) => project.type === type)
-    }
-
-    if (clientId) {
-      filteredProjects = filteredProjects.filter((project) => project.clientId === clientId)
-    }
+    const [projects, total] = await Promise.all([
+      db.project.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          client: { select: { companyName: true, contactPerson: true } },
+          manager: { select: { firstName: true, lastName: true } },
+          _count: { select: { surveys: true, boqItems: true } },
+        },
+      }),
+      db.project.count({ where }),
+    ])
 
     return NextResponse.json({
       success: true,
-      data: filteredProjects,
-      total: filteredProjects.length,
+      data: projects.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        code: p.code,
+        description: p.description,
+        type: p.type,
+        status: p.status,
+        budget: p.budget,
+        actualCost: p.actualCost,
+        startDate: p.startDate,
+        endDate: p.endDate,
+        address: p.address,
+        city: p.city,
+        state: p.state,
+        clientId: p.clientId,
+        clientName: p.client?.companyName || '',
+        managerId: p.managerId,
+        managerName: p.manager
+          ? `${p.manager.firstName} ${p.manager.lastName}`
+          : 'Unassigned',
+        progress:
+          p.status === 'COMPLETED'
+            ? 100
+            : p.status === 'PLANNING'
+              ? 5
+              : Math.min(90, Math.round(((p.actualCost || 0) / (p.budget || 1)) * 100)),
+        surveyCount: p._count.surveys,
+        boqCount: p._count.boqItems,
+        createdAt: p.createdAt,
+      })),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
     })
   } catch (error) {
+    console.error('Failed to fetch projects:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to fetch projects' },
       { status: 500 }
@@ -145,53 +93,64 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const {
       name,
-      clientId,
-      clientName,
+      code,
+      description,
       type,
-      priority,
-      budget,
+      clientId,
+      managerId,
       startDate,
       endDate,
-      location,
-      description,
+      budget,
+      address,
+      city,
+      state,
+      latitude,
+      longitude,
+      area,
+      floors,
     } = body
 
-    if (!name || !clientId || !clientName || !budget || !startDate || !endDate) {
+    if (!name || !clientId) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Name, client, budget, start date, and end date are required',
-        },
+        { success: false, error: 'Project name and client are required' },
         { status: 400 }
       )
     }
 
-    const newProject: Project = {
-      id: generateId('PROJ'),
-      name,
-      clientId,
-      clientName,
-      type: type || 'residential',
-      status: 'planning',
-      priority: priority || 'medium',
-      budget,
-      spent: 0,
-      progress: 0,
-      startDate,
-      endDate,
-      location: location || '',
-      description: description || '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+    const projectCode = code || `PRJ-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 999) + 1).padStart(3, '0')}`
+
+    const existing = await db.project.findUnique({ where: { code: projectCode } })
+    if (existing) {
+      return NextResponse.json(
+        { success: false, error: 'Project code already exists' },
+        { status: 409 }
+      )
     }
 
-    mockProjects.push(newProject)
+    const project = await db.project.create({
+      data: {
+        name,
+        code: projectCode,
+        description: description || null,
+        type: type || 'RESIDENTIAL',
+        clientId,
+        managerId: managerId || null,
+        startDate: startDate ? new Date(startDate) : null,
+        endDate: endDate ? new Date(endDate) : null,
+        budget: budget ? parseFloat(budget) : null,
+        address: address || null,
+        city: city || null,
+        state: state || null,
+        latitude: latitude ? parseFloat(latitude) : null,
+        longitude: longitude ? parseFloat(longitude) : null,
+        area: area ? parseFloat(area) : null,
+        floors: floors ? parseInt(floors) : null,
+      },
+    })
 
-    return NextResponse.json(
-      { success: true, data: newProject },
-      { status: 201 }
-    )
+    return NextResponse.json({ success: true, data: project }, { status: 201 })
   } catch (error) {
+    console.error('Failed to create project:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to create project' },
       { status: 500 }

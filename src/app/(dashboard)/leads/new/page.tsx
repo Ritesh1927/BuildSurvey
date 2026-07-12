@@ -139,10 +139,35 @@ export default function NewLeadPage() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsSubmitting(false)
-    router.push('/leads')
+    setErrors({})
+    try {
+      const res = await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim().toLowerCase(),
+          phone: formData.phone.trim(),
+          company: formData.company.trim(),
+          source: formData.source,
+          status: formData.status,
+          priority: formData.priority,
+          estimatedValue: formData.estimatedValue || undefined,
+          notes: formData.notes.trim() || undefined,
+          assignedToId: formData.assignedTo || undefined,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setErrors({ submit: data.error || 'Failed to create lead' })
+        setIsSubmitting(false)
+        return
+      }
+      router.push('/leads')
+    } catch {
+      setErrors({ submit: 'Network error. Please try again.' })
+      setIsSubmitting(false)
+    }
   }
 
   const renderStep1 = () => (

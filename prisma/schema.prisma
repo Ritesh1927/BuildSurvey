@@ -1076,3 +1076,18 @@ model OfflineSync {
   @@index([synced])
   @@index([entityType])
 }
+
+model AccessRequest {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  company   String
+  phone     String?
+  message   String?
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([email])
+}

@@ -1,182 +1,133 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateId } from '@/lib/utils'
+import bcrypt from 'bcryptjs'
+import { db } from '@/lib/db'
 
-interface User {
-  id: string
-  name: string
-  email: string
-  phone: string
-  role: string
-  department: string
-  status: string
-  avatar: string
-  lastLogin: string
-  createdAt: string
-  updatedAt: string
-}
-
-const mockUsers: User[] = [
-  {
-    id: 'USER-2026-001',
-    name: 'Saurabh Patil',
-    email: 'saurabh@buildsurvey.in',
-    phone: '+91 98765 43210',
-    role: 'admin',
-    department: 'Management',
-    status: 'active',
-    avatar: '/avatars/saurabh.jpg',
-    lastLogin: '2026-01-15T08:00:00Z',
-    createdAt: '2025-01-01T10:00:00Z',
-    updatedAt: '2026-01-15T08:00:00Z',
-  },
-  {
-    id: 'USER-2026-002',
-    name: 'Rahul Deshmukh',
-    email: 'rahul@buildsurvey.in',
-    phone: '+91 87654 32109',
-    role: 'project_manager',
-    department: 'Projects',
-    status: 'active',
-    avatar: '/avatars/rahul.jpg',
-    lastLogin: '2026-01-15T09:00:00Z',
-    createdAt: '2025-03-15T10:00:00Z',
-    updatedAt: '2026-01-15T09:00:00Z',
-  },
-  {
-    id: 'USER-2026-003',
-    name: 'Priya Jadhav',
-    email: 'priya@buildsurvey.in',
-    phone: '+91 76543 21098',
-    role: 'surveyor',
-    department: 'Field Operations',
-    status: 'active',
-    avatar: '/avatars/priya.jpg',
-    lastLogin: '2026-01-14T10:00:00Z',
-    createdAt: '2025-06-01T10:00:00Z',
-    updatedAt: '2026-01-14T10:00:00Z',
-  },
-  {
-    id: 'USER-2026-004',
-    name: 'Amit Kulkarni',
-    email: 'amit@buildsurvey.in',
-    phone: '+91 65432 10987',
-    role: 'analyst',
-    department: 'Analytics',
-    status: 'active',
-    avatar: '/avatars/amit.jpg',
-    lastLogin: '2026-01-13T10:00:00Z',
-    createdAt: '2025-08-10T10:00:00Z',
-    updatedAt: '2026-01-13T10:00:00Z',
-  },
-  {
-    id: 'USER-2026-005',
-    name: 'Neha More',
-    email: 'neha@buildsurvey.in',
-    phone: '+91 54321 09876',
-    role: 'document_controller',
-    department: 'Document Control',
-    status: 'inactive',
-    avatar: '/avatars/neha.jpg',
-    lastLogin: '2025-12-20T10:00:00Z',
-    createdAt: '2025-04-01T10:00:00Z',
-    updatedAt: '2025-12-20T10:00:00Z',
-  },
-]
-
-export async function GET(request: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = new URL(req.url)
     const search = searchParams.get('search') || ''
     const role = searchParams.get('role') || ''
     const status = searchParams.get('status') || ''
     const department = searchParams.get('department') || ''
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '25')
 
-    let filteredUsers = [...mockUsers]
+    const where: any = { isDeleted: false }
 
     if (search) {
-      const searchLower = search.toLowerCase()
-      filteredUsers = filteredUsers.filter(
-        (user) =>
-          user.name.toLowerCase().includes(searchLower) ||
-          user.email.toLowerCase().includes(searchLower) ||
-          user.department.toLowerCase().includes(searchLower)
-      )
+      where.OR = [
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+      ]
     }
+    if (role) where.role = role
+    if (status === 'active') where.isActive = true
+    if (status === 'inactive') where.isActive = false
 
-    if (role) {
-      filteredUsers = filteredUsers.filter((user) => user.role === role)
-    }
+    const [users, total] = await Promise.all([
+      db.user.findMany({
+        where,
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          phone: true,
+          role: true,
+          isActive: true,
+          avatar: true,
+          createdAt: true,
+          lastLoginAt: true,
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      db.user.count({ where }),
+    ])
 
-    if (status) {
-      filteredUsers = filteredUsers.filter((user) => user.status === status)
-    }
-
-    if (department) {
-      filteredUsers = filteredUsers.filter(
-        (user) => user.department.toLowerCase() === department.toLowerCase()
-      )
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: filteredUsers,
-      total: filteredUsers.length,
-    })
+    return NextResponse.json({ users, total, page, limit })
   } catch (error) {
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch users' },
-      { status: 500 }
-    )
+    console.error('GET /api/users error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json()
-    const { name, email, phone, role, department } = body
+    const body = await req.json()
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      employeeId,
+      department,
+      designation,
+      dateOfJoining,
+      role,
+      isActive,
+      initialPassword,
+    } = body
 
-    if (!name || !email || !role) {
+    if (!firstName || !lastName || !email || !role || !initialPassword) {
       return NextResponse.json(
-        { success: false, error: 'Name, email, and role are required' },
+        { error: 'First name, last name, email, role, and password are required' },
         { status: 400 }
       )
     }
 
-    const existingUser = mockUsers.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase()
-    )
-
-    if (existingUser) {
+    if (initialPassword.length < 8) {
       return NextResponse.json(
-        { success: false, error: 'User with this email already exists' },
+        { error: 'Password must be at least 8 characters' },
+        { status: 400 }
+      )
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { error: 'Invalid email format' },
+        { status: 400 }
+      )
+    }
+
+    const existing = await db.user.findUnique({ where: { email } })
+    if (existing) {
+      return NextResponse.json(
+        { error: 'Email already exists' },
         { status: 409 }
       )
     }
 
-    const newUser: User = {
-      id: generateId('USER'),
-      name,
-      email,
-      phone: phone || '',
-      role,
-      department: department || 'General',
-      status: 'active',
-      avatar: `/avatars/${name.toLowerCase().replace(/\s+/g, '-')}.jpg`,
-      lastLogin: '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
+    const hashedPassword = await bcrypt.hash(initialPassword, 12)
 
-    mockUsers.push(newUser)
+    const user = await db.user.create({
+      data: {
+        firstName,
+        lastName,
+        email,
+        phone: phone || null,
+        password: hashedPassword,
+        role: role || 'ENGINEER',
+        isActive: isActive !== false,
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+      },
+    })
 
-    return NextResponse.json(
-      { success: true, data: newUser },
-      { status: 201 }
-    )
+    return NextResponse.json({ success: true, user }, { status: 201 })
   } catch (error) {
-    return NextResponse.json(
-      { success: false, error: 'Failed to create user' },
-      { status: 500 }
-    )
+    console.error('POST /api/users error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

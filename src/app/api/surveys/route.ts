@@ -1,105 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateId } from '@/lib/utils'
-
-interface Survey {
-  id: string
-  projectId: string
-  projectName: string
-  title: string
-  type: string
-  status: string
-  assignee: string
-  location: string
-  scheduledDate: string
-  completedDate: string | null
-  findings: string
-  priority: string
-  createdAt: string
-  updatedAt: string
-}
-
-const mockSurveys: Survey[] = [
-  {
-    id: 'SURVEY-2026-001',
-    projectId: 'PROJ-2026-001',
-    projectName: 'Green Valley Residency - Phase 2',
-    title: 'Foundation Assessment Survey',
-    type: 'structural',
-    status: 'completed',
-    assignee: 'Saurabh Patil',
-    location: 'Plot A, Green Valley',
-    scheduledDate: '2026-01-10',
-    completedDate: '2026-01-10',
-    findings: 'Foundation integrity verified. Soil bearing capacity: 250 kN/m². Recommended for next phase.',
-    priority: 'high',
-    createdAt: '2026-01-05T10:00:00Z',
-    updatedAt: '2026-01-10T16:00:00Z',
-  },
-  {
-    id: 'SURVEY-2026-002',
-    projectId: 'PROJ-2026-002',
-    projectName: 'Metro Station Rehabilitation',
-    title: 'Structural Load Testing',
-    type: 'structural',
-    status: 'in_progress',
-    assignee: 'Saurabh Patil',
-    location: 'Metro Station - Platform Level',
-    scheduledDate: '2026-01-15',
-    completedDate: null,
-    findings: '',
-    priority: 'critical',
-    createdAt: '2026-01-12T10:00:00Z',
-    updatedAt: '2026-01-15T09:00:00Z',
-  },
-  {
-    id: 'SURVEY-2026-003',
-    projectId: 'PROJ-2026-001',
-    projectName: 'Green Valley Residency - Phase 2',
-    title: 'Site Topography Survey',
-    type: 'topography',
-    status: 'completed',
-    assignee: 'Saurabh Patil',
-    location: 'Plot B, Green Valley',
-    scheduledDate: '2026-01-08',
-    completedDate: '2026-01-08',
-    findings: 'Site elevation: 635m ASL. Natural slope: 2.5%. Drainage pattern identified.',
-    priority: 'medium',
-    createdAt: '2026-01-03T10:00:00Z',
-    updatedAt: '2026-01-08T14:00:00Z',
-  },
-  {
-    id: 'SURVEY-2026-004',
-    projectId: 'PROJ-2026-003',
-    projectName: 'Commercial Office Tower',
-    title: 'Geotechnical Investigation',
-    type: 'geotechnical',
-    status: 'scheduled',
-    assignee: 'Saurabh Patil',
-    location: 'Site Plot, Nashik',
-    scheduledDate: '2026-02-01',
-    completedDate: null,
-    findings: '',
-    priority: 'high',
-    createdAt: '2026-01-13T10:00:00Z',
-    updatedAt: '2026-01-13T10:00:00Z',
-  },
-  {
-    id: 'SURVEY-2026-005',
-    projectId: 'PROJ-2026-002',
-    projectName: 'Metro Station Rehabilitation',
-    title: 'Environmental Assessment',
-    type: 'environmental',
-    status: 'completed',
-    assignee: 'Saurabh Patil',
-    location: 'Metro Station - All Levels',
-    scheduledDate: '2026-01-05',
-    completedDate: '2026-01-07',
-    findings: 'Asbestos detected in ceiling panels. Lead paint on structural columns. Remediation required.',
-    priority: 'critical',
-    createdAt: '2026-01-02T10:00:00Z',
-    updatedAt: '2026-01-07T18:00:00Z',
-  },
-]
+import { db } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   try {
@@ -108,44 +8,69 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') || ''
     const type = searchParams.get('type') || ''
     const projectId = searchParams.get('projectId') || ''
-    const assignee = searchParams.get('assignee') || ''
+    const page = parseInt(searchParams.get('page') || '1', 10)
+    const limit = parseInt(searchParams.get('limit') || '25', 10)
 
-    let filteredSurveys = [...mockSurveys]
+    const where: any = { isDeleted: false }
 
     if (search) {
-      const searchLower = search.toLowerCase()
-      filteredSurveys = filteredSurveys.filter(
-        (survey) =>
-          survey.title.toLowerCase().includes(searchLower) ||
-          survey.projectName.toLowerCase().includes(searchLower) ||
-          survey.location.toLowerCase().includes(searchLower)
-      )
+      const s = search.toLowerCase()
+      where.OR = [
+        { title: { contains: s, mode: 'insensitive' } },
+        { description: { contains: s, mode: 'insensitive' } },
+      ]
     }
 
-    if (status) {
-      filteredSurveys = filteredSurveys.filter((survey) => survey.status === status)
-    }
+    if (status) where.status = status
+    if (type) where.type = type
+    if (projectId) where.projectId = projectId
 
-    if (type) {
-      filteredSurveys = filteredSurveys.filter((survey) => survey.type === type)
-    }
-
-    if (projectId) {
-      filteredSurveys = filteredSurveys.filter((survey) => survey.projectId === projectId)
-    }
-
-    if (assignee) {
-      filteredSurveys = filteredSurveys.filter((survey) =>
-        survey.assignee.toLowerCase().includes(assignee.toLowerCase())
-      )
-    }
+    const [surveys, total] = await Promise.all([
+      db.survey.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          project: { select: { name: true, code: true } },
+          engineer: { select: { firstName: true, lastName: true } },
+          _count: { select: { checklistItems: true, photos: true } },
+        },
+      }),
+      db.survey.count({ where }),
+    ])
 
     return NextResponse.json({
       success: true,
-      data: filteredSurveys,
-      total: filteredSurveys.length,
+      data: surveys.map((s: any) => ({
+        id: s.id,
+        title: s.title,
+        description: s.description,
+        type: s.type,
+        status: s.status,
+        scheduledDate: s.scheduledDate,
+        completedDate: s.completedDate,
+        projectId: s.projectId,
+        projectName: s.project?.name || '',
+        projectCode: s.project?.code || '',
+        engineerId: s.engineerId,
+        engineerName: s.engineer
+          ? `${s.engineer.firstName} ${s.engineer.lastName}`
+          : 'Unassigned',
+        weatherCondition: s.weatherCondition,
+        siteCondition: s.siteCondition,
+        notes: s.notes,
+        checklistCount: s._count.checklistItems,
+        photoCount: s._count.photos,
+        createdAt: s.createdAt,
+      })),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
     })
   } catch (error) {
+    console.error('Failed to fetch surveys:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to fetch surveys' },
       { status: 500 }
@@ -156,40 +81,61 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { projectId, projectName, title, type, assignee, location, scheduledDate, priority } =
-      body
+    const {
+      projectId,
+      title,
+      description,
+      type,
+      scheduledDate,
+      engineerId,
+      priority,
+      weatherCondition,
+      siteCondition,
+      accessDetails,
+      notes,
+      gpsLatitude,
+      gpsLongitude,
+      checklistItems,
+    } = body
 
-    if (!projectId || !title || !type || !scheduledDate) {
+    if (!projectId || !title) {
       return NextResponse.json(
-        { success: false, error: 'Project, title, type, and scheduled date are required' },
+        { success: false, error: 'Project and title are required' },
         { status: 400 }
       )
     }
 
-    const newSurvey: Survey = {
-      id: generateId('SURVEY'),
-      projectId,
-      projectName: projectName || '',
-      title,
-      type,
-      status: 'scheduled',
-      assignee: assignee || 'Unassigned',
-      location: location || '',
-      scheduledDate,
-      completedDate: null,
-      findings: '',
-      priority: priority || 'medium',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
+    const survey = await db.survey.create({
+      data: {
+        projectId,
+        title,
+        description: description || null,
+        type: type || 'INITIAL',
+        scheduledDate: scheduledDate ? new Date(scheduledDate) : null,
+        engineerId: engineerId || null,
+        weatherCondition: weatherCondition || null,
+        siteCondition: siteCondition || null,
+        accessDetails: accessDetails || null,
+        notes: notes || null,
+        gpsLatitude: gpsLatitude ? parseFloat(gpsLatitude) : null,
+        gpsLongitude: gpsLongitude ? parseFloat(gpsLongitude) : null,
+        checklistItems: checklistItems?.length
+          ? {
+              create: checklistItems.map((item: any) => ({
+                category: item.category || 'General',
+                item: item.item,
+                isCompleted: false,
+                notes: item.notes || null,
+              })),
+            }
+          : undefined,
+      },
+      include: { _count: { select: { checklistItems: true } } },
+    })
 
-    mockSurveys.push(newSurvey)
-
-    return NextResponse.json(
-      { success: true, data: newSurvey },
-      { status: 201 }
-    )
+    return NextResponse.json({ success: true, data: survey }, { status: 201 })
   } catch (error) {
+    console.error('Failed to create survey:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to create survey' },
       { status: 500 }

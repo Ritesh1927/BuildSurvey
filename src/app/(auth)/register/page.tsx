@@ -2,415 +2,295 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
-  Building2,
-  User,
-  Mail,
-  Phone,
-  Lock,
+  HardHat,
   Eye,
   EyeOff,
   MapPin,
   BarChart3,
   FileText,
-  Loader2,
-  AlertCircle,
   CheckCircle2,
   MessageSquare,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Textarea } from '@/components/ui/textarea'
+import { APP_NAME } from '@/lib/constants'
 
 const features = [
-  {
-    icon: MapPin,
-    title: 'Digital Surveys',
-    description: 'GPS-enabled field surveys with real-time data collection',
-  },
-  {
-    icon: BarChart3,
-    title: 'Real-time Tracking',
-    description: 'Monitor project progress and team activity in real-time',
-  },
-  {
-    icon: FileText,
-    title: 'Smart Analytics',
-    description: 'AI-powered insights for better decision making',
-  },
-  {
-    icon: Building2,
-    title: 'Document Management',
-    description: 'Centralized document storage with version control',
-  },
+  { icon: MapPin, title: 'Digital Surveys', desc: 'GPS-enabled site inspections' },
+  { icon: BarChart3, title: 'Project Tracking', desc: 'Real-time dashboards' },
+  { icon: FileText, title: 'BOQ & Quotations', desc: 'Automated cost estimation' },
+  { icon: MessageSquare, title: 'Team Communication', desc: 'In-app messaging & notifications' },
 ]
 
 export default function RegisterPage() {
+  const router = useRouter()
   const [mode, setMode] = useState<'request' | 'register'>('request')
-  const [formData, setFormData] = useState({
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
+
+  const [form, setForm] = useState({
     name: '',
     email: '',
     company: '',
     phone: '',
-    message: '',
     password: '',
     confirmPassword: '',
+    message: '',
+    terms: false,
   })
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [acceptTerms, setAcceptTerms] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [isSubmitted, setIsSubmitted] = useState(false)
 
-  const updateField = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
+  const validate = () => {
+    if (!form.name.trim()) { setError('Name is required'); return false }
+    if (!form.email.trim()) { setError('Email is required'); return false }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { setError('Invalid email format'); return false }
+    if (!form.company.trim()) { setError('Company is required'); return false }
 
-  const validateForm = () => {
-    if (!formData.name || !formData.email || !formData.company) {
-      setError('Please fill in all required fields')
-      return false
-    }
     if (mode === 'register') {
-      if (!formData.password || !formData.confirmPassword) {
-        setError('Please fill in all required fields')
-        return false
-      }
-      if (formData.password !== formData.confirmPassword) {
-        setError('Passwords do not match')
-        return false
-      }
-      if (formData.password.length < 8) {
-        setError('Password must be at least 8 characters')
-        return false
-      }
+      if (!form.password || form.password.length < 8) { setError('Password must be at least 8 characters'); return false }
+      if (form.password !== form.confirmPassword) { setError('Passwords do not match'); return false }
     }
-    if (mode === 'request' && !acceptTerms) {
-      setError('Please accept the terms and conditions')
-      return false
-    }
+
+    if (mode === 'request' && !form.terms) { setError('Please accept the terms'); return false }
+
     return true
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-
-    if (!validateForm()) return
+    if (!validate()) return
 
     setIsLoading(true)
     try {
-      // Mock submission - replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      setIsSubmitted(true)
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim().toLowerCase(),
+          company: form.company.trim(),
+          phone: form.phone.trim() || undefined,
+          password: mode === 'register' ? form.password : undefined,
+          message: mode === 'request' ? form.message.trim() : undefined,
+          mode,
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) { setError(data.error || 'Something went wrong'); return }
+
+      setSuccess(true)
     } catch {
-      setError('Something went wrong. Please try again.')
+      setError('Network error. Please try again.')
     } finally {
       setIsLoading(false)
     }
   }
 
-  if (isSubmitted) {
+  const update = (field: string, value: string | boolean) => {
+    setForm((p) => ({ ...p, [field]: value }))
+    if (error) setError('')
+  }
+
+  if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-8">
-        <div className="max-w-md w-full text-center space-y-6">
-          <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
-            <CheckCircle2 className="h-8 w-8 text-green-600" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4">
+        <div className="w-full max-w-md text-center">
+          <div className="rounded-2xl border border-border bg-card p-8 shadow-xl">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/40">
+              <CheckCircle2 className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <h2 className="mt-4 text-xl font-bold text-foreground">
+              {mode === 'request' ? 'Request Submitted!' : 'Account Created!'}
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {mode === 'request'
+                ? 'Your access request has been submitted. Our team will review it and get back to you within 24-48 hours.'
+                : 'Your account has been created. Please wait for admin activation before you can sign in.'}
+            </p>
+            <Button className="mt-6" onClick={() => router.push('/login')}>
+              Go to Login
+            </Button>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">
-            {mode === 'request' ? 'Request Submitted!' : 'Account Created!'}
-          </h1>
-          <p className="text-slate-500">
-            {mode === 'request'
-              ? 'Your access request has been submitted. Our team will review it and get back to you within 24-48 hours.'
-              : 'Your account has been created successfully. Please check your email to verify your account.'}
-          </p>
-          <Link href="/login">
-            <Button className="w-full">Go to Login</Button>
-          </Link>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-12 flex-col justify-between relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="h-12 w-12 rounded-xl bg-blue-600 flex items-center justify-center">
-              <Building2 className="h-7 w-7 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-white">BuildSurvey Pro</span>
+    <div className="min-h-screen flex bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      {/* Left: Features */}
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-center bg-blue-600 p-12 text-white">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20">
+            <HardHat className="h-7 w-7" />
           </div>
-          <p className="text-slate-400 text-lg ml-15">
-            Construction Site Survey Management Platform
-          </p>
+          <div>
+            <h1 className="text-xl font-bold">{APP_NAME}</h1>
+            <p className="text-sm text-blue-100">Survey & Project Platform</p>
+          </div>
         </div>
-
-        <div className="relative z-10 space-y-8">
-          <h2 className="text-4xl font-bold text-white leading-tight">
-            Enterprise Survey
-            <br />
-            Management Solution
-          </h2>
-          <div className="space-y-5">
-            {features.map((feature) => (
-              <div key={feature.title} className="flex items-start gap-4">
-                <div className="h-10 w-10 rounded-lg bg-blue-600/20 flex items-center justify-center shrink-0">
-                  <feature.icon className="h-5 w-5 text-blue-400" />
-                </div>
-                <div>
-                  <h3 className="text-white font-medium">{feature.title}</h3>
-                  <p className="text-slate-400 text-sm">{feature.description}</p>
-                </div>
+        <h2 className="text-3xl font-bold leading-tight mb-4">
+          Build smarter.<br />Build better.
+        </h2>
+        <p className="text-blue-100 mb-8 max-w-md">
+          Manage construction surveys, projects, BOQ, quotations, and team collaboration — all in one platform.
+        </p>
+        <div className="space-y-4">
+          {features.map((f) => (
+            <div key={f.title} className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10">
+                <f.icon className="h-5 w-5" />
               </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="relative z-10 text-slate-500 text-sm">
-          &copy; {new Date().getFullYear()} BuildSurvey Pro. All rights reserved.
+              <div>
+                <p className="font-medium">{f.title}</p>
+                <p className="text-sm text-blue-100">{f.desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-        <div className="w-full max-w-md space-y-8">
-          {/* Mobile Logo */}
-          <div className="lg:hidden text-center">
-            <div className="flex items-center justify-center gap-3 mb-2">
-              <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center">
-                <Building2 className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-xl font-bold text-slate-900">BuildSurvey Pro</span>
+      {/* Right: Form */}
+      <div className="flex flex-1 items-center justify-center p-6">
+        <div className="w-full max-w-md">
+          <div className="mb-6 text-center lg:hidden">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600">
+              <HardHat className="h-7 w-7 text-white" />
             </div>
+            <h1 className="mt-3 text-xl font-bold text-foreground">{APP_NAME}</h1>
           </div>
 
-          <div className="text-center lg:text-left">
-            <h1 className="text-3xl font-bold text-slate-900">
-              {mode === 'request' ? 'Request Access' : 'Create Account'}
-            </h1>
-            <p className="text-slate-500 mt-2">
+          <div className="rounded-2xl border border-border bg-card p-8 shadow-xl">
+            <h2 className="text-xl font-semibold text-foreground">Get Started</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Choose how you want to access the platform
+            </p>
+
+            {/* Mode Tabs */}
+            <div className="mt-4 flex rounded-lg bg-muted p-1">
+              <button
+                type="button"
+                onClick={() => { setMode('request'); setError('') }}
+                className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                  mode === 'request'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Request Access
+              </button>
+              <button
+                type="button"
+                onClick={() => { setMode('register'); setError('') }}
+                className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                  mode === 'register'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Register
+              </button>
+            </div>
+
+            <p className="mt-3 text-xs text-muted-foreground">
               {mode === 'request'
-                ? 'Fill out the form below and our team will get back to you.'
-                : 'Fill in the details below to create your account.'}
+                ? 'Submit a request — our team will create your account within 24-48 hours.'
+                : 'Create your own account — admin will activate it before you can sign in.'}
+            </p>
+
+            <form onSubmit={handleSubmit} className="mt-4 space-y-3">
+              {error && (
+                <div className="rounded-lg bg-red-50 dark:bg-red-950/30 p-3 text-sm text-red-600 dark:text-red-400">
+                  {error}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label>Full Name *</Label>
+                <Input placeholder="Rajesh Mehta" value={form.name} onChange={(e) => update('name', e.target.value)} disabled={isLoading} />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Email Address *</Label>
+                <Input type="email" placeholder="rajesh@company.com" value={form.email} onChange={(e) => update('email', e.target.value)} disabled={isLoading} />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Company Name *</Label>
+                <Input placeholder="Sunrise Builders Pvt. Ltd." value={form.company} onChange={(e) => update('company', e.target.value)} disabled={isLoading} />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Phone Number</Label>
+                <Input type="tel" placeholder="+91 98765 43210" value={form.phone} onChange={(e) => update('phone', e.target.value)} disabled={isLoading} />
+              </div>
+
+              {mode === 'register' && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Password *</Label>
+                    <div className="relative">
+                      <Input type={showPassword ? 'text' : 'password'} placeholder="Min. 8 characters" value={form.password} onChange={(e) => update('password', e.target.value)} disabled={isLoading} className="pr-10" />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" tabIndex={-1}>
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Confirm Password *</Label>
+                    <div className="relative">
+                      <Input type={showConfirm ? 'text' : 'password'} placeholder="Re-enter password" value={form.confirmPassword} onChange={(e) => update('confirmPassword', e.target.value)} disabled={isLoading} className="pr-10" />
+                      <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" tabIndex={-1}>
+                        {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {mode === 'request' && (
+                <div className="space-y-2">
+                  <Label>Message</Label>
+                  <Textarea placeholder="Tell us about your company and what you need..." rows={3} value={form.message} onChange={(e) => update('message', e.target.value)} disabled={isLoading} />
+                </div>
+              )}
+
+              {mode === 'request' && (
+                <label className="flex items-start gap-2 text-sm">
+                  <input type="checkbox" checked={form.terms} onChange={(e) => update('terms', e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-border" />
+                  <span className="text-muted-foreground">I agree to the Terms of Service and Privacy Policy</span>
+                </label>
+              )}
+
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    {mode === 'request' ? 'Submitting...' : 'Creating Account...'}
+                  </>
+                ) : mode === 'request' ? (
+                  'Submit Request'
+                ) : (
+                  'Create Account'
+                )}
+              </Button>
+            </form>
+
+            <p className="mt-4 text-center text-sm text-muted-foreground">
+              Already have an account?{' '}
+              <Link href="/login" className="font-medium text-blue-600 hover:underline">
+                Sign In
+              </Link>
             </p>
           </div>
-
-          {/* Mode Toggle */}
-          <div className="flex bg-slate-100 rounded-lg p-1">
-            <button
-              type="button"
-              onClick={() => setMode('request')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                mode === 'request'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <MessageSquare className="h-4 w-4 inline-block mr-2" />
-              Request Access
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode('register')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                mode === 'register'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <User className="h-4 w-4 inline-block mr-2" />
-              Register
-            </button>
-          </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
-              <AlertCircle className="h-5 w-5 text-red-600 shrink-0" />
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name *</Label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  id="name"
-                  placeholder="John Doe"
-                  value={formData.name}
-                  onChange={(e) => updateField('name', e.target.value)}
-                  className="pl-10"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email address *</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@company.com"
-                  value={formData.email}
-                  onChange={(e) => updateField('email', e.target.value)}
-                  className="pl-10"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="company">Company *</Label>
-              <div className="relative">
-                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  id="company"
-                  placeholder="Company Name"
-                  value={formData.company}
-                  onChange={(e) => updateField('company', e.target.value)}
-                  className="pl-10"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="+91 98765 43210"
-                  value={formData.phone}
-                  onChange={(e) => updateField('phone', e.target.value)}
-                  className="pl-10"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            {mode === 'request' && (
-              <div className="space-y-2">
-                <Label htmlFor="message">Message *</Label>
-                <Textarea
-                  id="message"
-                  placeholder="Tell us about your team and requirements..."
-                  value={formData.message}
-                  onChange={(e) => updateField('message', e.target.value)}
-                  rows={4}
-                  disabled={isLoading}
-                />
-              </div>
-            )}
-
-            {mode === 'register' && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password *</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Min 8 characters"
-                      value={formData.password}
-                      onChange={(e) => updateField('password', e.target.value)}
-                      className="pl-10 pr-10"
-                      disabled={isLoading}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password *</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input
-                      id="confirmPassword"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="Confirm your password"
-                      value={formData.confirmPassword}
-                      onChange={(e) => updateField('confirmPassword', e.target.value)}
-                      className="pl-10 pr-10"
-                      disabled={isLoading}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {mode === 'request' && (
-              <div className="flex items-start gap-3">
-                <Checkbox
-                  id="terms"
-                  checked={acceptTerms}
-                  onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
-                  disabled={isLoading}
-                  className="mt-1"
-                />
-                <Label htmlFor="terms" className="text-sm text-slate-600 leading-relaxed cursor-pointer">
-                  I agree to the{' '}
-                  <Link href="/terms" className="text-blue-600 hover:text-blue-700 font-medium">
-                    Terms of Service
-                  </Link>{' '}
-                  and{' '}
-                  <Link href="/privacy" className="text-blue-600 hover:text-blue-700 font-medium">
-                    Privacy Policy
-                  </Link>
-                </Label>
-              </div>
-            )}
-
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {mode === 'request' ? 'Submitting...' : 'Creating Account...'}
-                </>
-              ) : mode === 'request' ? (
-                'Submit Request'
-              ) : (
-                'Create Account'
-              )}
-            </Button>
-          </form>
-
-          <p className="text-center text-sm text-slate-500">
-            Already have an account?{' '}
-            <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
-              Sign in
-            </Link>
-          </p>
         </div>
       </div>
     </div>
