@@ -301,14 +301,40 @@ export default function UsersPage() {
                                   <Eye className="mr-2 h-4 w-4" />View
                                 </Link>
                               </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Pencil className="mr-2 h-4 w-4" />Edit
+                              <DropdownMenuItem asChild>
+                                <Link href={`/users/${user.id}?edit=true`}>
+                                  <Pencil className="mr-2 h-4 w-4" />Edit
+                                </Link>
                               </DropdownMenuItem>
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onClick={async () => {
+                                const newPass = prompt('Enter new password (min 8 characters):')
+                                if (!newPass || newPass.length < 8) {
+                                  if (newPass !== null) alert('Password must be at least 8 characters')
+                                  return
+                                }
+                                const res = await fetch(`/api/users/${user.id}`, {
+                                  method: 'PATCH',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ password: newPass }),
+                                })
+                                const data = await res.json()
+                                if (res.ok) alert('Password reset successfully')
+                                else alert(data.error || 'Failed to reset password')
+                              }}>
                                 <KeyRound className="mr-2 h-4 w-4" />Reset Password
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive">
+                              <DropdownMenuItem className="text-destructive" onClick={async () => {
+                                if (!confirm(`Delete user ${user.firstName} ${user.lastName}? This cannot be undone.`)) return
+                                const res = await fetch(`/api/users/${user.id}`, { method: 'DELETE' })
+                                const data = await res.json()
+                                if (res.ok) {
+                                  alert('User deleted successfully')
+                                  fetchUsers()
+                                } else {
+                                  alert(data.error || 'Failed to delete user')
+                                }
+                              }}>
                                 <Trash2 className="mr-2 h-4 w-4" />Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>
