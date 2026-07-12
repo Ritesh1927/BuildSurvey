@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  serverExternalPackages: ["@prisma/adapter-pg", "pg"],
+  images: {
+    unoptimized: true,
+  },
 };
 
 export default nextConfig;
