@@ -16,32 +16,16 @@ async function main() {
   for (const u of users) {
     const existing = await prisma.user.findUnique({ where: { email: u.email } })
     const hashedPassword = await bcrypt.hash(u.password, 12)
-
     if (existing) {
       await prisma.user.update({ where: { id: existing.id }, data: { password: hashedPassword, isActive: true } })
       console.log(`Updated: ${u.email}`)
     } else {
-      await prisma.user.create({
-        data: {
-          email: u.email,
-          password: hashedPassword,
-          firstName: u.firstName,
-          lastName: u.lastName,
-          phone: u.phone,
-          role: u.role,
-          isActive: true,
-        },
-      })
+      await prisma.user.create({ data: { email: u.email, password: hashedPassword, firstName: u.firstName, lastName: u.lastName, phone: u.phone, role: u.role, isActive: true } })
       console.log(`Created: ${u.email}`)
     }
   }
 
-  console.log('\nLogin credentials:')
-  console.log('Admin:    admin@buildsurvey.in / Admin@123')
-  console.log('Manager:  priya.sharma@buildsurvey.in / Manager@123')
-  console.log('Engineer: raj.mehta@buildsurvey.in / Engineer@123')
-  console.log('Surveyor: neha.gupta@buildsurvey.in / Surveyor@123')
-
+  console.log('\nAdmin: admin@buildsurvey.in / Admin@123')
   await prisma.$disconnect()
 }
 
