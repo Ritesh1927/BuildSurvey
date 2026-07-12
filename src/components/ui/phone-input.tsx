@@ -42,9 +42,9 @@ export function PhoneInput({
   const dropdownRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const selectedCode = value.match(/^\+\d+/)?.[0] || '+91'
+  const selectedCode = COUNTRY_CODES.find((c) => value.startsWith(c.code))?.code || '+91'
   const selectedCountry = COUNTRY_CODES.find((c) => c.code === selectedCode) || COUNTRY_CODES[0]
-  const numberOnly = value.replace(/^\+\d+/, '')
+  const numberOnly = value.startsWith(selectedCode) ? value.slice(selectedCode.length) : value.replace(/^\+\d{1,4}/, '')
   const maxDigits = selectedCountry.digits
 
   const filteredCodes = COUNTRY_CODES.filter(
