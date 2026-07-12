@@ -1,18 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import {
   ArrowLeft,
-  Save,
   Shield,
   Users,
-  Check,
-  X,
 } from "lucide-react"
 
-import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -20,341 +16,104 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
 import { PageHeader } from "@/components/ui/page-header"
 
-interface Permission {
-  module: string
-  actions: string[]
+const ROLE_META: Record<string, { name: string; description: string; color: string }> = {
+  SUPER_ADMIN: { name: "Super Admin", description: "Full platform access with all administrative privileges.", color: "#EF4444" },
+  ADMIN: { name: "Admin", description: "Administrative access for managing users, projects, and most platform features.", color: "#3B82F6" },
+  MANAGER: { name: "Manager", description: "Project management access with team oversight and reporting capabilities.", color: "#F59E0B" },
+  ENGINEER: { name: "Engineer", description: "Engineering team access for technical work, surveys, and documentation.", color: "#10B981" },
+  SURVEYOR: { name: "Surveyor", description: "Field survey team access for data collection and site documentation.", color: "#8B5CF6" },
+  CLIENT: { name: "Client", description: "External client access for viewing project progress and reports.", color: "#6B7280" },
+  ACCOUNTANT: { name: "Accountant", description: "Finance team access for billing, BOQ, quotations, and financial reports.", color: "#EC4899" },
 }
 
-const moduleGroups: Permission[] = [
-  { module: "Dashboard", actions: ["View"] },
-  { module: "Lead Management", actions: ["Create", "Read", "Update", "Delete"] },
-  { module: "Client Management", actions: ["Create", "Read", "Update", "Delete"] },
-  { module: "Project Management", actions: ["Create", "Read", "Update", "Delete", "Approve"] },
-  { module: "Survey Management", actions: ["Create", "Read", "Update", "Delete", "Approve", "Assign"] },
-  { module: "Media Management", actions: ["Upload", "View", "Delete"] },
-  { module: "BOQ", actions: ["Create", "Read", "Update", "Delete", "Approve"] },
-  { module: "Quotation", actions: ["Create", "Read", "Update", "Delete", "Approve", "Send"] },
-  { module: "Workflow", actions: ["Create", "Read", "Update", "Approve"] },
-  { module: "Reports", actions: ["Generate", "View", "Export"] },
-  { module: "Analytics", actions: ["View", "Export"] },
-  { module: "Documents", actions: ["Upload", "View", "Delete", "Share"] },
-  { module: "User Management", actions: ["Create", "Read", "Update", "Delete"] },
-  { module: "Role Management", actions: ["Create", "Read", "Update", "Delete"] },
-  { module: "Settings", actions: ["Read", "Update"] },
-  { module: "Audit Log", actions: ["View", "Export"] },
-]
-
-const rolesDb: Record<string, any> = {
-  "ROLE-001": {
-    id: "ROLE-001",
-    name: "Super Admin",
-    description: "Full platform access with all administrative privileges.",
-    color: "#EF4444",
-    usersCount: 2,
-    permissions: {
-      Dashboard: ["View"],
-      "Lead Management": ["Create", "Read", "Update", "Delete"],
-      "Client Management": ["Create", "Read", "Update", "Delete"],
-      "Project Management": ["Create", "Read", "Update", "Delete", "Approve"],
-      "Survey Management": ["Create", "Read", "Update", "Delete", "Approve", "Assign"],
-      "Media Management": ["Upload", "View", "Delete"],
-      BOQ: ["Create", "Read", "Update", "Delete", "Approve"],
-      Quotation: ["Create", "Read", "Update", "Delete", "Approve", "Send"],
-      Workflow: ["Create", "Read", "Update", "Approve"],
-      Reports: ["Generate", "View", "Export"],
-      Analytics: ["View", "Export"],
-      Documents: ["Upload", "View", "Delete", "Share"],
-      "User Management": ["Create", "Read", "Update", "Delete"],
-      "Role Management": ["Create", "Read", "Update", "Delete"],
-      Settings: ["Read", "Update"],
-      "Audit Log": ["View", "Export"],
-    },
-  },
-  "ROLE-002": {
-    id: "ROLE-002",
-    name: "Admin",
-    description: "Administrative access for managing users, projects, and most platform features.",
-    color: "#3B82F6",
-    usersCount: 3,
-    permissions: {
-      Dashboard: ["View"],
-      "Lead Management": ["Create", "Read", "Update", "Delete"],
-      "Client Management": ["Create", "Read", "Update"],
-      "Project Management": ["Create", "Read", "Update", "Delete"],
-      "Survey Management": ["Create", "Read", "Update", "Delete", "Assign"],
-      "Media Management": ["Upload", "View", "Delete"],
-      BOQ: ["Create", "Read", "Update", "Delete"],
-      Quotation: ["Create", "Read", "Update", "Delete", "Send"],
-      Workflow: ["Create", "Read", "Update"],
-      Reports: ["Generate", "View", "Export"],
-      Analytics: ["View"],
-      Documents: ["Upload", "View", "Delete"],
-      "User Management": ["Create", "Read", "Update"],
-      "Role Management": ["Read"],
-      Settings: ["Read"],
-      "Audit Log": ["View"],
-    },
-  },
-  "ROLE-003": {
-    id: "ROLE-003",
-    name: "Manager",
-    description: "Project management access with team oversight and reporting capabilities.",
-    color: "#F59E0B",
-    usersCount: 4,
-    permissions: {
-      Dashboard: ["View"],
-      "Lead Management": ["Read", "Update"],
-      "Client Management": ["Read", "Update"],
-      "Project Management": ["Create", "Read", "Update"],
-      "Survey Management": ["Create", "Read", "Update", "Assign"],
-      "Media Management": ["Upload", "View"],
-      BOQ: ["Create", "Read", "Update"],
-      Quotation: ["Create", "Read", "Update"],
-      Workflow: ["Create", "Read", "Update", "Approve"],
-      Reports: ["Generate", "View"],
-      Analytics: ["View"],
-      Documents: ["Upload", "View"],
-      "User Management": ["Read"],
-      "Role Management": [],
-      Settings: ["Read"],
-      "Audit Log": ["View"],
-    },
-  },
-  "ROLE-004": {
-    id: "ROLE-004",
-    name: "Engineer",
-    description: "Engineering team access for technical work, surveys, and documentation.",
-    color: "#10B981",
-    usersCount: 4,
-    permissions: {
-      Dashboard: ["View"],
-      "Lead Management": ["Read"],
-      "Client Management": ["Read"],
-      "Project Management": ["Read", "Update"],
-      "Survey Management": ["Create", "Read", "Update"],
-      "Media Management": ["Upload", "View"],
-      BOQ: ["Read", "Update"],
-      Quotation: ["Read"],
-      Workflow: ["Create", "Read"],
-      Reports: ["View"],
-      Analytics: [],
-      Documents: ["Upload", "View"],
-      "User Management": [],
-      "Role Management": [],
-      Settings: [],
-      "Audit Log": [],
-    },
-  },
-  "ROLE-005": {
-    id: "ROLE-005",
-    name: "Surveyor",
-    description: "Field survey team access for data collection and site documentation.",
-    color: "#8B5CF6",
-    usersCount: 3,
-    permissions: {
-      Dashboard: ["View"],
-      "Lead Management": [],
-      "Client Management": [],
-      "Project Management": ["Read"],
-      "Survey Management": ["Create", "Read", "Update"],
-      "Media Management": ["Upload", "View"],
-      BOQ: ["Read"],
-      Quotation: [],
-      Workflow: ["Read"],
-      Reports: ["View"],
-      Analytics: [],
-      Documents: ["Upload", "View"],
-      "User Management": [],
-      "Role Management": [],
-      Settings: [],
-      "Audit Log": [],
-    },
-  },
-  "ROLE-006": {
-    id: "ROLE-006",
-    name: "Client",
-    description: "External client access for viewing project progress and reports.",
-    color: "#6B7280",
-    usersCount: 2,
-    permissions: {
-      Dashboard: ["View"],
-      "Lead Management": [],
-      "Client Management": [],
-      "Project Management": ["Read"],
-      "Survey Management": ["Read"],
-      "Media Management": ["View"],
-      BOQ: ["Read"],
-      Quotation: ["Read"],
-      Workflow: ["Read"],
-      Reports: ["View"],
-      Analytics: ["View"],
-      Documents: ["View"],
-      "User Management": [],
-      "Role Management": [],
-      Settings: [],
-      "Audit Log": [],
-    },
-  },
-  "ROLE-007": {
-    id: "ROLE-007",
-    name: "Accountant",
-    description: "Finance team access for billing, BOQ, quotations, and financial reports.",
-    color: "#EC4899",
-    usersCount: 2,
-    permissions: {
-      Dashboard: ["View"],
-      "Lead Management": [],
-      "Client Management": ["Read"],
-      "Project Management": ["Read"],
-      "Survey Management": [],
-      "Media Management": [],
-      BOQ: ["Create", "Read", "Update", "Approve"],
-      Quotation: ["Create", "Read", "Update", "Approve", "Send"],
-      Workflow: ["Read"],
-      Reports: ["Generate", "View", "Export"],
-      Analytics: ["View", "Export"],
-      Documents: ["View"],
-      "User Management": [],
-      "Role Management": [],
-      Settings: [],
-      "Audit Log": ["View"],
-    },
-  },
+interface User {
+  id: string
+  firstName: string
+  lastName: string
+  email: string
+  role: string
+  isActive: boolean
+  lastLoginAt: string | null
 }
 
 export default function RoleDetailPage() {
   const params = useParams()
-  const roleId = (params?.id as string) || "ROLE-001"
-  const role = rolesDb[roleId] || rolesDb["ROLE-001"]
+  const roleKey = (params?.id as string) || "ENGINEER"
+  const meta = ROLE_META[roleKey] || { name: roleKey, description: "", color: "#6B7280" }
 
-  const [roleName, setRoleName] = useState(role.name)
-  const [roleDescription, setRoleDescription] = useState(role.description)
-  const [roleColor, setRoleColor] = useState(role.color)
-  const [permissions, setPermissions] = useState<Record<string, string[]>>(
-    () => {
-      const initial: Record<string, string[]> = {}
-      moduleGroups.forEach((group) => {
-        initial[group.module] = role.permissions?.[group.module] || []
-      })
-      return initial
+  const [users, setUsers] = useState<User[]>([])
+  const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const res = await fetch(`/api/users?role=${roleKey}&limit=1000`)
+        if (!res.ok) throw new Error("Failed to fetch users")
+        const data = await res.json()
+        setUsers(data.users ?? [])
+        setTotal(data.total ?? 0)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred")
+      } finally {
+        setLoading(false)
+      }
     }
-  )
-  const [isSaving, setIsSaving] = useState(false)
-
-  const togglePermission = (module: string, action: string) => {
-    setPermissions((prev) => {
-      const current = prev[module] || []
-      if (current.includes(action)) {
-        return { ...prev, [module]: current.filter((a) => a !== action) }
-      } else {
-        return { ...prev, [module]: [...current, action] }
-      }
-    })
-  }
-
-  const toggleModuleAll = (module: string, actions: string[]) => {
-    setPermissions((prev) => {
-      const current = prev[module] || []
-      if (current.length === actions.length) {
-        return { ...prev, [module]: [] }
-      } else {
-        return { ...prev, [module]: [...actions] }
-      }
-    })
-  }
-
-  const handleSave = () => {
-    setIsSaving(true)
-    setTimeout(() => setIsSaving(false), 1500)
-  }
-
-  const totalPermissions = Object.values(permissions).reduce(
-    (sum, arr) => sum + arr.length,
-    0
-  )
+    fetchUsers()
+  }, [roleKey])
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Edit Role: ${roleName}`}
-        description="Configure role details and permissions"
+        title={`${meta.name} — Users`}
+        description={`Users assigned to the ${meta.name} role`}
         breadcrumbs={[
           { label: "Dashboard", href: "/" },
           { label: "Roles", href: "/roles" },
-          { label: roleName },
+          { label: meta.name },
         ]}
         actions={
-          <div className="flex gap-2">
-            <Button variant="outline" asChild>
-              <Link href="/roles">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back
-              </Link>
-            </Button>
-            <Button onClick={handleSave} disabled={isSaving}>
-              {isSaving ? (
-                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              ) : (
-                <Save className="mr-2 h-4 w-4" />
-              )}
-              Save Changes
-            </Button>
-          </div>
+          <Button variant="outline" asChild>
+            <Link href="/roles">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Roles
+            </Link>
+          </Button>
         }
       />
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-1 space-y-6">
+        <div className="lg:col-span-1">
           <Card>
             <CardHeader>
               <CardTitle>Role Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="roleName">Role Name</Label>
-                <Input
-                  id="roleName"
-                  value={roleName}
-                  onChange={(e) => setRoleName(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="roleDescription">Description</Label>
-                <Textarea
-                  id="roleDescription"
-                  value={roleDescription}
-                  onChange={(e) => setRoleDescription(e.target.value)}
-                  rows={3}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Role Color</Label>
+                <p className="text-sm text-muted-foreground">Role Name</p>
                 <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={roleColor}
-                    onChange={(e) => setRoleColor(e.target.value)}
-                    className="h-10 w-10 rounded-md border cursor-pointer"
+                  <div
+                    className="h-3 w-3 rounded-full"
+                    style={{ backgroundColor: meta.color }}
                   />
-                  <span className="text-sm text-muted-foreground">{roleColor}</span>
+                  <span className="font-medium">{meta.name}</span>
                 </div>
               </div>
-              <div className="rounded-lg border p-3 space-y-1">
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Description</p>
+                <p className="text-sm">{meta.description}</p>
+              </div>
+              <div className="rounded-lg border p-3">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Users Assigned</span>
-                  <Badge variant="info">{role.usersCount}</Badge>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Total Permissions</span>
-                  <Badge variant="success">{totalPermissions}</Badge>
+                  <span className="text-muted-foreground flex items-center gap-1.5">
+                    <Users className="h-4 w-4" />
+                    Total Users
+                  </span>
+                  <Badge variant="info">{loading ? "—" : total}</Badge>
                 </div>
               </div>
             </CardContent>
@@ -364,73 +123,68 @@ export default function RoleDetailPage() {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Permissions Matrix</CardTitle>
-              <CardDescription>
-                Toggle individual permissions or select all for each module group
-              </CardDescription>
+              <CardTitle>Users with this Role</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {moduleGroups.map((group) => {
-                  const groupPerms = permissions[group.module] || []
-                  const allSelected =
-                    groupPerms.length === group.actions.length &&
-                    group.actions.length > 0
+              {error && (
+                <div className="rounded-md bg-destructive/10 p-4 text-sm text-destructive">
+                  {error}
+                </div>
+              )}
 
-                  return (
-                    <div
-                      key={group.module}
-                      className="rounded-lg border overflow-hidden"
-                    >
-                      <div className="flex items-center justify-between bg-muted/50 px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <Shield className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium text-sm">
-                            {group.module}
-                          </span>
-                          <Badge variant="outline" className="text-xs">
-                            {groupPerms.length}/{group.actions.length}
-                          </Badge>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 text-xs"
-                          onClick={() =>
-                            toggleModuleAll(group.module, group.actions)
-                          }
-                        >
-                          {allSelected ? "Deselect All" : "Select All"}
-                        </Button>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 p-4">
-                        {group.actions.map((action) => {
-                          const isChecked = groupPerms.includes(action)
-                          return (
-                            <label
-                              key={action}
-                              className={cn(
-                                "flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer transition-colors",
-                                isChecked
-                                  ? "border-primary bg-primary/5"
-                                  : "hover:bg-muted/50"
-                              )}
-                            >
-                              <Checkbox
-                                checked={isChecked}
-                                onCheckedChange={() =>
-                                  togglePermission(group.module, action)
-                                }
-                              />
-                              <span className="text-sm">{action}</span>
-                            </label>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
+              {loading ? (
+                <div className="flex items-center justify-center py-8 text-muted-foreground">
+                  Loading users...
+                </div>
+              ) : users.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                  <Users className="mb-2 h-8 w-8 opacity-50" />
+                  <p>No users assigned to this role</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="pb-3 text-left font-medium text-muted-foreground">
+                          Name
+                        </th>
+                        <th className="pb-3 text-left font-medium text-muted-foreground">
+                          Email
+                        </th>
+                        <th className="pb-3 text-left font-medium text-muted-foreground">
+                          Status
+                        </th>
+                        <th className="pb-3 text-left font-medium text-muted-foreground">
+                          Last Login
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.map((user) => (
+                        <tr key={user.id} className="border-b last:border-0">
+                          <td className="py-3 font-medium">
+                            {user.firstName} {user.lastName}
+                          </td>
+                          <td className="py-3 text-muted-foreground">
+                            {user.email}
+                          </td>
+                          <td className="py-3">
+                            <Badge variant={user.isActive ? "success" : "secondary"}>
+                              {user.isActive ? "Active" : "Inactive"}
+                            </Badge>
+                          </td>
+                          <td className="py-3 text-muted-foreground">
+                            {user.lastLoginAt
+                              ? new Date(user.lastLoginAt).toLocaleDateString()
+                              : "Never"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

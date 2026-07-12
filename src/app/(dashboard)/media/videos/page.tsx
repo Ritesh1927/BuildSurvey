@@ -40,6 +40,26 @@ const projects = ["All Projects", "Riverside Tower Complex", "Green Valley Offic
 export default function VideosPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [projectFilter, setProjectFilter] = useState("All Projects")
+  const [uploadedVideos, setUploadedVideos] = useState<{ id: number; name: string; url: string; project: string; survey: string; duration: string; date: string; time: string; size: string; resolution: string }[]>([])
+
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return
+    const files = Array.from(e.target.files)
+    const newVideos = files.map((file, i) => ({
+      id: Date.now() + i,
+      name: file.name,
+      url: URL.createObjectURL(file),
+      project: "All Projects",
+      survey: "New Upload",
+      duration: "--:--",
+      date: new Date().toISOString().split("T")[0],
+      time: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
+      size: (file.size / (1024 * 1024)).toFixed(1) + " MB",
+      resolution: "Unknown",
+    }))
+    setUploadedVideos(prev => [...prev, ...newVideos])
+    e.target.value = ""
+  }
 
   const filteredVideos = videos.filter((video) => {
     const matchesProject = projectFilter === "All Projects" || video.project === projectFilter
@@ -58,28 +78,67 @@ export default function VideosPage() {
           { label: "Videos" },
         ]}
         actions={
-          <Button>
+          <Button onClick={() => document.getElementById("video-upload-input")?.click()}>
             <Upload className="h-4 w-4 mr-2" />
             Upload Video
           </Button>
         }
       />
 
+      <input
+        id="video-upload-input"
+        type="file"
+        accept="video/*"
+        multiple
+        className="hidden"
+        onChange={handleVideoUpload}
+      />
+
       <Card>
         <CardContent className="p-6">
-          <div className="border-2 border-dashed rounded-lg p-12 text-center hover:bg-muted/50 transition-colors cursor-pointer">
+          <div
+            className="border-2 border-dashed rounded-lg p-12 text-center hover:bg-muted/50 transition-colors cursor-pointer"
+            onClick={() => document.getElementById("video-upload-input")?.click()}
+          >
             <Video className="h-12 w-12 mx-auto text-muted-foreground" />
             <p className="text-lg font-medium mt-4">Drag & drop videos here</p>
             <p className="text-sm text-muted-foreground mt-2">
               or click to browse. Supports MP4, MOV, AVI up to 500MB
             </p>
-            <Button className="mt-4">
+            <Button className="mt-4" onClick={(e) => { e.stopPropagation(); document.getElementById("video-upload-input")?.click() }}>
               <Upload className="h-4 w-4 mr-2" />
               Browse Files
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      {uploadedVideos.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-sm font-medium text-muted-foreground">Newly Uploaded</h3>
+          {uploadedVideos.map((video) => (
+            <Card key={video.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="relative w-full md:w-64 h-36 rounded-lg bg-slate-200 flex items-center justify-center shrink-0">
+                    <video src={video.url} className="w-full h-full object-cover rounded-lg" controls={false} />
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <div>
+                      <h3 className="font-medium">{video.name}</h3>
+                      <p className="text-sm text-muted-foreground">{video.project}</p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                      <span>{video.size}</span>
+                      <span>{video.date}</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       <div className="flex flex-col gap-4 md:flex-row md:items-center">
         <div className="relative flex-1 max-w-sm">

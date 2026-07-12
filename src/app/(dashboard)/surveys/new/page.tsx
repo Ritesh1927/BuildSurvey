@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
@@ -34,18 +34,8 @@ const steps = [
   { id: 7, title: "Review & Submit", icon: CheckCircle2 },
 ]
 
-const mockProjects = [
-  "Riverside Tower Complex", "Green Valley Office Park", "Metro Residential Towers",
-  "Downtown Mall Expansion", "Heritage Building Renovation", "Lakeside Villa Community",
-]
-
-const mockEngineers = [
-  { name: "Rajesh Kumar", initials: "RK", specialties: ["Structural", "Foundation"] },
-  { name: "Priya Sharma", initials: "PS", specialties: ["Electrical", "HVAC"] },
-  { name: "Amit Patel", initials: "AP", specialties: ["Plumbing", "Environmental"] },
-  { name: "Neha Gupta", initials: "NG", specialties: ["Safety", "Interior"] },
-  { name: "Suresh Reddy", initials: "SR", specialties: ["Structural", "Environmental"] },
-]
+interface ProjectOption { id: string; name: string }
+interface EngineerOption { id: string; firstName: string; lastName: string; role: string }
 
 const defaultChecklistItems = [
   { id: 1, category: "Structural", item: "Foundation condition assessment", checked: false, notes: "" },
@@ -87,9 +77,35 @@ export default function NewSurveyPage() {
   const [checklistItems, setChecklistItems] = useState(defaultChecklistItems)
   const [newItemCategory, setNewItemCategory] = useState("Structural")
   const [newItemText, setNewItemText] = useState("")
-  const [photos, setPhotos] = useState<{ name: string; size: string }[]>([])
-  const [videos, setVideos] = useState<{ name: string; size: string }[]>([])
-  const [documents, setDocuments] = useState<{ name: string; size: string }[]>([])
+  const [photos, setPhotos] = useState<{ name: string; size: string; url?: string }[]>([])
+  const [videos, setVideos] = useState<{ name: string; size: string; url?: string }[]>([])
+  const [documents, setDocuments] = useState<{ name: string; size: string; url?: string }[]>([])
+  const [projects, setProjects] = useState<ProjectOption[]>([])
+  const [engineers, setEngineers] = useState<EngineerOption[]>([])
+  const [projectsLoading, setProjectsLoading] = useState(true)
+  const [engineersLoading, setEngineersLoading] = useState(true)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [gpsLoading, setGpsLoading] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/projects')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setProjects(data)
+        else if (data.projects) setProjects(data.projects)
+      })
+      .catch(() => {})
+      .finally(() => setProjectsLoading(false))
+
+    fetch('/api/users')
+      .then((res) => res.json())
+      .then((data) => {
+        const list = Array.isArray(data) ? data : data.users || []
+        setEngineers(list.filter((u: EngineerOption) => u.role === 'ENGINEER' || u.role === 'SURVEYOR'))
+      })
+      .catch(() => {})
+      .finally(() => setEngineersLoading(false))
+  }, [])
 
   const updateFormData = (field: string, value: string | boolean | number) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -125,34 +141,38 @@ export default function NewSurveyPage() {
     : 0
 
   const simulateLocation = () => {
-    updateFormData("latitude", "19.0760")
-    updateFormData("longitude", "72.8777")
+    if (!navigator.geolocation) {
+      setSubmitError("Geolocation is not supported by your browser")
+      return
+    }
+    setGpsLoading(true)
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        updateFormData("latitude", position.coords.latitude.toFixed(6))
+        updateFormData("longitude", position.coords.longitude.toFixed(6))
+        setGpsLoading(false)
+      },
+      (error) => {
+        setSubmitError(`Unable to get location: ${error.message}`)
+        setGpsLoading(false)
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    )
   }
 
-  const addMockFiles = (type: "photo" | "video" | "doc") => {
-    const mockData = {
-      photo: [
-        { name: "site_entrance.jpg", size: "2.4 MB" },
-        { name: "foundation_area.jpg", size: "3.1 MB" },
-        { name: "electrical_panel.jpg", size: "1.8 MB" },
-      ],
-      video: [
-        { name: "site_walkthrough.mp4", size: "45 MB" },
-        { name: "crack_measurement.mp4", size: "18 MB" },
-      ],
-      doc: [
-        { name: "site_permission.pdf", size: "1.2 MB" },
-        { name: "structural_drawings.pdf", size: "5.6 MB" },
-      ],
+  const photoInputRef = useState<HTMLInputElement | null>(null)
+  const videoInputRef = useState<HTMLInputElement | null>(null)
+  const docInputRef = useState<HTMLInputElement | null>(null)
+
+  const handleFileSelect = (type: "photo" | "video" | "doc", file: File) => {
+    const formatSize = (bytes: number) => {
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB"
+      return (bytes / (1024 * 1024)).toFixed(1) + " MB"
     }
-    const existing = type === "photo" ? photos : type === "video" ? videos : documents
-    const available = mockData[type].filter(f => !existing.find(e => e.name === f.name))
-    if (available.length > 0) {
-      const file = available[0]
-      if (type === "photo") setPhotos(prev => [...prev, file])
-      else if (type === "video") setVideos(prev => [...prev, file])
-      else setDocuments(prev => [...prev, file])
-    }
+    const fileData = { name: file.name, size: formatSize(file.size), url: URL.createObjectURL(file) }
+    if (type === "photo") setPhotos(prev => [...prev, fileData])
+    else if (type === "video") setVideos(prev => [...prev, fileData])
+    else setDocuments(prev => [...prev, fileData])
   }
 
   const removeFile = (type: "photo" | "video" | "doc", index: number) => {
@@ -202,7 +222,8 @@ export default function NewSurveyPage() {
         setIsSubmitting(false)
         return
       }
-      router.push("/surveys")
+      setShowSuccess(true)
+      setTimeout(() => router.push("/surveys"), 2000)
     } catch {
       setSubmitError("Network error. Please try again.")
       setIsSubmitting(false)
@@ -220,6 +241,19 @@ export default function NewSurveyPage() {
           { label: "New Survey" },
         ]}
       />
+
+      {showSuccess && (
+        <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">
+          <CheckCircle2 className="h-5 w-5" />
+          <span className="font-medium">Survey created successfully! Redirecting...</span>
+        </div>
+      )}
+
+      {submitError && (
+        <div className="rounded-lg bg-red-50 dark:bg-red-950/30 p-3 text-sm text-red-600 dark:text-red-400">
+          {submitError}
+        </div>
+      )}
 
       {/* Step Indicator */}
       <Card className="overflow-hidden">
@@ -276,9 +310,15 @@ export default function NewSurveyPage() {
                   <div className="space-y-2">
                     <Label>Project *</Label>
                     <Select value={formData.project} onValueChange={(v) => updateFormData("project", v)}>
-                      <SelectTrigger><SelectValue placeholder="Select a project" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder={projectsLoading ? "Loading projects..." : "Select a project"} /></SelectTrigger>
                       <SelectContent>
-                        {mockProjects.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                        {projectsLoading ? (
+                          <SelectItem value="__loading" disabled>Loading projects...</SelectItem>
+                        ) : projects.length === 0 ? (
+                          <SelectItem value="__none" disabled>No projects found</SelectItem>
+                        ) : (
+                          projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -322,17 +362,25 @@ export default function NewSurveyPage() {
                   <div className="space-y-2">
                     <Label>Assign Engineer *</Label>
                     <Select value={formData.engineer} onValueChange={(v) => updateFormData("engineer", v)}>
-                      <SelectTrigger><SelectValue placeholder="Select engineer" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder={engineersLoading ? "Loading engineers..." : "Select engineer"} /></SelectTrigger>
                       <SelectContent>
-                        {mockEngineers.map(e => (
-                          <SelectItem key={e.name} value={e.name}>
-                            <div className="flex items-center gap-2">
-                              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">{e.initials}</div>
-                              <span>{e.name}</span>
-                              <span className="text-xs text-muted-foreground">({e.specialties.join(", ")})</span>
-                            </div>
-                          </SelectItem>
-                        ))}
+                        {engineersLoading ? (
+                          <SelectItem value="__loading" disabled>Loading engineers...</SelectItem>
+                        ) : engineers.length === 0 ? (
+                          <SelectItem value="__none" disabled>No engineers found</SelectItem>
+                        ) : (
+                          engineers.map(e => (
+                            <SelectItem key={e.id} value={e.id}>
+                              <div className="flex items-center gap-2">
+                                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">
+                                  {e.firstName[0]}{e.lastName[0]}
+                                </div>
+                                <span>{e.firstName} {e.lastName}</span>
+                                <span className="text-xs text-muted-foreground">({e.role})</span>
+                              </div>
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -365,9 +413,12 @@ export default function NewSurveyPage() {
                         </div>
                         <p className="font-medium">Map Integration Area</p>
                         <p className="text-sm text-muted-foreground">Google Maps / Leaflet will be integrated here</p>
-                        <Button variant="outline" size="sm" onClick={simulateLocation}>
-                          <MapPin className="h-4 w-4 mr-2" />
-                          Get Current Location
+                        <Button variant="outline" size="sm" onClick={simulateLocation} disabled={gpsLoading}>
+                          {gpsLoading ? (
+                            <><span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />Getting Location...</>
+                          ) : (
+                            <><MapPin className="h-4 w-4 mr-2" />Get Current Location</>
+                          )}
                         </Button>
                       </div>
                     </div>
@@ -691,13 +742,18 @@ export default function NewSurveyPage() {
               {/* Step 6: Media & Documentation */}
               {currentStep === 6 && (
                 <div className="space-y-6">
+                  {/* Hidden file inputs */}
+                  <input type="file" accept="image/*" multiple className="hidden" ref={(el) => { (photoInputRef as any).current = el }} onChange={(e) => { if (e.target.files) { Array.from(e.target.files).forEach(f => handleFileSelect("photo", f)); e.target.value = "" } }} />
+                  <input type="file" accept="video/*" multiple className="hidden" ref={(el) => { (videoInputRef as any).current = el }} onChange={(e) => { if (e.target.files) { Array.from(e.target.files).forEach(f => handleFileSelect("video", f)); e.target.value = "" } }} />
+                  <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.dwg,.dxf" multiple className="hidden" ref={(el) => { (docInputRef as any).current = el }} onChange={(e) => { if (e.target.files) { Array.from(e.target.files).forEach(f => handleFileSelect("doc", f)); e.target.value = "" } }} />
+
                   {/* Photos */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <Label className="text-base font-semibold flex items-center gap-2"><Camera className="h-4 w-4" /> Photos</Label>
-                      <Button variant="outline" size="sm" onClick={() => addMockFiles("photo")}><Upload className="h-4 w-4 mr-1" /> Upload</Button>
+                      <Button variant="outline" size="sm" onClick={() => (photoInputRef as any).current?.click()}><Upload className="h-4 w-4 mr-1" /> Upload</Button>
                     </div>
-                    <div className="rounded-lg border-2 border-dashed p-8 text-center bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => addMockFiles("photo")}>
+                    <div className="rounded-lg border-2 border-dashed p-8 text-center bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => (photoInputRef as any).current?.click()}>
                       <Camera className="h-10 w-10 mx-auto text-muted-foreground" />
                       <p className="text-sm text-muted-foreground mt-2">Click or drag photos here to upload</p>
                     </div>
@@ -705,7 +761,11 @@ export default function NewSurveyPage() {
                       <div className="grid grid-cols-3 gap-3">
                         {photos.map((photo, i) => (
                           <div key={i} className="relative group rounded-lg border overflow-hidden">
-                            <div className="aspect-video bg-muted flex items-center justify-center"><Camera className="h-8 w-8 text-muted-foreground" /></div>
+                            {photo.url ? (
+                              <img src={photo.url} alt={photo.name} className="aspect-video w-full object-cover" />
+                            ) : (
+                              <div className="aspect-video bg-muted flex items-center justify-center"><Camera className="h-8 w-8 text-muted-foreground" /></div>
+                            )}
                             <div className="p-2">
                               <p className="text-xs font-medium truncate">{photo.name}</p>
                               <p className="text-xs text-muted-foreground">{photo.size}</p>
@@ -721,11 +781,13 @@ export default function NewSurveyPage() {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <Label className="text-base font-semibold flex items-center gap-2"><Video className="h-4 w-4" /> Videos</Label>
-                      <Button variant="outline" size="sm" onClick={() => addMockFiles("video")}><Upload className="h-4 w-4 mr-1" /> Upload</Button>
+                      <Button variant="outline" size="sm" onClick={() => (videoInputRef as any).current?.click()}><Upload className="h-4 w-4 mr-1" /> Upload</Button>
                     </div>
                     {videos.map((video, i) => (
                       <div key={i} className="flex items-center gap-3 p-3 rounded-lg border">
-                        <div className="h-12 w-16 bg-muted rounded flex items-center justify-center"><Video className="h-5 w-5 text-muted-foreground" /></div>
+                        <div className="h-12 w-16 bg-muted rounded flex items-center justify-center">
+                          {video.url ? <video src={video.url} className="h-full w-full object-cover rounded" /> : <Video className="h-5 w-5 text-muted-foreground" />}
+                        </div>
                         <div className="flex-1"><p className="text-sm font-medium">{video.name}</p><p className="text-xs text-muted-foreground">{video.size}</p></div>
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => removeFile("video", i)}><Trash2 className="h-4 w-4" /></Button>
                       </div>
@@ -752,7 +814,7 @@ export default function NewSurveyPage() {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <Label className="text-base font-semibold flex items-center gap-2"><FileText className="h-4 w-4" /> Documents & Drawings</Label>
-                      <Button variant="outline" size="sm" onClick={() => addMockFiles("doc")}><Upload className="h-4 w-4 mr-1" /> Upload</Button>
+                      <Button variant="outline" size="sm" onClick={() => (docInputRef as any).current?.click()}><Upload className="h-4 w-4 mr-1" /> Upload</Button>
                     </div>
                     {documents.map((doc, i) => (
                       <div key={i} className="flex items-center gap-3 p-3 rounded-lg border">
@@ -776,7 +838,7 @@ export default function NewSurveyPage() {
                         <Button variant="ghost" size="sm" onClick={() => setCurrentStep(1)}><Pencil className="h-3 w-3 mr-1" /> Edit</Button>
                       </div>
                       <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div><span className="text-muted-foreground">Project:</span> <span className="font-medium">{formData.project || "—"}</span></div>
+                        <div><span className="text-muted-foreground">Project:</span> <span className="font-medium">{projects.find(p => p.id === formData.project)?.name || "—"}</span></div>
                         <div><span className="text-muted-foreground">Type:</span> <span className="font-medium">{formData.surveyType || "—"}</span></div>
                         <div className="col-span-2"><span className="text-muted-foreground">Title:</span> <span className="font-medium">{formData.title || "—"}</span></div>
                         {formData.description && <div className="col-span-2"><span className="text-muted-foreground">Description:</span> <span className="font-medium">{formData.description}</span></div>}
@@ -790,7 +852,7 @@ export default function NewSurveyPage() {
                       </div>
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         <div><span className="text-muted-foreground">Date:</span> <span className="font-medium">{formData.scheduledDate || "—"}</span></div>
-                        <div><span className="text-muted-foreground">Engineer:</span> <span className="font-medium">{formData.engineer || "—"}</span></div>
+                        <div><span className="text-muted-foreground">Engineer:</span> <span className="font-medium">{(() => { const eng = engineers.find(e => e.id === formData.engineer); return eng ? `${eng.firstName} ${eng.lastName}` : "—"; })()}</span></div>
                         <div><span className="text-muted-foreground">Priority:</span> <span className="font-medium capitalize">{formData.priority}</span></div>
                         <div><span className="text-muted-foreground">Duration:</span> <span className="font-medium">{formData.estimatedDuration || "—"}</span></div>
                       </div>

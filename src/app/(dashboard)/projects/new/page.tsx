@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
@@ -59,22 +59,7 @@ const projectTypes = [
   "Mixed Use",
 ]
 
-const clientList = [
-  { id: "CLT-001", name: "L&T Realty" },
-  { id: "CLT-002", name: "Tata Projects Ltd" },
-  { id: "CLT-003", name: "DLF Limited" },
-  { id: "CLT-004", name: "NHAI" },
-  { id: "CLT-005", name: "Godrej Properties" },
-  { id: "CLT-006", name: "Shapoorji Pallonji & Co" },
-  { id: "CLT-007", name: "Brigade Enterprises" },
-  { id: "CLT-008", name: "Ircon International Ltd" },
-  { id: "CLT-009", name: "Oberoi Realty" },
-  { id: "CLT-010", name: "Adani Realty" },
-  { id: "CLT-011", name: "Larsen & Toubro (Construction)" },
-  { id: "CLT-012", name: "Hindustan Construction Co" },
-  { id: "CLT-015", name: "Prestige Estates Projects" },
-  { id: "CLT-016", name: "GMR Infrastructure Ltd" },
-]
+
 
 const indianStates = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
@@ -84,16 +69,7 @@ const indianStates = [
   "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Delhi",
 ]
 
-const teamMembers = [
-  { id: "USR-001", name: "Amit Deshmukh", role: "Project Manager" },
-  { id: "USR-002", name: "Priya Nair", role: "Site Engineer" },
-  { id: "USR-003", name: "Ravi Shankar", role: "Surveyor" },
-  { id: "USR-004", name: "Neha Kulkarni", role: "Architect" },
-  { id: "USR-005", name: "Vikram Desai", role: "Site Engineer" },
-  { id: "USR-006", name: "Sanjay Kulkarni", role: "Surveyor" },
-  { id: "USR-007", name: "Deepak Nair", role: "Project Manager" },
-  { id: "USR-008", name: "Arjun Reddy", role: "Architect" },
-]
+
 
 interface FormData {
   // Step 1: Basic Info
@@ -122,12 +98,19 @@ interface FormData {
   notes: string
 }
 
+interface ClientOption { id: string; companyName: string }
+interface UserOption { id: string; firstName: string; lastName: string; role: string }
+
 export default function NewProjectPage() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
+  const [clientList, setClientList] = useState<ClientOption[]>([])
+  const [teamMembers, setTeamMembers] = useState<UserOption[]>([])
+  const [clientsLoading, setClientsLoading] = useState(true)
+  const [usersLoading, setUsersLoading] = useState(true)
   const [formData, setFormData] = useState<FormData>({
     name: "",
     code: `PRJ-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 999)).padStart(3, "0")}`,
@@ -150,6 +133,26 @@ export default function NewProjectPage() {
     teamMemberIds: [],
     notes: "",
   })
+
+  useEffect(() => {
+    fetch('/api/clients')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setClientList(data)
+        else if (data.clients) setClientList(data.clients)
+      })
+      .catch(() => {})
+      .finally(() => setClientsLoading(false))
+
+    fetch('/api/users')
+      .then((res) => res.json())
+      .then((data) => {
+        const list = Array.isArray(data) ? data : data.users || []
+        setTeamMembers(list)
+      })
+      .catch(() => {})
+      .finally(() => setUsersLoading(false))
+  }, [])
 
   const updateField = (field: keyof FormData, value: string | string[]) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -195,6 +198,8 @@ export default function NewProjectPage() {
           startDate: formData.startDate || undefined,
           endDate: formData.endDate || undefined,
           budget: formData.budget ? Number(formData.budget) : undefined,
+          estimatedCost: formData.estimatedCost ? Number(formData.estimatedCost) : undefined,
+          notes: formData.notes.trim() || undefined,
           address: formData.address.trim() || undefined,
           city: formData.city.trim() || undefined,
           state: formData.state.trim() || undefined,
@@ -376,12 +381,18 @@ export default function NewProjectPage() {
                         <SelectTrigger>
                           <SelectValue placeholder="Select client" />
                         </SelectTrigger>
-                        <SelectContent>
-                          {clientList.map((client) => (
-                            <SelectItem key={client.id} value={client.id}>
-                              {client.name}
-                            </SelectItem>
-                          ))}
+                      <SelectContent>
+                          {clientsLoading ? (
+                            <SelectItem value="__loading" disabled>Loading clients...</SelectItem>
+                          ) : clientList.length === 0 ? (
+                            <SelectItem value="__none" disabled>No clients found</SelectItem>
+                          ) : (
+                            clientList.map((client) => (
+                              <SelectItem key={client.id} value={client.id}>
+                                {client.companyName}
+                              </SelectItem>
+                            ))
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -559,13 +570,19 @@ export default function NewProjectPage() {
                         <SelectValue placeholder="Select project manager" />
                       </SelectTrigger>
                       <SelectContent>
-                        {teamMembers
-                          .filter((m) => m.role === "Project Manager")
-                          .map((member) => (
-                            <SelectItem key={member.id} value={member.id}>
-                              {member.name} - {member.role}
-                            </SelectItem>
-                          ))}
+                        {usersLoading ? (
+                          <SelectItem value="__loading" disabled>Loading users...</SelectItem>
+                        ) : teamMembers.length === 0 ? (
+                          <SelectItem value="__none" disabled>No users found</SelectItem>
+                        ) : (
+                          teamMembers
+                            .filter((m) => m.role === "MANAGER" || m.role === "Project Manager")
+                            .map((member) => (
+                              <SelectItem key={member.id} value={member.id}>
+                                {member.firstName} {member.lastName} - {member.role}
+                              </SelectItem>
+                            ))
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -573,36 +590,42 @@ export default function NewProjectPage() {
                   <div className="space-y-2">
                     <Label>Team Members</Label>
                     <p className="text-xs text-muted-foreground">Select team members to assign to this project</p>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {teamMembers.map((member) => (
-                        <div
-                          key={member.id}
-                          className={cn(
-                            "flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors",
-                            formData.teamMemberIds.includes(member.id)
-                              ? "border-primary bg-primary/5"
-                              : "hover:bg-muted/50"
-                          )}
-                          onClick={() => toggleTeamMember(member.id)}
-                        >
+                      <div className="grid gap-2 sm:grid-cols-2">
+                      {usersLoading ? (
+                        <p className="text-sm text-muted-foreground">Loading team members...</p>
+                      ) : teamMembers.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">No team members found</p>
+                      ) : (
+                        teamMembers.map((member) => (
                           <div
+                            key={member.id}
                             className={cn(
-                              "flex h-5 w-5 items-center justify-center rounded border",
+                              "flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors",
                               formData.teamMemberIds.includes(member.id)
-                                ? "border-primary bg-primary text-primary-foreground"
-                                : "border-muted-foreground/30"
+                                ? "border-primary bg-primary/5"
+                                : "hover:bg-muted/50"
                             )}
+                            onClick={() => toggleTeamMember(member.id)}
                           >
-                            {formData.teamMemberIds.includes(member.id) && (
-                              <Check className="h-3 w-3" />
-                            )}
+                            <div
+                              className={cn(
+                                "flex h-5 w-5 items-center justify-center rounded border",
+                                formData.teamMemberIds.includes(member.id)
+                                  ? "border-primary bg-primary text-primary-foreground"
+                                  : "border-muted-foreground/30"
+                              )}
+                            >
+                              {formData.teamMemberIds.includes(member.id) && (
+                                <Check className="h-3 w-3" />
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">{member.firstName} {member.lastName}</p>
+                              <p className="text-xs text-muted-foreground">{member.role}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-sm font-medium">{member.name}</p>
-                            <p className="text-xs text-muted-foreground">{member.role}</p>
-                          </div>
-                        </div>
-                      ))}
+                        ))
+                      )}
                     </div>
                   </div>
 
@@ -698,7 +721,7 @@ export default function NewProjectPage() {
                 <div>
                   <p className="text-muted-foreground text-xs">Client</p>
                   <p className="font-medium">
-                    {clientList.find((c) => c.id === formData.clientId)?.name}
+                    {clientList.find((c) => c.id === formData.clientId)?.companyName}
                   </p>
                 </div>
               )}

@@ -222,11 +222,44 @@ export default function DocumentsPage() {
           { label: "Documents" },
         ]}
         actions={
-          <Button>
+          <Button onClick={() => document.getElementById("doc-upload-input")?.click()}>
             <Upload className="mr-2 h-4 w-4" />
             Upload Document
           </Button>
         }
+      />
+
+      <input
+        id="doc-upload-input"
+        type="file"
+        accept=".pdf,.doc,.docx,.xls,.xlsx,.dwg,.dxf,.png,.jpg,.jpeg"
+        multiple
+        className="hidden"
+        onChange={(e) => {
+          if (!e.target.files) return
+          const files = Array.from(e.target.files)
+          const formatSize = (bytes: number) => {
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB"
+            return (bytes / (1024 * 1024)).toFixed(1) + " MB"
+          }
+          files.forEach((file, i) => {
+            const ext = file.name.split(".").pop()?.toUpperCase() || "PDF"
+            const newDoc = {
+              id: `DOC-NEW-${Date.now() + i}`,
+              name: file.name,
+              type: ["PDF"].includes(ext) ? "PDF" : ["XLS", "XLSX"].includes(ext) ? "Excel" : ["DWG"].includes(ext) ? "DWG" : "PDF",
+              category: "Drawings",
+              folder: "drawings",
+              size: formatSize(file.size),
+              uploadedBy: "Current User",
+              date: new Date().toISOString().split("T")[0],
+              version: "1.0",
+              project: "All Projects",
+            }
+            mockDocuments.unshift(newDoc)
+          })
+          e.target.value = ""
+        }}
       />
 
       {/* Storage Usage */}

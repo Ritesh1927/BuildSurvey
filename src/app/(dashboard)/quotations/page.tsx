@@ -14,6 +14,7 @@ import {
 } from "lucide-react"
 
 import { formatCurrency } from "@/lib/utils"
+import { showSuccess } from "@/components/ui/toast"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -78,6 +79,22 @@ export default function QuotationsPage() {
     })
   }, [statusFilter, projectFilter])
 
+  const handleExport = () => {
+    const headers = ["Quotation #", "Title", "Project", "Total Amount", "Tax", "Grand Total", "Valid Until", "Status"]
+    const rows = filteredQuotations.map(q => [
+      q.id, q.title, q.project, q.totalAmount, q.tax, q.grandTotal, q.validUntil, q.status
+    ])
+    const csv = [headers, ...rows].map(r => r.map(c => `"${c}"`).join(",")).join("\n")
+    const blob = new Blob([csv], { type: "text/csv" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `quotations-export-${new Date().toISOString().split("T")[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    showSuccess("Quotation data exported as CSV")
+  }
+
   const totalValue = mockQuotations.reduce((s, q) => s + q.grandTotal, 0)
   const draftCount = mockQuotations.filter((q) => q.status === "Draft").length
   const sentCount = mockQuotations.filter((q) => q.status === "Sent").length
@@ -94,7 +111,7 @@ export default function QuotationsPage() {
         ]}
         actions={
           <div className="flex items-center gap-2">
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleExport}>
               <Download className="mr-2 h-4 w-4" />
               Export
             </Button>

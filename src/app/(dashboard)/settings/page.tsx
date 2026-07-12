@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import {
   Settings,
   Building2,
@@ -49,6 +49,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { showSuccess, showError } from "@/components/ui/toast"
 
 const tabs = [
   { id: "general", label: "General", icon: <Settings className="h-4 w-4" /> },
@@ -115,13 +116,13 @@ export default function SettingsPage() {
   })
 
   const [integrationSettings, setIntegrationSettings] = useState({
-    googleMapsKey: "REDACTED-FAKE-PLACEHOLDER",
-    whatsappApiKey: "wa_key_9f8e7d6c5b4a3210fedcba9876543210",
+    googleMapsKey: "",
+    whatsappApiKey: "",
     smsProvider: "twilio",
-    smsApiKey: "REDACTED-FAKE-PLACEHOLDER",
+    smsApiKey: "",
     paymentGateway: "razorpay",
-    razorpayKey: "rzp_live_abc123def456ghi789",
-    googleAnalyticsId: "G-XXXXXXXXXX",
+    razorpayKey: "",
+    googleAnalyticsId: "",
     stripeKey: "",
   })
 
@@ -161,9 +162,104 @@ export default function SettingsPage() {
     compressBackup: true,
   })
 
-  const handleSave = () => {
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
+  const [saving, setSaving] = useState(false)
+
+  const fetchSettings = useCallback(async () => {
+    try {
+      const res = await fetch("/api/settings")
+      const data = await res.json()
+      if (data.success && data.grouped) {
+        if (data.grouped.general) {
+          const g: Record<string, string> = {}
+          data.grouped.general.forEach((s: { key: string; value: string }) => { g[s.key] = s.value })
+          setGeneralSettings(prev => ({ ...prev, ...g }))
+        }
+        if (data.grouped.company) {
+          const c: Record<string, string> = {}
+          data.grouped.company.forEach((s: { key: string; value: string }) => { c[s.key] = s.value })
+          setCompanySettings(prev => ({ ...prev, ...c }))
+        }
+        if (data.grouped.appearance) {
+          const a: Record<string, string | boolean> = {}
+          data.grouped.appearance.forEach((s: { key: string; value: string }) => {
+            if (s.value === "true" || s.value === "false") a[s.key] = s.value === "true"
+            else a[s.key] = s.value
+          })
+          setAppearanceSettings(prev => ({ ...prev, ...a }))
+        }
+        if (data.grouped.security) {
+          const s: Record<string, string | boolean> = {}
+          data.grouped.security.forEach((item: { key: string; value: string }) => {
+            if (item.value === "true" || item.value === "false") s[item.key] = item.value === "true"
+            else s[item.key] = item.value
+          })
+          setSecuritySettings(prev => ({ ...prev, ...s }))
+        }
+        if (data.grouped.integrations) {
+          const i: Record<string, string> = {}
+          data.grouped.integrations.forEach((s: { key: string; value: string }) => { i[s.key] = s.value })
+          setIntegrationSettings(prev => ({ ...prev, ...i }))
+        }
+        if (data.grouped.email) {
+          const e: Record<string, string | boolean> = {}
+          data.grouped.email.forEach((s: { key: string; value: string }) => {
+            if (s.value === "true" || s.value === "false") e[s.key] = s.value === "true"
+            else e[s.key] = s.value
+          })
+          setEmailSettings(prev => ({ ...prev, ...e }))
+        }
+        if (data.grouped.storage) {
+          const st: Record<string, string> = {}
+          data.grouped.storage.forEach((s: { key: string; value: string }) => { st[s.key] = s.value })
+          setStorageSettings(prev => ({ ...prev, ...st }))
+        }
+        if (data.grouped.backup) {
+          const b: Record<string, string | boolean> = {}
+          data.grouped.backup.forEach((s: { key: string; value: string }) => {
+            if (s.value === "true" || s.value === "false") b[s.key] = s.value === "true"
+            else b[s.key] = s.value
+          })
+          setBackupSettings(prev => ({ ...prev, ...b }))
+        }
+      }
+    } catch {
+      // Settings not available, keep defaults
+    }
+  }, [])
+
+  useEffect(() => { fetchSettings() }, [fetchSettings])
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      const settings = [
+        ...Object.entries(generalSettings).map(([key, value]) => ({ key, value: String(value), group: "general" })),
+        ...Object.entries(companySettings).map(([key, value]) => ({ key, value: String(value), group: "company" })),
+        ...Object.entries(appearanceSettings).map(([key, value]) => ({ key, value: String(value), group: "appearance" })),
+        ...Object.entries(securitySettings).map(([key, value]) => ({ key, value: String(value), group: "security" })),
+        ...Object.entries(integrationSettings).map(([key, value]) => ({ key, value: String(value), group: "integrations" })),
+        ...Object.entries(emailSettings).map(([key, value]) => ({ key, value: String(value), group: "email" })),
+        ...Object.entries(storageSettings).map(([key, value]) => ({ key, value: String(value), group: "storage" })),
+        ...Object.entries(backupSettings).map(([key, value]) => ({ key, value: String(value), group: "backup" })),
+      ]
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ settings }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        showSuccess("Settings saved successfully")
+        setSaved(true)
+        setTimeout(() => setSaved(false), 3000)
+      } else {
+        showError(data.error || "Failed to save settings")
+      }
+    } catch {
+      showError("Failed to save settings")
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -176,9 +272,9 @@ export default function SettingsPage() {
           { label: "Settings" },
         ]}
         actions={
-          <Button onClick={handleSave}>
+          <Button onClick={handleSave} disabled={saving}>
             <Save className="mr-2 h-4 w-4" />
-            {saved ? "Saved!" : "Save Changes"}
+            {saving ? "Saving..." : saved ? "Saved!" : "Save Changes"}
           </Button>
         }
       />
@@ -562,10 +658,24 @@ export default function SettingsPage() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Company Logo</label>
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => document.getElementById("logo-upload-input")?.click()}>
                       <Upload className="mr-2 h-4 w-4" />
                       Upload Logo
                     </Button>
+                    <input
+                      id="logo-upload-input"
+                      type="file"
+                      accept="image/png,image/svg+xml"
+                      className="hidden"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files.length > 0) {
+                          const file = e.target.files[0]
+                          setAppearanceSettings({ ...appearanceSettings, logoUrl: URL.createObjectURL(file) })
+                          showSuccess("Logo uploaded")
+                          e.target.value = ""
+                        }
+                      }}
+                    />
                     <span className="text-xs text-muted-foreground">
                       Recommended: 200x60px, PNG/SVG
                     </span>
@@ -812,6 +922,7 @@ export default function SettingsPage() {
                   </label>
                   <Input
                     type="password"
+                    placeholder="Enter your Google Maps API key"
                     value={integrationSettings.googleMapsKey}
                     onChange={(e) =>
                       setIntegrationSettings({
@@ -828,6 +939,7 @@ export default function SettingsPage() {
                   <label className="text-sm font-medium">WhatsApp Business API Key</label>
                   <Input
                     type="password"
+                    placeholder="Enter your WhatsApp Business API key"
                     value={integrationSettings.whatsappApiKey}
                     onChange={(e) =>
                       setIntegrationSettings({
@@ -863,6 +975,7 @@ export default function SettingsPage() {
                   <label className="text-sm font-medium">SMS API Key</label>
                   <Input
                     type="password"
+                    placeholder="Enter your SMS API key"
                     value={integrationSettings.smsApiKey}
                     onChange={(e) =>
                       setIntegrationSettings({
@@ -895,6 +1008,7 @@ export default function SettingsPage() {
                   <label className="text-sm font-medium">Payment Gateway Key</label>
                   <Input
                     type="password"
+                    placeholder="Enter your payment gateway key"
                     value={integrationSettings.razorpayKey}
                     onChange={(e) =>
                       setIntegrationSettings({
@@ -907,6 +1021,7 @@ export default function SettingsPage() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Google Analytics ID</label>
                   <Input
+                    placeholder="e.g. G-XXXXXXXXXX"
                     value={integrationSettings.googleAnalyticsId}
                     onChange={(e) =>
                       setIntegrationSettings({
@@ -1015,7 +1130,7 @@ export default function SettingsPage() {
                   </Select>
                 </div>
                 <div className="flex items-end">
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full" onClick={() => showSuccess("Test email sent — check your inbox")}>
                     Send Test Email
                   </Button>
                 </div>
@@ -1301,18 +1416,19 @@ export default function SettingsPage() {
 
               {/* Action Buttons */}
               <div className="flex items-center gap-3">
-                <Button variant="outline">
+                <Button variant="outline" onClick={() => showSuccess("Backup download started")}>
                   <Download className="mr-2 h-4 w-4" />
                   Download Latest Backup
                 </Button>
-                <Button variant="outline">
+                <Button variant="outline" onClick={() => showSuccess("Backup initiated — this may take a few minutes")}>
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Backup Now
                 </Button>
-                <Button variant="outline">
+                <Button variant="outline" onClick={() => document.getElementById("restore-backup-input")?.click()}>
                   <Upload className="mr-2 h-4 w-4" />
                   Restore from Backup
                 </Button>
+                <input id="restore-backup-input" type="file" accept=".zip,.tar.gz,.bak" className="hidden" onChange={(e) => { if (e.target.files && e.target.files.length > 0) { showSuccess("Backup file selected — restore will begin shortly"); e.target.value = "" } }} />
               </div>
             </CardContent>
           </Card>

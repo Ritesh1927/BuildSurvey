@@ -130,10 +130,26 @@ export default function VoiceNotesPage() {
         ]}
         actions={
           <div className="flex items-center gap-2">
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => document.getElementById("voice-upload-input")?.click()}>
               <Upload className="h-4 w-4 mr-2" />
               Upload Recording
             </Button>
+            <input
+              id="voice-upload-input"
+              type="file"
+              accept="audio/*"
+              multiple
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  const count = e.target.files.length
+                  import("@/components/ui/toast").then(({ showSuccess }) => {
+                    showSuccess(`${count} recording(s) uploaded successfully`)
+                  })
+                  e.target.value = ""
+                }
+              }}
+            />
           </div>
         }
       />

@@ -136,6 +136,27 @@ const statusColors: Record<string, string> = {
 export default function DrawingsPage() {
   const [selectedDrawing, setSelectedDrawing] = useState<typeof drawings[0] | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [uploadedDrawings, setUploadedDrawings] = useState<{ id: number; name: string; type: string; project: string; survey: string; date: string; size: string; version: string; status: string; dimensions: string; uploadedBy: string }[]>([])
+
+  const handleDrawingUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return
+    const files = Array.from(e.target.files)
+    const newDrawings = files.map((file, i) => ({
+      id: Date.now() + i,
+      name: file.name,
+      type: file.name.endsWith(".dwg") || file.name.endsWith(".dxf") ? "CAD Drawing" : "Blueprint",
+      project: "All Projects",
+      survey: "New Upload",
+      date: new Date().toISOString().split("T")[0],
+      size: (file.size / (1024 * 1024)).toFixed(1) + " MB",
+      version: "Rev A",
+      status: "draft",
+      dimensions: "A1 (841 x 594 mm)",
+      uploadedBy: "Current User",
+    }))
+    setUploadedDrawings(prev => [...prev, ...newDrawings])
+    e.target.value = ""
+  }
 
   const filteredDrawings = drawings.filter((d) =>
     d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -153,22 +174,34 @@ export default function DrawingsPage() {
           { label: "Drawings" },
         ]}
         actions={
-          <Button>
+          <Button onClick={() => document.getElementById("drawing-upload-input")?.click()}>
             <Upload className="h-4 w-4 mr-2" />
             Upload Drawing
           </Button>
         }
       />
 
+      <input
+        id="drawing-upload-input"
+        type="file"
+        accept=".dwg,.dxf,.pdf,.png,.jpg,.jpeg"
+        multiple
+        className="hidden"
+        onChange={handleDrawingUpload}
+      />
+
       <Card>
         <CardContent className="p-6">
-          <div className="border-2 border-dashed rounded-lg p-12 text-center hover:bg-muted/50 transition-colors cursor-pointer">
+          <div
+            className="border-2 border-dashed rounded-lg p-12 text-center hover:bg-muted/50 transition-colors cursor-pointer"
+            onClick={() => document.getElementById("drawing-upload-input")?.click()}
+          >
             <FileText className="h-12 w-12 mx-auto text-muted-foreground" />
             <p className="text-lg font-medium mt-4">Drag & drop drawings here</p>
             <p className="text-sm text-muted-foreground mt-2">
               Supports DWG, DXF, PDF, PNG, JPG. Max file size 100MB
             </p>
-            <Button className="mt-4">
+            <Button className="mt-4" onClick={(e) => { e.stopPropagation(); document.getElementById("drawing-upload-input")?.click() }}>
               <Upload className="h-4 w-4 mr-2" />
               Browse Files
             </Button>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
@@ -17,6 +17,7 @@ import {
   IndianRupee,
   AlertCircle,
   Save,
+  CheckCircle2,
 } from 'lucide-react'
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -80,12 +81,33 @@ const initialFormData: FormData = {
   followUpDate: '',
 }
 
+interface UserOption {
+  id: string
+  firstName: string
+  lastName: string
+  role: string
+}
+
 export default function NewLeadPage() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState<FormData>(initialFormData)
   const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [users, setUsers] = useState<UserOption[]>([])
+  const [usersLoading, setUsersLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/users')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setUsers(data)
+        else if (data.users) setUsers(data.users)
+      })
+      .catch(() => {})
+      .finally(() => setUsersLoading(false))
+  }, [])
 
   const updateField = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -149,12 +171,14 @@ export default function NewLeadPage() {
           email: formData.email.trim().toLowerCase(),
           phone: formData.phone.trim(),
           company: formData.company.trim(),
+          website: formData.website.trim() || undefined,
           source: formData.source,
           status: formData.status,
           priority: formData.priority,
           estimatedValue: formData.estimatedValue || undefined,
           notes: formData.notes.trim() || undefined,
           assignedToId: formData.assignedTo || undefined,
+          followUpDate: formData.followUpDate || undefined,
         }),
       })
       const data = await res.json()
@@ -163,7 +187,8 @@ export default function NewLeadPage() {
         setIsSubmitting(false)
         return
       }
-      router.push('/leads')
+      setShowSuccess(true)
+      setTimeout(() => router.push('/leads'), 2000)
     } catch {
       setErrors({ submit: 'Network error. Please try again.' })
       setIsSubmitting(false)
@@ -383,14 +408,20 @@ export default function NewLeadPage() {
           <Label>Assign To</Label>
           <Select value={formData.assignedTo} onValueChange={(v) => updateField('assignedTo', v)}>
             <SelectTrigger>
-              <SelectValue placeholder="Select team member" />
+              <SelectValue placeholder={usersLoading ? 'Loading users...' : 'Select team member'} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="user-1">Saurabh Verma (Admin)</SelectItem>
-              <SelectItem value="user-2">Priya Sharma (Project Manager)</SelectItem>
-              <SelectItem value="user-3">Raj Mehta (Site Engineer)</SelectItem>
-              <SelectItem value="user-4">Neha Gupta (Surveyor)</SelectItem>
-              <SelectItem value="user-5">Amit Kumar (Surveyor)</SelectItem>
+              {usersLoading ? (
+                <SelectItem value="__loading" disabled>Loading users...</SelectItem>
+              ) : users.length === 0 ? (
+                <SelectItem value="__none" disabled>No users found</SelectItem>
+              ) : (
+                users.map((u) => (
+                  <SelectItem key={u.id} value={u.id}>
+                    {u.firstName} {u.lastName} ({u.role})
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
           <p className="text-xs text-muted-foreground">Leave unassigned to keep it in the general pool</p>
@@ -533,6 +564,19 @@ export default function NewLeadPage() {
           </div>
         </CardContent>
       </Card>
+
+      {showSuccess && (
+        <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">
+          <CheckCircle2 className="h-5 w-5" />
+          <span className="font-medium">Lead created successfully! Redirecting...</span>
+        </div>
+      )}
+
+      {errors.submit && (
+        <div className="rounded-lg bg-red-50 dark:bg-red-950/30 p-3 text-sm text-red-600 dark:text-red-400">
+          {errors.submit}
+        </div>
+      )}
 
       {/* Form Content */}
       <Card>

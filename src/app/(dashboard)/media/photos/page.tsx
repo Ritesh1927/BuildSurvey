@@ -53,6 +53,27 @@ export default function PhotosPage() {
   const [editCaption, setEditCaption] = useState("")
   const [projectFilter, setProjectFilter] = useState("All Projects")
   const [searchQuery, setSearchQuery] = useState("")
+  const [uploadedPhotos, setUploadedPhotos] = useState<{ id: number; name: string; url: string; caption: string; project: string; survey: string; date: string; time: string; size: string; hasLocation: boolean; location: { lat: number; lng: number } }[]>([])
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return
+    const files = Array.from(e.target.files)
+    const newPhotos = files.map((file, i) => ({
+      id: Date.now() + i,
+      name: file.name,
+      url: URL.createObjectURL(file),
+      caption: file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "),
+      project: "All Projects",
+      survey: "New Upload",
+      date: new Date().toISOString().split("T")[0],
+      time: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
+      size: (file.size / (1024 * 1024)).toFixed(1) + " MB",
+      hasLocation: false,
+      location: { lat: 0, lng: 0 },
+    }))
+    setUploadedPhotos(prev => [...prev, ...newPhotos])
+    e.target.value = ""
+  }
 
   const filteredPhotos = photos.filter((photo) => {
     const matchesProject = projectFilter === "All Projects" || photo.project === projectFilter
@@ -86,22 +107,34 @@ export default function PhotosPage() {
           { label: "Photos" },
         ]}
         actions={
-          <Button>
+          <Button onClick={() => document.getElementById("photo-upload-input")?.click()}>
             <Upload className="h-4 w-4 mr-2" />
             Upload Photos
           </Button>
         }
       />
 
+      <input
+        id="photo-upload-input"
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={handlePhotoUpload}
+      />
+
       <Card>
         <CardContent className="p-6">
-          <div className="border-2 border-dashed rounded-lg p-12 text-center hover:bg-muted/50 transition-colors cursor-pointer">
+          <div
+            className="border-2 border-dashed rounded-lg p-12 text-center hover:bg-muted/50 transition-colors cursor-pointer"
+            onClick={() => document.getElementById("photo-upload-input")?.click()}
+          >
             <Camera className="h-12 w-12 mx-auto text-muted-foreground" />
             <p className="text-lg font-medium mt-4">Drag & drop photos here</p>
             <p className="text-sm text-muted-foreground mt-2">
               or click to browse. Supports JPG, PNG, HEIC up to 50MB
             </p>
-            <Button className="mt-4">
+            <Button className="mt-4" onClick={(e) => { e.stopPropagation(); document.getElementById("photo-upload-input")?.click() }}>
               <Upload className="h-4 w-4 mr-2" />
               Browse Files
             </Button>
@@ -151,6 +184,39 @@ export default function PhotosPage() {
           )}
         </div>
       </div>
+
+      {uploadedPhotos.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-medium text-muted-foreground">Newly Uploaded</h3>
+          <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+            {uploadedPhotos.map((photo) => (
+              <div
+                key={photo.id}
+                className="break-inside-avoid group relative rounded-lg border overflow-hidden bg-muted cursor-pointer"
+              >
+                <div className="absolute top-2 left-2 z-10" onClick={(e) => e.stopPropagation()}>
+                  <Checkbox checked={false} onCheckedChange={() => {}} />
+                </div>
+                <div className="aspect-square bg-slate-200 flex items-center justify-center">
+                  <img src={photo.url} alt={photo.caption} className="w-full h-full object-cover" />
+                </div>
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <Button size="icon" variant="secondary" className="h-8 w-8" onClick={(e) => { e.stopPropagation() }}>
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="p-3 space-y-1">
+                  <p className="text-sm font-medium truncate">{photo.caption}</p>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>{photo.date}</span>
+                    <span>{photo.size}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
         {filteredPhotos.map((photo) => (

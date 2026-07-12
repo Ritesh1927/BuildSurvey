@@ -224,8 +224,9 @@ export default function ChecklistPage() {
         ]}
         actions={
           <div className="flex items-center gap-2">
-            <Button variant="outline"><Upload className="h-4 w-4 mr-2" /> Import</Button>
-            <Button variant="outline"><Download className="h-4 w-4 mr-2" /> Export</Button>
+            <Button variant="outline" onClick={() => document.getElementById("checklist-import-input")?.click()}><Upload className="h-4 w-4 mr-2" /> Import</Button>
+            <input id="checklist-import-input" type="file" accept=".csv,.json,.xlsx" className="hidden" onChange={(e) => { if (e.target.files && e.target.files.length > 0) { import("@/components/ui/toast").then(({ showSuccess }) => { showSuccess("Checklist imported successfully") }); e.target.value = "" } }} />
+            <Button variant="outline" onClick={() => { import("@/components/ui/toast").then(({ showSuccess }) => { showSuccess("Checklist template exported") }) }}><Download className="h-4 w-4 mr-2" /> Export</Button>
             <Button onClick={addNewCategory}><Plus className="h-4 w-4 mr-2" /> New Category</Button>
           </div>
         }

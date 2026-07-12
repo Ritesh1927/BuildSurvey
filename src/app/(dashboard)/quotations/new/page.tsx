@@ -1,11 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
   ArrowRight,
   Check,
+  Loader2,
   Minus,
   Plus,
   Save,
@@ -35,13 +37,13 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { PageHeader } from "@/components/ui/page-header"
+import { showSuccess, showError } from "@/components/ui/toast"
 
-const projects = [
-  { id: "PRJ-001", name: "Worli Sky Residences Tower A" },
-  { id: "PRJ-002", name: "BKC Commercial Hub Phase 1" },
-  { id: "PRJ-004", name: "Prestige Lake Ridge Villas" },
-  { id: "PRJ-008", name: "Brigade Gateway Commercial Tower" },
-]
+interface Project {
+  id: string
+  name: string
+  code: string
+}
 
 interface LineItem {
   id: string
@@ -68,6 +70,7 @@ const defaultTerms = `1. This quotation is valid for 90 days from the date of is
 8. Workmanship guarantee as per IS standards.`
 
 export default function NewQuotationPage() {
+  const router = useRouter()
   const [step, setStep] = useState(1)
   const [selectedProject, setSelectedProject] = useState("")
   const [title, setTitle] = useState("")
@@ -76,6 +79,24 @@ export default function NewQuotationPage() {
   const [gstPercent, setGstPercent] = useState(18)
   const [discount, setDiscount] = useState(0)
   const [terms, setTerms] = useState(defaultTerms)
+  const [projects, setProjects] = useState<Project[]>([])
+  const [saving, setSaving] = useState(false)
+  const [loadingProjects, setLoadingProjects] = useState(true)
+
+  const fetchProjects = useCallback(async () => {
+    try {
+      setLoadingProjects(true)
+      const res = await fetch("/api/projects?limit=100")
+      const data = await res.json()
+      if (data.success) setProjects(data.data)
+    } catch {
+      showError("Failed to load projects")
+    } finally {
+      setLoadingProjects(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchProjects() }, [fetchProjects])
 
   const subtotal = lineItems.reduce((s, i) => s + i.amount, 0)
   const discountAmount = (subtotal * discount) / 100
@@ -110,6 +131,91 @@ export default function NewQuotationPage() {
 
   const removeLineItem = (id: string) => {
     setLineItems((prev) => prev.filter((i) => i.id !== id))
+  }
+
+  const buildPayload = () => ({
+    title,
+    projectId: selectedProject,
+    items: lineItems.map((li) => ({
+      description: li.description,
+      unit: li.unit,
+      quantity: li.qty,
+      unitRate: li.rate,
+    })),
+    terms,
+    notes: description,
+  })
+
+  const handleSaveDraft = async () => {
+    if (!selectedProject || !title) {
+      showError("Project and title are required")
+      return
+    }
+    if (lineItems.length === 0 || lineItems.every((li) => !li.description)) {
+      showError("Add at least one line item with a description")
+      return
+    }
+    try {
+      setSaving(true)
+      const res = await fetch("/api/quotations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(buildPayload()),
+      })
+      const data = await res.json()
+      if (data.success) {
+        if (discount > 0) {
+          await fetch(`/api/quotations/${data.data.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: "PENDING", discountAmount: discountAmount }),
+          })
+        }
+        showSuccess("Quotation saved as draft")
+        router.push("/quotations")
+      } else {
+        showError(data.error || "Failed to save quotation")
+      }
+    } catch {
+      showError("Failed to save quotation")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleSendQuotation = async () => {
+    if (!selectedProject || !title) {
+      showError("Project and title are required")
+      return
+    }
+    if (lineItems.length === 0 || lineItems.every((li) => !li.description)) {
+      showError("Add at least one line item with a description")
+      return
+    }
+    try {
+      setSaving(true)
+      const res = await fetch("/api/quotations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(buildPayload()),
+      })
+      const data = await res.json()
+      if (data.success) {
+        await fetch(`/api/quotations/${data.data.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "APPROVED", discountAmount: discount > 0 ? discountAmount : undefined }),
+        })
+        showSuccess("Quotation sent successfully")
+        router.push("/quotations")
+      } else {
+        showError(data.error || "Failed to send quotation")
+      }
+    } catch {
+      showError("Failed to send quotation")
+    } finally {
+      setSaving(false)
+    }
   }
 
   const steps = [
@@ -180,7 +286,7 @@ export default function NewQuotationPage() {
                 <Label>Select Project *</Label>
                 <Select value={selectedProject} onValueChange={setSelectedProject}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose a project" />
+                    <SelectValue placeholder={loadingProjects ? "Loading projects..." : "Choose a project"} />
                   </SelectTrigger>
                   <SelectContent>
                     {projects.map((p) => (
@@ -462,12 +568,20 @@ export default function NewQuotationPage() {
                 Back
               </Button>
               <div className="flex gap-2">
-                <Button variant="outline">
-                  <Save className="mr-2 h-4 w-4" />
+                <Button variant="outline" onClick={handleSaveDraft} disabled={saving}>
+                  {saving ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
                   Save as Draft
                 </Button>
-                <Button>
-                  <Send className="mr-2 h-4 w-4" />
+                <Button onClick={handleSendQuotation} disabled={saving}>
+                  {saving ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="mr-2 h-4 w-4" />
+                  )}
                   Send Quotation
                 </Button>
               </div>

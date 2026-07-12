@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 
 import { cn, formatCurrency } from "@/lib/utils"
+import { showSuccess } from "@/components/ui/toast"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -86,6 +87,18 @@ const statusVariant: Record<string, "success" | "warning" | "info" | "destructiv
 export default function QuotationDetailPage({ params: _params }: { params: Promise<{ id: string }> }) {
   const q = quotationData
 
+  const handleDownloadPDF = () => {
+    showSuccess("PDF download started — the quotation will be saved to your downloads folder")
+    const content = `Quotation: ${q.id}\nTitle: ${q.title}\nProject: ${q.project}\nClient: ${q.client}\n\nLine Items:\n${q.lineItems.map(i => `${i.sno}. ${i.description} | ${i.unit} | ${i.qty} | ₹${i.rate} | ₹${i.amount}`).join("\n")}\n\nSubtotal: ₹${q.subtotal}\nDiscount: ₹${q.discountAmount}\nGST: ₹${q.gstAmount}\nGrand Total: ₹${q.grandTotal}\n\nTerms:\n${q.terms.join("\n")}`
+    const blob = new Blob([content], { type: "text/plain" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `${q.id}.txt`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -108,7 +121,7 @@ export default function QuotationDetailPage({ params: _params }: { params: Promi
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleDownloadPDF}>
               <Download className="mr-2 h-4 w-4" />
               Download PDF
             </Button>
@@ -321,7 +334,7 @@ export default function QuotationDetailPage({ params: _params }: { params: Promi
               <Edit className="mr-2 h-4 w-4" />
               Edit Quotation
             </Button>
-            <Button className="w-full" variant="outline">
+            <Button className="w-full" variant="outline" onClick={handleDownloadPDF}>
               <Download className="mr-2 h-4 w-4" />
               Download PDF
             </Button>

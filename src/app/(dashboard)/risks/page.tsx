@@ -1,12 +1,10 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import {
   AlertTriangle,
   Download,
-  Eye,
-  MoreHorizontal,
-  Pencil,
+  Loader2,
   Plus,
   Shield,
   ShieldAlert,
@@ -18,13 +16,10 @@ import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Modal } from "@/components/ui/modal"
 import {
   Select,
   SelectContent,
@@ -42,6 +37,7 @@ import {
 } from "@/components/ui/table"
 import { PageHeader } from "@/components/ui/page-header"
 import { StatCard } from "@/components/ui/stat-card"
+import { showSuccess, showError } from "@/components/ui/toast"
 
 const riskLevels = ["Critical", "High", "Medium", "Low"] as const
 type RiskLevel = (typeof riskLevels)[number]
@@ -53,228 +49,172 @@ const levelColors: Record<RiskLevel, string> = {
   Low: "bg-emerald-100 text-emerald-800 border-emerald-300",
 }
 
-const matrixColors: Record<string, string> = {
-  "5x5": "bg-red-600 text-white",
-  "5x4": "bg-red-500 text-white",
-  "5x3": "bg-orange-500 text-white",
-  "4x5": "bg-red-500 text-white",
-  "4x4": "bg-orange-500 text-white",
-  "4x3": "bg-amber-500 text-white",
-  "3x5": "bg-orange-500 text-white",
-  "3x4": "bg-amber-500 text-white",
-  "3x3": "bg-amber-400 text-gray-900",
-  "2x5": "bg-amber-500 text-white",
-  "2x4": "bg-amber-400 text-gray-900",
-  "2x3": "bg-yellow-300 text-gray-900",
-  "1x5": "bg-amber-400 text-gray-900",
-  "1x4": "bg-yellow-300 text-gray-900",
-  "1x3": "bg-emerald-400 text-gray-900",
+const apiLevelMap: Record<string, RiskLevel> = {
+  CRITICAL: "Critical",
+  HIGH: "High",
+  MEDIUM: "Medium",
+  LOW: "Low",
 }
 
-const mockRisks = [
-  {
-    id: "RSK-001",
-    title: "Structural Crack in Foundation Wall",
-    survey: "SRY-2024-003",
-    project: "Worli Sky Residences Tower A",
-    level: "Critical" as RiskLevel,
-    description: "Horizontal crack observed in foundation retaining wall, 3mm width on 12th floor basement. Possible settlement issue requiring immediate structural engineer review.",
-    mitigation: "Deploy structural engineer for detailed inspection. Install crack monitors. Restrict load on affected area. Prepare contingency for underpinning.",
-    identifiedBy: "Rajesh Kumar",
-    date: "2024-11-15",
-    status: "Open",
-  },
-  {
-    id: "RSK-002",
-    title: "Exposed Electrical Wiring in Service Corridor",
-    survey: "SRY-2024-001",
-    project: "BKC Commercial Hub Phase 1",
-    level: "Critical" as RiskLevel,
-    description: "Live electrical cables found without proper conduit protection in B2 level service corridor. Risk of electrocution for site workers.",
-    mitigation: "Isolate affected circuits immediately. Install temporary conduit protection. Schedule permanent rewiring within 48 hours. Post warning signage.",
-    identifiedBy: "Amit Deshmukh",
-    date: "2024-11-10",
-    status: "In Progress",
-  },
-  {
-    id: "RSK-003",
-    title: "Water Leakage from Overhead Tank",
-    survey: "SRY-2024-005",
-    project: "Prestige Lake Ridge Villas",
-    level: "High" as RiskLevel,
-    description: "Continuous water seepage detected from rooftop overhead tank through expansion joint. Affecting 3 floors below. Damage to electrical panels observed.",
-    mitigation: "Apply emergency waterproof sealant. Drain overhead tank for repair. Install temporary drainage. Schedule permanent waterproofing repair.",
-    identifiedBy: "Neha Kulkarni",
-    date: "2024-11-12",
-    status: "Open",
-  },
-  {
-    id: "RSK-004",
-    title: "Soil Settlement near Excavation Zone",
-    survey: "SRY-2024-008",
-    project: "Delhi-Meerut Expressway Section 3",
-    level: "High" as RiskLevel,
-    description: "Uneven soil settlement observed near main excavation zone. Differential settlement of 15mm detected over 50m stretch. Risk to adjacent structures.",
-    mitigation: "Install settlement monitoring points. Reduce excavation depth temporarily. Engage geotechnical consultant. Prepare soil improvement plan.",
-    identifiedBy: "Ravi Shankar",
-    date: "2024-11-08",
-    status: "In Progress",
-  },
-  {
-    id: "RSK-005",
-    title: "Non-Compliance with Fire Safety Norms",
-    survey: "SRY-2024-002",
-    project: "Godrej Platinum Towers",
-    level: "Critical" as RiskLevel,
-    description: "Fire escape stairwell width found non-compliant with NBC 2016 requirements. Emergency evacuation route compromised for 32-floor tower.",
-    mitigation: "Halt interior finishing on affected floors. Engage fire safety consultant. Submit revised drawings to fire department. Plan structural modification.",
-    identifiedBy: "Sanjay Kulkarni",
-    date: "2024-11-18",
-    status: "Open",
-  },
-  {
-    id: "RSK-006",
-    title: "Contaminated Soil near Boundary Wall",
-    survey: "SRY-2024-007",
-    project: "Adani Ahmedabad Airport Expansion",
-    level: "Medium" as RiskLevel,
-    description: "Soil samples show elevated hydrocarbon levels near north boundary wall. Possible contamination from adjacent industrial zone. Environmental clearance at risk.",
-    mitigation: "Conduct detailed environmental assessment. Install soil vapor barriers. Notify Gujarat Pollution Control Board. Prepare remediation plan.",
-    identifiedBy: "Vikram Desai",
-    date: "2024-11-05",
-    status: "In Progress",
-  },
-  {
-    id: "RSK-007",
-    title: "Inadequate Scaffolding Safety",
-    survey: "SRY-2024-010",
-    project: "Oberoi Three Sixty West",
-    level: "High" as RiskLevel,
-    description: "Scaffolding at east facade missing toe boards and guardrails at multiple levels. Fall hazard for workers at heights above 15m.",
-    mitigation: "Immediate scaffolding audit by safety officer. Install missing guardrails and toe boards. Conduct worker safety briefing. Daily inspection protocol.",
-    identifiedBy: "Meera Rao",
-    date: "2024-11-14",
-    status: "Open",
-  },
-  {
-    id: "RSK-008",
-    title: "Storm Water Drainage Blockage",
-    survey: "SRY-2024-006",
-    project: "Brigade Gateway Commercial Tower",
-    level: "Medium" as RiskLevel,
-    description: "Primary storm water drainage line blocked by construction debris. Risk of waterlogging during monsoon season affecting basement levels.",
-    mitigation: "Clear drainage line immediately. Install debris screens. Schedule periodic drainage maintenance. Prepare pump standby for emergency.",
-    identifiedBy: "Arjun Reddy",
-    date: "2024-11-01",
-    status: "Resolved",
-  },
-  {
-    id: "RSK-009",
-    title: "Noise Pollution Exceeding Limits",
-    survey: "SRY-2024-009",
-    project: "Mumbai Metro Line 4 Extension",
-    level: "Low" as RiskLevel,
-    description: "Construction noise levels recorded at 82 dB during night shifts, exceeding CPCB limit of 75 dB for residential zones. Complaints from nearby residents.",
-    mitigation: "Install noise barriers at site perimeter. Restrict heavy equipment operations during night. Use silencers on generators. Schedule noisy activities day-time.",
-    identifiedBy: "Deepak Nair",
-    date: "2024-11-20",
-    status: "Open",
-  },
-  {
-    id: "RSK-010",
-    title: "Material Storage Fire Risk",
-    survey: "SRY-2024-011",
-    project: "Ircon Bridge Reconstruction - Bihar",
-    level: "Medium" as RiskLevel,
-    description: "Chemical storage area for waterproofing compounds lacks proper ventilation and fire extinguishers. Flammable materials stored near welding zone.",
-    mitigation: "Relocate chemical storage to designated area. Install fire extinguishers. Create buffer zone between chemical storage and hot work areas. Train workers.",
-    identifiedBy: "Suresh Patil",
-    date: "2024-11-22",
-    status: "Open",
-  },
-  {
-    id: "RSK-011",
-    title: "Crane Operator Certification Expired",
-    survey: "SRY-2024-012",
-    project: "DLF Cyber City Phase 2",
-    level: "High" as RiskLevel,
-    description: "Tower crane operator working with expired certification. Last renewal was 8 months ago. Safety compliance violation under Factories Act.",
-    mitigation: "Immediately suspend crane operations. Arrange emergency certification renewal. Deploy backup certified operator. Audit all equipment operator certifications.",
-    identifiedBy: "Karan Bhatt",
-    date: "2024-11-25",
-    status: "In Progress",
-  },
-  {
-    id: "RSK-012",
-    title: "Underground Utility Conflict",
-    survey: "SRY-2024-013",
-    project: "Chennai-Salem Expressway",
-    level: "Low" as RiskLevel,
-    description: "Uncharted water pipeline discovered during pile foundation work. Pipeline may belong to local municipality. Potential delay to foundation work.",
-    mitigation: "Suspend excavation in affected zone. Contact BWSSB for pipeline mapping. Coordinate with utility department for relocation. Update site utility drawings.",
-    identifiedBy: "Manish Gupta",
-    date: "2024-11-28",
-    status: "Open",
-  },
-  {
-    id: "RSK-013",
-    title: "Structural Deflection in Transfer Beam",
-    survey: "SRY-2024-014",
-    project: "Tata Housing Primanti Floors",
-    level: "Critical" as RiskLevel,
-    description: "Transfer beam at 5th floor showing deflection of 18mm exceeding permissible limit of 12mm. Load redistribution required before proceeding with upper floors.",
-    mitigation: "Halt construction above transfer level. Engage structural designer for beam strengthening. Install additional propping. Conduct load test after remediation.",
-    identifiedBy: "Ashok Verma",
-    date: "2024-11-30",
-    status: "Open",
-  },
-  {
-    id: "RSK-014",
-    title: "Dust Control Measures Insufficient",
-    survey: "SRY-2024-015",
-    project: "HCC Selinium Tower B",
-    level: "Low" as RiskLevel,
-    description: "PM10 levels at site boundary measured at 380 μg/m³, exceeding 300 μg/m³ limit. Dust suppression measures inadequate during earthwork operations.",
-    mitigation: "Increase water sprinkling frequency to every 30 minutes. Install additional mist cannons. Cover exposed soil with tarpaulins. Enforce vehicle speed limits.",
-    identifiedBy: "Rakesh Sachdev",
-    date: "2024-12-01",
-    status: "Open",
-  },
-]
+interface Risk {
+  id: string
+  title: string
+  description: string
+  level: string
+  mitigation: string | null
+  surveyId: string
+  surveyTitle: string
+  identifiedBy: string
+  date: string
+}
 
-const projectList = [...new Set(mockRisks.map((r) => r.project))].sort()
-const surveyList = [...new Set(mockRisks.map((r) => r.survey))].sort()
+interface Survey {
+  id: string
+  title: string
+  projectName: string
+}
 
 export default function RisksPage() {
   const [levelFilter, setLevelFilter] = useState("all")
-  const [projectFilter, setProjectFilter] = useState("all")
-  const [surveyFilter, setSurveyFilter] = useState("all")
+  const [risks, setRisks] = useState<Risk[]>([])
+  const [surveys, setSurveys] = useState<Survey[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
-  const filteredRisks = useMemo(() => {
-    return mockRisks.filter((risk) => {
-      const matchesLevel = levelFilter === "all" || risk.level === levelFilter
-      const matchesProject = projectFilter === "all" || risk.project === projectFilter
-      const matchesSurvey = surveyFilter === "all" || risk.survey === surveyFilter
-      return matchesLevel && matchesProject && matchesSurvey
-    })
-  }, [levelFilter, projectFilter, surveyFilter])
+  const [formTitle, setFormTitle] = useState("")
+  const [formDescription, setFormDescription] = useState("")
+  const [formLevel, setFormLevel] = useState("")
+  const [formMitigation, setFormMitigation] = useState("")
+  const [formSurveyId, setFormSurveyId] = useState("")
+
+  const fetchSurveys = useCallback(async () => {
+    try {
+      const res = await fetch("/api/surveys?limit=100")
+      const data = await res.json()
+      if (data.success) setSurveys(data.data)
+    } catch {
+      showError("Failed to load surveys")
+    }
+  }, [])
+
+  const fetchRisks = useCallback(async () => {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams({ limit: "500" })
+      if (levelFilter !== "all") params.set("level", levelFilter.toUpperCase())
+      const res = await fetch(`/api/risks?${params}`)
+      const data = await res.json()
+      if (data.success) {
+        setRisks(data.data.map((r: any) => ({
+          id: r.id,
+          title: r.title,
+          description: r.description,
+          level: r.level,
+          mitigation: r.mitigation,
+          surveyId: r.surveyId,
+          surveyTitle: r.survey?.title || "",
+          identifiedBy: r.identifiedBy ? `${r.identifiedBy.firstName} ${r.identifiedBy.lastName}` : "",
+          date: r.createdAt,
+        })))
+      }
+    } catch {
+      showError("Failed to load risks")
+    } finally {
+      setLoading(false)
+    }
+  }, [levelFilter])
+
+  useEffect(() => { fetchSurveys() }, [fetchSurveys])
+  useEffect(() => { fetchRisks() }, [fetchRisks])
 
   const levelCounts = useMemo(() => {
     const counts: Record<string, number> = { Critical: 0, High: 0, Medium: 0, Low: 0 }
-    mockRisks.forEach((r) => { counts[r.level]++ })
+    risks.forEach((r) => {
+      const display = apiLevelMap[r.level] || r.level
+      if (display in counts) counts[display]++
+    })
     return counts
-  }, [])
+  }, [risks])
 
-  const matrixData: { likelihood: number; impact: number; count: number; level: string }[] = []
-  for (let l = 1; l <= 5; l++) {
-    for (let i = 1; i <= 5; i++) {
-      const score = l * i
-      let level = "Low"
-      if (score >= 20) level = "Critical"
-      else if (score >= 12) level = "High"
-      else if (score >= 6) level = "Medium"
-      matrixData.push({ likelihood: l, impact: i, count: 0, level })
+  const resetForm = () => {
+    setFormTitle("")
+    setFormDescription("")
+    setFormLevel("")
+    setFormMitigation("")
+    setFormSurveyId("")
+  }
+
+  const handleAddRisk = async () => {
+    if (!formTitle || !formDescription || !formSurveyId || !formLevel) {
+      showError("Title, description, survey, and level are required")
+      return
     }
+    try {
+      setSubmitting(true)
+      const res = await fetch("/api/risks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: formTitle,
+          description: formDescription,
+          surveyId: formSurveyId,
+          level: formLevel.toUpperCase(),
+          mitigation: formMitigation || undefined,
+          identifiedById: "",
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        showSuccess("Risk created successfully")
+        setShowAddModal(false)
+        resetForm()
+        fetchRisks()
+      } else {
+        showError(data.error || "Failed to create risk")
+      }
+    } catch {
+      showError("Failed to create risk")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDeleteRisk = async (id: string) => {
+    try {
+      setDeletingId(id)
+      const res = await fetch(`/api/risks/${id}`, { method: "DELETE" })
+      const data = await res.json()
+      if (data.success) {
+        showSuccess("Risk deleted")
+        fetchRisks()
+      } else {
+        showError(data.error || "Failed to delete risk")
+      }
+    } catch {
+      showError("Failed to delete risk")
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  const matrixColors: Record<string, string> = {
+    "5x5": "bg-red-600 text-white",
+    "5x4": "bg-red-500 text-white",
+    "5x3": "bg-orange-500 text-white",
+    "4x5": "bg-red-500 text-white",
+    "4x4": "bg-orange-500 text-white",
+    "4x3": "bg-amber-500 text-white",
+    "3x5": "bg-orange-500 text-white",
+    "3x4": "bg-amber-500 text-white",
+    "3x3": "bg-amber-400 text-gray-900",
+    "2x5": "bg-amber-500 text-white",
+    "2x4": "bg-amber-400 text-gray-900",
+    "2x3": "bg-yellow-300 text-gray-900",
+    "1x5": "bg-amber-400 text-gray-900",
+    "1x4": "bg-yellow-300 text-gray-900",
+    "1x3": "bg-emerald-400 text-gray-900",
   }
 
   return (
@@ -287,7 +227,7 @@ export default function RisksPage() {
           { label: "Risks" },
         ]}
         actions={
-          <Button>
+          <Button onClick={() => { resetForm(); setShowAddModal(true) }}>
             <Plus className="mr-2 h-4 w-4" />
             New Risk
           </Button>
@@ -297,7 +237,7 @@ export default function RisksPage() {
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
         <StatCard
           label="Total Risks"
-          value={mockRisks.length}
+          value={risks.length}
           icon={<AlertTriangle className="h-6 w-6" />}
           color="default"
         />
@@ -396,28 +336,6 @@ export default function RisksPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Select value={projectFilter} onValueChange={setProjectFilter}>
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder="All Projects" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Projects</SelectItem>
-                    {projectList.map((p) => (
-                      <SelectItem key={p} value={p}>{p}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={surveyFilter} onValueChange={setSurveyFilter}>
-                  <SelectTrigger className="w-[160px]">
-                    <SelectValue placeholder="All Surveys" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Surveys</SelectItem>
-                    {surveyList.map((s) => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
                 <Button variant="outline" size="sm">
                   <Download className="mr-2 h-4 w-4" />
                   Export
@@ -426,80 +344,151 @@ export default function RisksPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Survey</TableHead>
-                  <TableHead>Level</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Mitigation</TableHead>
-                  <TableHead>Identified By</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-center">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredRisks.map((risk) => (
-                  <TableRow key={risk.id}>
-                    <TableCell>
-                      <div className="font-medium">{risk.title}</div>
-                      <div className="text-xs text-muted-foreground font-mono">{risk.id}</div>
-                    </TableCell>
-                    <TableCell className="font-mono text-xs">{risk.survey}</TableCell>
-                    <TableCell>
-                      <Badge className={cn("border", levelColors[risk.level])}>
-                        {risk.level}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="max-w-[250px] text-sm text-muted-foreground truncate">
-                      {risk.description}
-                    </TableCell>
-                    <TableCell className="max-w-[250px] text-sm text-muted-foreground truncate">
-                      {risk.mitigation}
-                    </TableCell>
-                    <TableCell className="text-sm">{risk.identifiedBy}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                      {new Date(risk.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Pencil className="mr-2 h-4 w-4" />
-                            Edit Risk
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Survey</TableHead>
+                    <TableHead>Level</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Mitigation</TableHead>
+                    <TableHead>Identified By</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            {filteredRisks.length === 0 && (
+                </TableHeader>
+                <TableBody>
+                  {risks.map((risk) => {
+                    const displayLevel = (apiLevelMap[risk.level] || risk.level) as RiskLevel
+                    return (
+                      <TableRow key={risk.id}>
+                        <TableCell>
+                          <div className="font-medium">{risk.title}</div>
+                          <div className="text-xs text-muted-foreground font-mono">{risk.id}</div>
+                        </TableCell>
+                        <TableCell className="text-sm max-w-[150px] truncate">{risk.surveyTitle}</TableCell>
+                        <TableCell>
+                          <Badge className={cn("border", levelColors[displayLevel] || levelColors.Medium)}>
+                            {displayLevel}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="max-w-[250px] text-sm text-muted-foreground truncate">
+                          {risk.description}
+                        </TableCell>
+                        <TableCell className="max-w-[250px] text-sm text-muted-foreground truncate">
+                          {risk.mitigation || "—"}
+                        </TableCell>
+                        <TableCell className="text-sm">{risk.identifiedBy}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                          {risk.date ? new Date(risk.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—"}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            onClick={() => handleDeleteRisk(risk.id)}
+                            disabled={deletingId === risk.id}
+                          >
+                            {deletingId === risk.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            )}
+            {!loading && risks.length === 0 && (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <AlertTriangle className="h-12 w-12 text-muted-foreground/50" />
                 <h3 className="mt-4 text-lg font-semibold">No risks found</h3>
-                <p className="mt-1 text-sm text-muted-foreground">Try adjusting your filters</p>
+                <p className="mt-1 text-sm text-muted-foreground">Try adjusting your filters or add a new risk</p>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
+
+      <Modal
+        open={showAddModal}
+        onOpenChange={setShowAddModal}
+        title="New Risk Assessment"
+        description="Create a new risk entry in the risk register"
+        maxWidth="lg"
+        onCancel={() => setShowAddModal(false)}
+        onConfirm={handleAddRisk}
+        confirmLabel={submitting ? "Creating..." : "Create Risk"}
+        loading={submitting}
+      >
+        <div className="grid gap-4">
+          <div className="space-y-2">
+            <Label>Title *</Label>
+            <Input
+              placeholder="Risk title"
+              value={formTitle}
+              onChange={(e) => setFormTitle(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Description *</Label>
+            <Textarea
+              placeholder="Detailed description of the risk"
+              rows={3}
+              value={formDescription}
+              onChange={(e) => setFormDescription(e.target.value)}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Risk Level *</Label>
+              <Select value={formLevel} onValueChange={setFormLevel}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {riskLevels.map((l) => (
+                    <SelectItem key={l} value={l}>{l}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Survey *</Label>
+              <Select value={formSurveyId} onValueChange={setFormSurveyId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select survey" />
+                </SelectTrigger>
+                <SelectContent>
+                  {surveys.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.title}{s.projectName ? ` (${s.projectName})` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Mitigation Plan</Label>
+            <Textarea
+              placeholder="Mitigation measures and action plan"
+              rows={3}
+              value={formMitigation}
+              onChange={(e) => setFormMitigation(e.target.value)}
+            />
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

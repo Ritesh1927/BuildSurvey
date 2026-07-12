@@ -147,7 +147,7 @@ export default function SurveyDetailPage() {
         actions={
           <div className="flex items-center gap-2">
             <Button variant="outline"><Download className="h-4 w-4 mr-2" /> PDF</Button>
-            <Button variant="outline"><Printer className="h-4 w-4 mr-2" /> Print</Button>
+            <Button variant="outline" onClick={() => window.print()}><Printer className="h-4 w-4 mr-2" /> Print</Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>

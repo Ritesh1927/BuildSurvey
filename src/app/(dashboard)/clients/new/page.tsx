@@ -89,6 +89,7 @@ export default function NewClientPage() {
           gstNumber: formData.gstNumber.trim() || undefined,
           panNumber: formData.panNumber.trim() || undefined,
           website: formData.website.trim() || undefined,
+          clientType: formData.clientType || undefined,
           notes: formData.notes.trim() || undefined,
         }),
       })

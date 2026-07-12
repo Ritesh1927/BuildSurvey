@@ -19,6 +19,7 @@ import {
 } from "lucide-react"
 
 import { cn, formatDate } from "@/lib/utils"
+import { showSuccess } from "@/components/ui/toast"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -50,7 +51,7 @@ export default function ReportDetailPage() {
               <Printer className="mr-2 h-4 w-4" />
               Print
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => { showSuccess("PDF download started"); window.print() }}>
               <Download className="mr-2 h-4 w-4" />
               Download PDF
             </Button>

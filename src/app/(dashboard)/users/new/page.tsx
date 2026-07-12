@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Camera, Save } from "lucide-react"
+import { ArrowLeft, Camera, Save, CheckCircle2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -51,6 +51,7 @@ export default function NewUserPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState("")
+  const [showSuccess, setShowSuccess] = useState(false)
 
   const [form, setForm] = useState({
     firstName: "",
@@ -112,6 +113,10 @@ export default function NewUserPage() {
           role: form.role,
           initialPassword: form.initialPassword,
           isActive: form.isActive,
+          employeeId: form.employeeId.trim() || undefined,
+          department: form.department || undefined,
+          designation: form.designation.trim() || undefined,
+          dateOfJoining: form.dateOfJoining || undefined,
         }),
       })
 
@@ -122,7 +127,8 @@ export default function NewUserPage() {
         return
       }
 
-      router.push("/users")
+      setShowSuccess(true)
+      setTimeout(() => router.push("/users"), 2000)
     } catch (err) {
       setSubmitError("Network error. Please try again.")
     } finally {
@@ -160,6 +166,13 @@ export default function NewUserPage() {
           </Button>
         }
       />
+
+      {showSuccess && (
+        <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">
+          <CheckCircle2 className="h-5 w-5" />
+          <span className="font-medium">User created successfully! Redirecting...</span>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <div className="grid gap-6 lg:grid-cols-3">
