@@ -30,6 +30,8 @@ export type GpsTrackingAvgAggregateOutputType = {
   latitude: number | null
   longitude: number | null
   accuracy: number | null
+  speed: number | null
+  batteryLevel: number | null
   version: number | null
 }
 
@@ -37,6 +39,8 @@ export type GpsTrackingSumAggregateOutputType = {
   latitude: number | null
   longitude: number | null
   accuracy: number | null
+  speed: number | null
+  batteryLevel: number | null
   version: number | null
 }
 
@@ -45,6 +49,9 @@ export type GpsTrackingMinAggregateOutputType = {
   latitude: number | null
   longitude: number | null
   accuracy: number | null
+  speed: number | null
+  batteryLevel: number | null
+  isMoving: boolean | null
   timestamp: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -61,6 +68,9 @@ export type GpsTrackingMaxAggregateOutputType = {
   latitude: number | null
   longitude: number | null
   accuracy: number | null
+  speed: number | null
+  batteryLevel: number | null
+  isMoving: boolean | null
   timestamp: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -77,6 +87,9 @@ export type GpsTrackingCountAggregateOutputType = {
   latitude: number
   longitude: number
   accuracy: number
+  speed: number
+  batteryLevel: number
+  isMoving: number
   timestamp: number
   createdAt: number
   updatedAt: number
@@ -94,6 +107,8 @@ export type GpsTrackingAvgAggregateInputType = {
   latitude?: true
   longitude?: true
   accuracy?: true
+  speed?: true
+  batteryLevel?: true
   version?: true
 }
 
@@ -101,6 +116,8 @@ export type GpsTrackingSumAggregateInputType = {
   latitude?: true
   longitude?: true
   accuracy?: true
+  speed?: true
+  batteryLevel?: true
   version?: true
 }
 
@@ -109,6 +126,9 @@ export type GpsTrackingMinAggregateInputType = {
   latitude?: true
   longitude?: true
   accuracy?: true
+  speed?: true
+  batteryLevel?: true
+  isMoving?: true
   timestamp?: true
   createdAt?: true
   updatedAt?: true
@@ -125,6 +145,9 @@ export type GpsTrackingMaxAggregateInputType = {
   latitude?: true
   longitude?: true
   accuracy?: true
+  speed?: true
+  batteryLevel?: true
+  isMoving?: true
   timestamp?: true
   createdAt?: true
   updatedAt?: true
@@ -141,6 +164,9 @@ export type GpsTrackingCountAggregateInputType = {
   latitude?: true
   longitude?: true
   accuracy?: true
+  speed?: true
+  batteryLevel?: true
+  isMoving?: true
   timestamp?: true
   createdAt?: true
   updatedAt?: true
@@ -244,6 +270,9 @@ export type GpsTrackingGroupByOutputType = {
   latitude: number
   longitude: number
   accuracy: number | null
+  speed: number | null
+  batteryLevel: number | null
+  isMoving: boolean
   timestamp: Date
   createdAt: Date
   updatedAt: Date
@@ -283,6 +312,9 @@ export type GpsTrackingWhereInput = {
   latitude?: Prisma.FloatFilter<"GpsTracking"> | number
   longitude?: Prisma.FloatFilter<"GpsTracking"> | number
   accuracy?: Prisma.FloatNullableFilter<"GpsTracking"> | number | null
+  speed?: Prisma.FloatNullableFilter<"GpsTracking"> | number | null
+  batteryLevel?: Prisma.IntNullableFilter<"GpsTracking"> | number | null
+  isMoving?: Prisma.BoolFilter<"GpsTracking"> | boolean
   timestamp?: Prisma.DateTimeFilter<"GpsTracking"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"GpsTracking"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"GpsTracking"> | Date | string
@@ -301,6 +333,9 @@ export type GpsTrackingOrderByWithRelationInput = {
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
   accuracy?: Prisma.SortOrderInput | Prisma.SortOrder
+  speed?: Prisma.SortOrderInput | Prisma.SortOrder
+  batteryLevel?: Prisma.SortOrderInput | Prisma.SortOrder
+  isMoving?: Prisma.SortOrder
   timestamp?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -322,6 +357,9 @@ export type GpsTrackingWhereUniqueInput = Prisma.AtLeast<{
   latitude?: Prisma.FloatFilter<"GpsTracking"> | number
   longitude?: Prisma.FloatFilter<"GpsTracking"> | number
   accuracy?: Prisma.FloatNullableFilter<"GpsTracking"> | number | null
+  speed?: Prisma.FloatNullableFilter<"GpsTracking"> | number | null
+  batteryLevel?: Prisma.IntNullableFilter<"GpsTracking"> | number | null
+  isMoving?: Prisma.BoolFilter<"GpsTracking"> | boolean
   timestamp?: Prisma.DateTimeFilter<"GpsTracking"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"GpsTracking"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"GpsTracking"> | Date | string
@@ -340,6 +378,9 @@ export type GpsTrackingOrderByWithAggregationInput = {
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
   accuracy?: Prisma.SortOrderInput | Prisma.SortOrder
+  speed?: Prisma.SortOrderInput | Prisma.SortOrder
+  batteryLevel?: Prisma.SortOrderInput | Prisma.SortOrder
+  isMoving?: Prisma.SortOrder
   timestamp?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -364,6 +405,9 @@ export type GpsTrackingScalarWhereWithAggregatesInput = {
   latitude?: Prisma.FloatWithAggregatesFilter<"GpsTracking"> | number
   longitude?: Prisma.FloatWithAggregatesFilter<"GpsTracking"> | number
   accuracy?: Prisma.FloatNullableWithAggregatesFilter<"GpsTracking"> | number | null
+  speed?: Prisma.FloatNullableWithAggregatesFilter<"GpsTracking"> | number | null
+  batteryLevel?: Prisma.IntNullableWithAggregatesFilter<"GpsTracking"> | number | null
+  isMoving?: Prisma.BoolWithAggregatesFilter<"GpsTracking"> | boolean
   timestamp?: Prisma.DateTimeWithAggregatesFilter<"GpsTracking"> | Date | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"GpsTracking"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"GpsTracking"> | Date | string
@@ -380,6 +424,9 @@ export type GpsTrackingCreateInput = {
   latitude: number
   longitude: number
   accuracy?: number | null
+  speed?: number | null
+  batteryLevel?: number | null
+  isMoving?: boolean
   timestamp?: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -396,6 +443,9 @@ export type GpsTrackingUncheckedCreateInput = {
   latitude: number
   longitude: number
   accuracy?: number | null
+  speed?: number | null
+  batteryLevel?: number | null
+  isMoving?: boolean
   timestamp?: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -412,6 +462,9 @@ export type GpsTrackingUpdateInput = {
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   accuracy?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  speed?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  batteryLevel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isMoving?: Prisma.BoolFieldUpdateOperationsInput | boolean
   timestamp?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -428,6 +481,9 @@ export type GpsTrackingUncheckedUpdateInput = {
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   accuracy?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  speed?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  batteryLevel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isMoving?: Prisma.BoolFieldUpdateOperationsInput | boolean
   timestamp?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -444,6 +500,9 @@ export type GpsTrackingCreateManyInput = {
   latitude: number
   longitude: number
   accuracy?: number | null
+  speed?: number | null
+  batteryLevel?: number | null
+  isMoving?: boolean
   timestamp?: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -460,6 +519,9 @@ export type GpsTrackingUpdateManyMutationInput = {
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   accuracy?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  speed?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  batteryLevel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isMoving?: Prisma.BoolFieldUpdateOperationsInput | boolean
   timestamp?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -474,6 +536,9 @@ export type GpsTrackingUncheckedUpdateManyInput = {
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   accuracy?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  speed?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  batteryLevel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isMoving?: Prisma.BoolFieldUpdateOperationsInput | boolean
   timestamp?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -500,6 +565,9 @@ export type GpsTrackingCountOrderByAggregateInput = {
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
   accuracy?: Prisma.SortOrder
+  speed?: Prisma.SortOrder
+  batteryLevel?: Prisma.SortOrder
+  isMoving?: Prisma.SortOrder
   timestamp?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -515,6 +583,8 @@ export type GpsTrackingAvgOrderByAggregateInput = {
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
   accuracy?: Prisma.SortOrder
+  speed?: Prisma.SortOrder
+  batteryLevel?: Prisma.SortOrder
   version?: Prisma.SortOrder
 }
 
@@ -523,6 +593,9 @@ export type GpsTrackingMaxOrderByAggregateInput = {
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
   accuracy?: Prisma.SortOrder
+  speed?: Prisma.SortOrder
+  batteryLevel?: Prisma.SortOrder
+  isMoving?: Prisma.SortOrder
   timestamp?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -539,6 +612,9 @@ export type GpsTrackingMinOrderByAggregateInput = {
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
   accuracy?: Prisma.SortOrder
+  speed?: Prisma.SortOrder
+  batteryLevel?: Prisma.SortOrder
+  isMoving?: Prisma.SortOrder
   timestamp?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -554,6 +630,8 @@ export type GpsTrackingSumOrderByAggregateInput = {
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
   accuracy?: Prisma.SortOrder
+  speed?: Prisma.SortOrder
+  batteryLevel?: Prisma.SortOrder
   version?: Prisma.SortOrder
 }
 
@@ -646,6 +724,9 @@ export type GpsTrackingCreateWithoutUserInput = {
   latitude: number
   longitude: number
   accuracy?: number | null
+  speed?: number | null
+  batteryLevel?: number | null
+  isMoving?: boolean
   timestamp?: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -661,6 +742,9 @@ export type GpsTrackingUncheckedCreateWithoutUserInput = {
   latitude: number
   longitude: number
   accuracy?: number | null
+  speed?: number | null
+  batteryLevel?: number | null
+  isMoving?: boolean
   timestamp?: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -705,6 +789,9 @@ export type GpsTrackingScalarWhereInput = {
   latitude?: Prisma.FloatFilter<"GpsTracking"> | number
   longitude?: Prisma.FloatFilter<"GpsTracking"> | number
   accuracy?: Prisma.FloatNullableFilter<"GpsTracking"> | number | null
+  speed?: Prisma.FloatNullableFilter<"GpsTracking"> | number | null
+  batteryLevel?: Prisma.IntNullableFilter<"GpsTracking"> | number | null
+  isMoving?: Prisma.BoolFilter<"GpsTracking"> | boolean
   timestamp?: Prisma.DateTimeFilter<"GpsTracking"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"GpsTracking"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"GpsTracking"> | Date | string
@@ -721,6 +808,9 @@ export type GpsTrackingCreateWithoutProjectInput = {
   latitude: number
   longitude: number
   accuracy?: number | null
+  speed?: number | null
+  batteryLevel?: number | null
+  isMoving?: boolean
   timestamp?: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -736,6 +826,9 @@ export type GpsTrackingUncheckedCreateWithoutProjectInput = {
   latitude: number
   longitude: number
   accuracy?: number | null
+  speed?: number | null
+  batteryLevel?: number | null
+  isMoving?: boolean
   timestamp?: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -777,6 +870,9 @@ export type GpsTrackingCreateManyUserInput = {
   latitude: number
   longitude: number
   accuracy?: number | null
+  speed?: number | null
+  batteryLevel?: number | null
+  isMoving?: boolean
   timestamp?: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -792,6 +888,9 @@ export type GpsTrackingUpdateWithoutUserInput = {
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   accuracy?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  speed?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  batteryLevel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isMoving?: Prisma.BoolFieldUpdateOperationsInput | boolean
   timestamp?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -807,6 +906,9 @@ export type GpsTrackingUncheckedUpdateWithoutUserInput = {
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   accuracy?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  speed?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  batteryLevel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isMoving?: Prisma.BoolFieldUpdateOperationsInput | boolean
   timestamp?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -822,6 +924,9 @@ export type GpsTrackingUncheckedUpdateManyWithoutUserInput = {
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   accuracy?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  speed?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  batteryLevel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isMoving?: Prisma.BoolFieldUpdateOperationsInput | boolean
   timestamp?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -837,6 +942,9 @@ export type GpsTrackingCreateManyProjectInput = {
   latitude: number
   longitude: number
   accuracy?: number | null
+  speed?: number | null
+  batteryLevel?: number | null
+  isMoving?: boolean
   timestamp?: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -852,6 +960,9 @@ export type GpsTrackingUpdateWithoutProjectInput = {
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   accuracy?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  speed?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  batteryLevel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isMoving?: Prisma.BoolFieldUpdateOperationsInput | boolean
   timestamp?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -867,6 +978,9 @@ export type GpsTrackingUncheckedUpdateWithoutProjectInput = {
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   accuracy?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  speed?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  batteryLevel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isMoving?: Prisma.BoolFieldUpdateOperationsInput | boolean
   timestamp?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -882,6 +996,9 @@ export type GpsTrackingUncheckedUpdateManyWithoutProjectInput = {
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   accuracy?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  speed?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  batteryLevel?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isMoving?: Prisma.BoolFieldUpdateOperationsInput | boolean
   timestamp?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -899,6 +1016,9 @@ export type GpsTrackingSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   latitude?: boolean
   longitude?: boolean
   accuracy?: boolean
+  speed?: boolean
+  batteryLevel?: boolean
+  isMoving?: boolean
   timestamp?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -917,6 +1037,9 @@ export type GpsTrackingSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   latitude?: boolean
   longitude?: boolean
   accuracy?: boolean
+  speed?: boolean
+  batteryLevel?: boolean
+  isMoving?: boolean
   timestamp?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -935,6 +1058,9 @@ export type GpsTrackingSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   latitude?: boolean
   longitude?: boolean
   accuracy?: boolean
+  speed?: boolean
+  batteryLevel?: boolean
+  isMoving?: boolean
   timestamp?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -953,6 +1079,9 @@ export type GpsTrackingSelectScalar = {
   latitude?: boolean
   longitude?: boolean
   accuracy?: boolean
+  speed?: boolean
+  batteryLevel?: boolean
+  isMoving?: boolean
   timestamp?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -964,7 +1093,7 @@ export type GpsTrackingSelectScalar = {
   projectId?: boolean
 }
 
-export type GpsTrackingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "latitude" | "longitude" | "accuracy" | "timestamp" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy" | "isDeleted" | "version" | "userId" | "projectId", ExtArgs["result"]["gpsTracking"]>
+export type GpsTrackingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "latitude" | "longitude" | "accuracy" | "speed" | "batteryLevel" | "isMoving" | "timestamp" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy" | "isDeleted" | "version" | "userId" | "projectId", ExtArgs["result"]["gpsTracking"]>
 export type GpsTrackingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   project?: boolean | Prisma.GpsTracking$projectArgs<ExtArgs>
@@ -989,6 +1118,9 @@ export type $GpsTrackingPayload<ExtArgs extends runtime.Types.Extensions.Interna
     latitude: number
     longitude: number
     accuracy: number | null
+    speed: number | null
+    batteryLevel: number | null
+    isMoving: boolean
     timestamp: Date
     createdAt: Date
     updatedAt: Date
@@ -1427,6 +1559,9 @@ export interface GpsTrackingFieldRefs {
   readonly latitude: Prisma.FieldRef<"GpsTracking", 'Float'>
   readonly longitude: Prisma.FieldRef<"GpsTracking", 'Float'>
   readonly accuracy: Prisma.FieldRef<"GpsTracking", 'Float'>
+  readonly speed: Prisma.FieldRef<"GpsTracking", 'Float'>
+  readonly batteryLevel: Prisma.FieldRef<"GpsTracking", 'Int'>
+  readonly isMoving: Prisma.FieldRef<"GpsTracking", 'Boolean'>
   readonly timestamp: Prisma.FieldRef<"GpsTracking", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"GpsTracking", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"GpsTracking", 'DateTime'>

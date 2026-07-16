@@ -48,6 +48,7 @@ export type ClientMinAggregateOutputType = {
   gstNumber: string | null
   panNumber: string | null
   website: string | null
+  clientType: string | null
   notes: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -71,6 +72,7 @@ export type ClientMaxAggregateOutputType = {
   gstNumber: string | null
   panNumber: string | null
   website: string | null
+  clientType: string | null
   notes: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -94,6 +96,7 @@ export type ClientCountAggregateOutputType = {
   gstNumber: number
   panNumber: number
   website: number
+  clientType: number
   notes: number
   createdAt: number
   updatedAt: number
@@ -127,6 +130,7 @@ export type ClientMinAggregateInputType = {
   gstNumber?: true
   panNumber?: true
   website?: true
+  clientType?: true
   notes?: true
   createdAt?: true
   updatedAt?: true
@@ -150,6 +154,7 @@ export type ClientMaxAggregateInputType = {
   gstNumber?: true
   panNumber?: true
   website?: true
+  clientType?: true
   notes?: true
   createdAt?: true
   updatedAt?: true
@@ -173,6 +178,7 @@ export type ClientCountAggregateInputType = {
   gstNumber?: true
   panNumber?: true
   website?: true
+  clientType?: true
   notes?: true
   createdAt?: true
   updatedAt?: true
@@ -283,6 +289,7 @@ export type ClientGroupByOutputType = {
   gstNumber: string | null
   panNumber: string | null
   website: string | null
+  clientType: string | null
   notes: string | null
   createdAt: Date
   updatedAt: Date
@@ -329,6 +336,7 @@ export type ClientWhereInput = {
   gstNumber?: Prisma.StringNullableFilter<"Client"> | string | null
   panNumber?: Prisma.StringNullableFilter<"Client"> | string | null
   website?: Prisma.StringNullableFilter<"Client"> | string | null
+  clientType?: Prisma.StringNullableFilter<"Client"> | string | null
   notes?: Prisma.StringNullableFilter<"Client"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Client"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Client"> | Date | string
@@ -354,6 +362,7 @@ export type ClientOrderByWithRelationInput = {
   gstNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   panNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   website?: Prisma.SortOrderInput | Prisma.SortOrder
+  clientType?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -382,6 +391,7 @@ export type ClientWhereUniqueInput = Prisma.AtLeast<{
   gstNumber?: Prisma.StringNullableFilter<"Client"> | string | null
   panNumber?: Prisma.StringNullableFilter<"Client"> | string | null
   website?: Prisma.StringNullableFilter<"Client"> | string | null
+  clientType?: Prisma.StringNullableFilter<"Client"> | string | null
   notes?: Prisma.StringNullableFilter<"Client"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Client"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Client"> | Date | string
@@ -407,6 +417,7 @@ export type ClientOrderByWithAggregationInput = {
   gstNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   panNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   website?: Prisma.SortOrderInput | Prisma.SortOrder
+  clientType?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -438,6 +449,7 @@ export type ClientScalarWhereWithAggregatesInput = {
   gstNumber?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
   panNumber?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
   website?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
+  clientType?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
   notes?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Client"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Client"> | Date | string
@@ -461,6 +473,7 @@ export type ClientCreateInput = {
   gstNumber?: string | null
   panNumber?: string | null
   website?: string | null
+  clientType?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -486,6 +499,7 @@ export type ClientUncheckedCreateInput = {
   gstNumber?: string | null
   panNumber?: string | null
   website?: string | null
+  clientType?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -511,6 +525,7 @@ export type ClientUpdateInput = {
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   panNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -536,6 +551,7 @@ export type ClientUncheckedUpdateInput = {
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   panNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -561,6 +577,7 @@ export type ClientCreateManyInput = {
   gstNumber?: string | null
   panNumber?: string | null
   website?: string | null
+  clientType?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -584,6 +601,7 @@ export type ClientUpdateManyMutationInput = {
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   panNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -607,6 +625,7 @@ export type ClientUncheckedUpdateManyInput = {
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   panNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -630,6 +649,7 @@ export type ClientCountOrderByAggregateInput = {
   gstNumber?: Prisma.SortOrder
   panNumber?: Prisma.SortOrder
   website?: Prisma.SortOrder
+  clientType?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -657,6 +677,7 @@ export type ClientMaxOrderByAggregateInput = {
   gstNumber?: Prisma.SortOrder
   panNumber?: Prisma.SortOrder
   website?: Prisma.SortOrder
+  clientType?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -680,6 +701,7 @@ export type ClientMinOrderByAggregateInput = {
   gstNumber?: Prisma.SortOrder
   panNumber?: Prisma.SortOrder
   website?: Prisma.SortOrder
+  clientType?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -747,6 +769,7 @@ export type ClientCreateWithoutLeadsInput = {
   gstNumber?: string | null
   panNumber?: string | null
   website?: string | null
+  clientType?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -771,6 +794,7 @@ export type ClientUncheckedCreateWithoutLeadsInput = {
   gstNumber?: string | null
   panNumber?: string | null
   website?: string | null
+  clientType?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -811,6 +835,7 @@ export type ClientUpdateWithoutLeadsInput = {
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   panNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -835,6 +860,7 @@ export type ClientUncheckedUpdateWithoutLeadsInput = {
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   panNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -859,6 +885,7 @@ export type ClientCreateWithoutProjectsInput = {
   gstNumber?: string | null
   panNumber?: string | null
   website?: string | null
+  clientType?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -883,6 +910,7 @@ export type ClientUncheckedCreateWithoutProjectsInput = {
   gstNumber?: string | null
   panNumber?: string | null
   website?: string | null
+  clientType?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -923,6 +951,7 @@ export type ClientUpdateWithoutProjectsInput = {
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   panNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -947,6 +976,7 @@ export type ClientUncheckedUpdateWithoutProjectsInput = {
   gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   panNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1011,6 +1041,7 @@ export type ClientSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   gstNumber?: boolean
   panNumber?: boolean
   website?: boolean
+  clientType?: boolean
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1037,6 +1068,7 @@ export type ClientSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   gstNumber?: boolean
   panNumber?: boolean
   website?: boolean
+  clientType?: boolean
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1060,6 +1092,7 @@ export type ClientSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   gstNumber?: boolean
   panNumber?: boolean
   website?: boolean
+  clientType?: boolean
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1083,6 +1116,7 @@ export type ClientSelectScalar = {
   gstNumber?: boolean
   panNumber?: boolean
   website?: boolean
+  clientType?: boolean
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1092,7 +1126,7 @@ export type ClientSelectScalar = {
   version?: boolean
 }
 
-export type ClientOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "companyName" | "contactPerson" | "email" | "phone" | "address" | "city" | "state" | "zipCode" | "country" | "gstNumber" | "panNumber" | "website" | "notes" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy" | "isDeleted" | "version", ExtArgs["result"]["client"]>
+export type ClientOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "companyName" | "contactPerson" | "email" | "phone" | "address" | "city" | "state" | "zipCode" | "country" | "gstNumber" | "panNumber" | "website" | "clientType" | "notes" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy" | "isDeleted" | "version", ExtArgs["result"]["client"]>
 export type ClientInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   projects?: boolean | Prisma.Client$projectsArgs<ExtArgs>
   leads?: boolean | Prisma.Client$leadsArgs<ExtArgs>
@@ -1121,6 +1155,7 @@ export type $ClientPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     gstNumber: string | null
     panNumber: string | null
     website: string | null
+    clientType: string | null
     notes: string | null
     createdAt: Date
     updatedAt: Date
@@ -1566,6 +1601,7 @@ export interface ClientFieldRefs {
   readonly gstNumber: Prisma.FieldRef<"Client", 'String'>
   readonly panNumber: Prisma.FieldRef<"Client", 'String'>
   readonly website: Prisma.FieldRef<"Client", 'String'>
+  readonly clientType: Prisma.FieldRef<"Client", 'String'>
   readonly notes: Prisma.FieldRef<"Client", 'String'>
   readonly createdAt: Prisma.FieldRef<"Client", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Client", 'DateTime'>

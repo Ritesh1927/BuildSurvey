@@ -1,8 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { auth } from '@/lib/auth'
+import { requireAuth, requireRole } from '@/lib/api-auth'
+
+const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT'] as const
+const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
+const DELETE_ROLES = ['SUPER_ADMIN'] as const
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const authError = await requireAuth()
+  if (authError) return authError
+
+  const roleError = await requireRole([...READ_ROLES])
+  if (roleError) return roleError
+
   try {
+    const session = await auth()
+    const role = session!.user!.role
+
     const { id } = await params
     const client = await db.client.findUnique({
       where: { id },
@@ -12,11 +27,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       },
     })
 
-    if (!client) {
+    if (!client || client.isDeleted) {
       return NextResponse.json({ success: false, error: 'Client not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ success: true, data: client })
+    const data: any = { ...client }
+    if (role === 'ENGINEER') {
+      data.gstNumber = undefined
+      data.panNumber = undefined
+    }
+
+    return NextResponse.json({ success: true, data })
   } catch (error) {
     console.error('GET /api/clients/[id] error:', error)
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
@@ -24,20 +45,41 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const authError = await requireAuth()
+  if (authError) return authError
+
+  const roleError = await requireRole([...WRITE_ROLES])
+  if (roleError) return roleError
+
   try {
+    const session = await auth()
+
     const { id } = await params
     const body = await req.json()
     const {
       companyName, contactPerson, email, phone, address, city, state,
-      zipCode, country, gstNumber, panNumber, website, notes,
+      zipCode, country, gstNumber, panNumber, website, clientType, notes,
     } = body
 
     const existing = await db.client.findUnique({ where: { id } })
-    if (!existing) {
+    if (!existing || existing.isDeleted) {
       return NextResponse.json({ success: false, error: 'Client not found' }, { status: 404 })
     }
 
-    const updateData: any = {}
+    if (email !== undefined) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(email)) {
+        return NextResponse.json({ success: false, error: 'Invalid email format' }, { status: 400 })
+      }
+      if (email !== existing.email) {
+        const dup = await db.client.findFirst({ where: { email, isDeleted: false } })
+        if (dup) {
+          return NextResponse.json({ success: false, error: 'A client with this email already exists' }, { status: 409 })
+        }
+      }
+    }
+
+    const updateData: any = { updatedBy: session!.user!.id }
 
     if (companyName) updateData.companyName = companyName
     if (contactPerson) updateData.contactPerson = contactPerson
@@ -51,6 +93,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (gstNumber !== undefined) updateData.gstNumber = gstNumber
     if (panNumber !== undefined) updateData.panNumber = panNumber
     if (website !== undefined) updateData.website = website
+    if (clientType !== undefined) updateData.clientType = clientType
     if (notes !== undefined) updateData.notes = notes
 
     const updated = await db.client.update({
@@ -59,19 +102,35 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     })
 
     return NextResponse.json({ success: true, data: updated })
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === 'P2002') {
+      return NextResponse.json(
+        { success: false, error: 'A client with this email already exists' },
+        { status: 409 }
+      )
+    }
     console.error('PATCH /api/clients/[id] error:', error)
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const authError = await requireAuth()
+  if (authError) return authError
+
+  const roleError = await requireRole([...DELETE_ROLES])
+  if (roleError) return roleError
+
   try {
     const { id } = await params
 
     const existing = await db.client.findUnique({ where: { id } })
     if (!existing) {
       return NextResponse.json({ success: false, error: 'Client not found' }, { status: 404 })
+    }
+
+    if (existing.isDeleted) {
+      return NextResponse.json({ success: true, message: 'Client deleted successfully' })
     }
 
     await db.client.update({

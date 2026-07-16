@@ -1,14 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { auth } from '@/lib/auth'
+import { requireAuth, requireRole } from '@/lib/api-auth'
+
+const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT'] as const
+const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const
 
 export async function GET(request: NextRequest) {
+  const authError = await requireAuth()
+  if (authError) return authError
+
+  const roleError = await requireRole([...READ_ROLES])
+  if (roleError) return roleError
+
   try {
+    const session = await auth()
+    const role = session!.user!.role
+
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search') || ''
-    const status = searchParams.get('status') || ''
     const type = searchParams.get('type') || ''
     const page = parseInt(searchParams.get('page') || '1', 10)
-    const limit = parseInt(searchParams.get('limit') || '25', 10)
+    const limit = Math.min(parseInt(searchParams.get('limit') || '25', 10) || 25, 100)
 
     const where: any = { isDeleted: false }
 
@@ -20,9 +33,6 @@ export async function GET(request: NextRequest) {
         { email: { contains: searchLower, mode: 'insensitive' } },
       ]
     }
-
-    if (status === 'active') where.isActive = true
-    if (status === 'inactive') where.isActive = false
 
     if (type) {
       where.projects = { some: { type } }
@@ -39,10 +49,16 @@ export async function GET(request: NextRequest) {
       db.client.count({ where }),
     ])
 
+    // Tax registration numbers are not shown to Engineer — no business
+    // reason for field staff to see a client's GST/PAN.
+    const redactTax = role === 'ENGINEER'
+
     return NextResponse.json({
       success: true,
       data: clients.map((c: any) => ({
         ...c,
+        gstNumber: redactTax ? undefined : c.gstNumber,
+        panNumber: redactTax ? undefined : c.panNumber,
         totalProjects: c._count.projects,
         totalLeads: c._count.leads,
       })),
@@ -61,7 +77,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const authError = await requireAuth()
+  if (authError) return authError
+
+  const roleError = await requireRole([...CREATE_ROLES])
+  if (roleError) return roleError
+
   try {
+    const session = await auth()
+
     const body = await request.json()
     const {
       companyName,
@@ -76,12 +100,21 @@ export async function POST(request: NextRequest) {
       gstNumber,
       panNumber,
       website,
+      clientType,
       notes,
     } = body
 
     if (!companyName || !contactPerson || !email || !phone) {
       return NextResponse.json(
         { success: false, error: 'Company name, contact person, email, and phone are required' },
+        { status: 400 }
+      )
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid email format' },
         { status: 400 }
       )
     }
@@ -108,12 +141,20 @@ export async function POST(request: NextRequest) {
         gstNumber: gstNumber || null,
         panNumber: panNumber || null,
         website: website || null,
+        clientType: clientType || null,
         notes: notes || null,
+        createdBy: session!.user!.id,
       },
     })
 
     return NextResponse.json({ success: true, data: client }, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === 'P2002') {
+      return NextResponse.json(
+        { success: false, error: 'A client with this email already exists' },
+        { status: 409 }
+      )
+    }
     console.error('Failed to create client:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to create client' },

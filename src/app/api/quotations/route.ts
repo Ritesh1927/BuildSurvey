@@ -1,14 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { auth } from '@/lib/auth'
+import { requireAuth, requireRole } from '@/lib/api-auth'
+
+const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT'] as const
+const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT'] as const
 
 export async function GET(request: NextRequest) {
+  const authError = await requireAuth()
+  if (authError) return authError
+
+  const roleError = await requireRole([...READ_ROLES])
+  if (roleError) return roleError
+
   try {
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search') || ''
     const projectId = searchParams.get('projectId') || ''
     const status = searchParams.get('status') || ''
     const page = parseInt(searchParams.get('page') || '1', 10)
-    const limit = parseInt(searchParams.get('limit') || '10', 10)
+    const limit = Math.min(parseInt(searchParams.get('limit') || '10', 10) || 10, 100)
 
     const where: any = { isDeleted: false }
 
@@ -24,7 +35,7 @@ export async function GET(request: NextRequest) {
     if (status) where.status = status
 
     const [quotations, total] = await Promise.all([
-      (db as any).quotation.findMany({
+      db.quotation.findMany({
         where,
         skip: (page - 1) * limit,
         take: limit,
@@ -34,7 +45,7 @@ export async function GET(request: NextRequest) {
           items: { where: { isDeleted: false } },
         },
       }),
-      (db as any).quotation.count({ where }),
+      db.quotation.count({ where }),
     ])
 
     return NextResponse.json({
@@ -52,7 +63,16 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const authError = await requireAuth()
+  if (authError) return authError
+
+  const roleError = await requireRole([...CREATE_ROLES])
+  if (roleError) return roleError
+
   try {
+    const session = await auth()
+    const userId = session!.user!.id
+
     const body = await request.json()
     const { title, projectId, items, validUntil, terms, notes } = body
 
@@ -72,19 +92,29 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const lastQuotation = await (db as any).quotation.findFirst({
-      orderBy: { createdAt: 'desc' },
+    const project = await db.project.findUnique({ where: { id: projectId } })
+    if (!project || project.isDeleted) {
+      return NextResponse.json(
+        { success: false, error: 'Project not found' },
+        { status: 400 }
+      )
+    }
+
+    const year = new Date().getFullYear()
+    const yearPrefix = `QUO-${year}-`
+    const lastQuotation = await db.quotation.findFirst({
+      where: { quotationNumber: { startsWith: yearPrefix } },
+      orderBy: { quotationNumber: 'desc' },
       select: { quotationNumber: true },
     })
 
     let nextNum = 1
-    if (lastQuotation && lastQuotation.quotationNumber) {
+    if (lastQuotation?.quotationNumber) {
       const parts = lastQuotation.quotationNumber.split('-')
       const last = parseInt(parts[parts.length - 1], 10)
       if (!isNaN(last)) nextNum = last + 1
     }
-    const year = new Date().getFullYear()
-    const quotationNumber = `QUO-${year}-${String(nextNum).padStart(3, '0')}`
+    const quotationNumber = `${yearPrefix}${String(nextNum).padStart(3, '0')}`
 
     const computedItems = items.map((item: any) => ({
       description: item.description,
@@ -98,7 +128,7 @@ export async function POST(request: NextRequest) {
     const taxAmount = totalAmount * 0.18
     const grandTotal = totalAmount + taxAmount
 
-    const quotation = await (db as any).quotation.create({
+    const quotation = await db.quotation.create({
       data: {
         quotationNumber,
         title,
@@ -109,6 +139,7 @@ export async function POST(request: NextRequest) {
         validUntil: validUntil ? new Date(validUntil) : null,
         terms: terms || null,
         notes: notes || null,
+        createdBy: userId,
         items: {
           create: computedItems,
         },
@@ -120,7 +151,13 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({ success: true, data: quotation }, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === 'P2002') {
+      return NextResponse.json(
+        { success: false, error: 'Quotation number collision, please retry' },
+        { status: 409 }
+      )
+    }
     console.error('Failed to create quotation:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to create quotation' },

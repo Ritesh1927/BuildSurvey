@@ -201,12 +201,18 @@ export default function NewQuotationPage() {
       })
       const data = await res.json()
       if (data.success) {
-        await fetch(`/api/quotations/${data.data.id}`, {
+        const patchRes = await fetch(`/api/quotations/${data.data.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: "APPROVED", discountAmount: discount > 0 ? discountAmount : undefined }),
         })
-        showSuccess("Quotation sent successfully")
+        const patchData = await patchRes.json()
+        if (patchData.success) {
+          showSuccess("Quotation sent successfully")
+        } else {
+          showSuccess("Quotation saved, but status could not be updated")
+          showError(patchData.error || "Failed to update quotation status")
+        }
         router.push("/quotations")
       } else {
         showError(data.error || "Failed to send quotation")

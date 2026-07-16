@@ -191,6 +191,12 @@ model Client {
   id            String   @id @default(uuid())
   companyName   String
   contactPerson String
+  // Uniqueness among active clients is enforced by a partial unique index
+  // (WHERE "isDeleted" = false) created directly in the database — not a
+  // plain @unique, since that would apply across soft-deleted rows too
+  // and block legitimate email reuse. Prisma's schema DSL has no partial-
+  // index syntax, so this constraint is intentionally invisible here;
+  // do not add @unique back, and do not let `prisma db push` "fix" this.
   email         String
   phone         String
   address       String?
@@ -201,6 +207,7 @@ model Client {
   gstNumber     String?
   panNumber     String?
   website       String?
+  clientType    String?
   notes         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

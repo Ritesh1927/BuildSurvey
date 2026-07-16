@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { auth } from '@/lib/auth'
+import { requireAuth, requireRole } from '@/lib/api-auth'
 
 const GEOFENCE_RADIUS_METERS = 500
+const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR'] as const
+const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR'] as const
+const SCOPED_ROLES = ['ENGINEER', 'SURVEYOR']
 
 function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371000
@@ -14,9 +19,19 @@ function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
 }
 
 export async function GET(req: NextRequest) {
+  const authError = await requireAuth()
+  if (authError) return authError
+
+  const roleError = await requireRole([...READ_ROLES])
+  if (roleError) return roleError
+
   try {
+    const session = await auth()
+    const role = session!.user!.role
+    const sessionUserId = session!.user!.id
+
     const { searchParams } = new URL(req.url)
-    const userId = searchParams.get('userId') || ''
+    const requestedUserId = searchParams.get('userId') || ''
     const projectId = searchParams.get('projectId') || ''
     const hours = parseInt(searchParams.get('hours') || '24', 10)
     const route = searchParams.get('route') === 'true'
@@ -27,7 +42,17 @@ export async function GET(req: NextRequest) {
       isDeleted: false,
       timestamp: { gte: since },
     }
-    if (userId) where.userId = userId
+
+    // Engineer/Surveyor can only ever see their own location history —
+    // seeing a colleague's whereabouts is a privacy boundary, not just
+    // a data-access one. The client-supplied userId is never honored
+    // for these roles.
+    if (SCOPED_ROLES.includes(role)) {
+      where.userId = sessionUserId
+    } else if (requestedUserId) {
+      where.userId = requestedUserId
+    }
+
     if (projectId) where.projectId = projectId
 
     const locations = await db.gpsTracking.findMany({
@@ -96,8 +121,12 @@ export async function GET(req: NextRequest) {
       },
     })
 
+    // Engineer/Surveyor only get geofences relevant to themselves — the
+    // full list otherwise leaks every survey site's coordinates and
+    // which engineer is assigned to each, company-wide.
     const geofences = surveys
       .filter((s: any) => s.gpsLatitude && s.gpsLongitude)
+      .filter((s: any) => !SCOPED_ROLES.includes(role) || s.engineerId === sessionUserId)
       .map((s: any) => ({
         id: s.id,
         name: s.title,
@@ -179,43 +208,65 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json()
-    const { userId, latitude, longitude, accuracy, speed, batteryLevel, projectId } = body
+  const authError = await requireAuth()
+  if (authError) return authError
 
-    if (!userId || latitude == null || longitude == null) {
+  const roleError = await requireRole([...WRITE_ROLES])
+  if (roleError) return roleError
+
+  try {
+    const session = await auth()
+    // A GPS ping always reports the submitting device's own position —
+    // userId is never taken from the body, for any role. Accepting a
+    // client-supplied userId would let anyone fabricate another
+    // employee's location/attendance record.
+    const userId = session!.user!.id
+
+    const body = await req.json()
+    const { latitude, longitude, accuracy, speed, batteryLevel } = body
+
+    if (latitude == null || longitude == null) {
       return NextResponse.json(
-        { error: 'userId, latitude, and longitude are required' },
+        { error: 'latitude and longitude are required' },
         { status: 400 }
       )
     }
 
     const lat = parseFloat(latitude)
     const lng = parseFloat(longitude)
+    if (Number.isNaN(lat) || lat < -90 || lat > 90 || Number.isNaN(lng) || lng < -180 || lng > 180) {
+      return NextResponse.json(
+        { error: 'latitude/longitude out of range' },
+        { status: 400 }
+      )
+    }
+
     const isMoving = speed != null && parseFloat(speed) > 0.5
 
-    let assignedProjectId = projectId || null
+    // Project association is always computed server-side from proximity
+    // to an active survey's site coordinates — never trusted from the
+    // client, otherwise the geofence "verification" would be meaningless
+    // (an employee could just always claim their assigned project).
+    let assignedProjectId: string | null = null
 
-    if (!assignedProjectId) {
-      const activeSurvey = await db.survey.findFirst({
-        where: {
-          engineerId: userId,
-          isDeleted: false,
-          status: { in: ['IN_PROGRESS', 'SCHEDULED'] },
-          gpsLatitude: { not: null },
-          gpsLongitude: { not: null },
-        },
-        select: { projectId: true, gpsLatitude: true, gpsLongitude: true },
-      })
+    const activeSurvey = await db.survey.findFirst({
+      where: {
+        engineerId: userId,
+        isDeleted: false,
+        status: { in: ['IN_PROGRESS', 'ASSIGNED'] },
+        gpsLatitude: { not: null },
+        gpsLongitude: { not: null },
+      },
+      select: { projectId: true, gpsLatitude: true, gpsLongitude: true },
+    })
 
-      if (activeSurvey) {
-        const dist = haversineDistance(
-          lat, lng,
-          activeSurvey.gpsLatitude!, activeSurvey.gpsLongitude!
-        )
-        if (dist <= GEOFENCE_RADIUS_METERS * 2) {
-          assignedProjectId = activeSurvey.projectId
-        }
+    if (activeSurvey) {
+      const dist = haversineDistance(
+        lat, lng,
+        activeSurvey.gpsLatitude!, activeSurvey.gpsLongitude!
+      )
+      if (dist <= GEOFENCE_RADIUS_METERS * 2) {
+        assignedProjectId = activeSurvey.projectId
       }
     }
 
@@ -224,11 +275,12 @@ export async function POST(req: NextRequest) {
         userId,
         latitude: lat,
         longitude: lng,
-        accuracy: accuracy ? parseFloat(accuracy) : null,
-        speed: speed ? parseFloat(speed) : null,
+        accuracy: accuracy !== undefined && accuracy !== null && accuracy !== '' ? parseFloat(accuracy) : null,
+        speed: speed !== undefined && speed !== null && speed !== '' ? parseFloat(speed) : null,
         batteryLevel: batteryLevel != null ? parseInt(batteryLevel) : null,
         isMoving,
         projectId: assignedProjectId,
+        createdBy: userId,
       },
     })
 
