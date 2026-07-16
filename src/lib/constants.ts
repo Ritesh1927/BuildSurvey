@@ -1,17 +1,7 @@
+import type { UserRole } from '@/generated/prisma/enums'
+
 export const APP_NAME = 'BuildSurvey Pro'
 export const APP_VERSION = '1.0.0'
-
-export const ROLES = [
-  { value: 'ADMIN', label: 'Administrator', color: 'bg-violet-100 text-violet-800' },
-  { value: 'PROJECT_MANAGER', label: 'Project Manager', color: 'bg-blue-100 text-blue-800' },
-  { value: 'SITE_ENGINEER', label: 'Site Engineer', color: 'bg-emerald-100 text-emerald-800' },
-  { value: 'SURVEYOR', label: 'Surveyor', color: 'bg-teal-100 text-teal-800' },
-  { value: 'ARCHITECT', label: 'Architect', color: 'bg-amber-100 text-amber-800' },
-  { value: 'CLIENT', label: 'Client', color: 'bg-gray-100 text-gray-800' },
-  { value: 'VENDOR', label: 'Vendor', color: 'bg-orange-100 text-orange-800' },
-  { value: 'ACCOUNTANT', label: 'Accountant', color: 'bg-cyan-100 text-cyan-800' },
-  { value: 'VIEWER', label: 'Viewer', color: 'bg-slate-100 text-slate-800' },
-] as const
 
 export const PROJECT_STATUSES = [
   { value: 'DRAFT', label: 'Draft', color: 'bg-gray-100 text-gray-800' },
@@ -50,8 +40,6 @@ export const PRIORITIES = [
   { value: 'HIGH', label: 'High', color: 'bg-orange-100 text-orange-700 border-orange-300' },
   { value: 'CRITICAL', label: 'Critical', color: 'bg-red-100 text-red-700 border-red-300' },
 ] as const
-
-type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'ENGINEER' | 'SURVEYOR' | 'CLIENT' | 'ACCOUNTANT'
 
 export const SIDEBAR_NAV_ITEMS: readonly {
   group: string

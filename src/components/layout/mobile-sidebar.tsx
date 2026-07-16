@@ -65,7 +65,7 @@ function MobileNavItem({
 export default function MobileSidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
-  const userRole = (session?.user as any)?.role as string | undefined
+  const userRole = session?.user?.role
   const { sidebarOpen, setSidebarOpen } = useUIStore()
   const { user, logout } = useAuthStore()
 
@@ -151,7 +151,7 @@ export default function MobileSidebar() {
               const visibleItems = group.items.filter((item) => {
                 if (!item.roles) return true
                 if (!userRole) return false
-                return (item.roles as readonly string[]).includes(userRole)
+                return item.roles.includes(userRole)
               })
               if (visibleItems.length === 0) return null
               return (

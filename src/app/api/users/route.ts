@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { db } from '@/lib/db'
+import { auth } from '@/lib/auth'
+import { requireAuth, requireRole, canManageRole } from '@/lib/api-auth'
 
 export async function GET(req: NextRequest) {
+  const authError = await requireAuth()
+  if (authError) return authError
+
+  const roleError = await requireRole(['SUPER_ADMIN', 'ADMIN', 'MANAGER'])
+  if (roleError) return roleError
+
   try {
     const { searchParams } = new URL(req.url)
     const search = searchParams.get('search') || ''
@@ -55,6 +63,12 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const authError = await requireAuth()
+  if (authError) return authError
+
+  const roleError = await requireRole(['SUPER_ADMIN', 'ADMIN'])
+  if (roleError) return roleError
+
   try {
     const body = await req.json()
     const {
@@ -90,6 +104,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: 'Invalid email format' },
         { status: 400 }
+      )
+    }
+
+    const session = await auth()
+    if (!canManageRole(session!.user!.role, role)) {
+      return NextResponse.json(
+        { error: 'Only a Super Admin can create a Super Admin user' },
+        { status: 403 }
       )
     }
 

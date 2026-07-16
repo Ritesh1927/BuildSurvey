@@ -85,7 +85,7 @@ function SidebarNavItem({
 export default function Sidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
-  const userRole = (session?.user as any)?.role as string | undefined
+  const userRole = session?.user?.role
   const { sidebarCollapsed, toggleSidebarCollapsed } = useUIStore()
   const { user, logout } = useAuthStore()
 
@@ -127,7 +127,7 @@ export default function Sidebar() {
               const visibleItems = group.items.filter((item) => {
                 if (!item.roles) return true
                 if (!userRole) return false
-                return (item.roles as readonly string[]).includes(userRole)
+                return item.roles.includes(userRole)
               })
               if (visibleItems.length === 0) return null
               return (

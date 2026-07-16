@@ -36,7 +36,7 @@ export default function Header() {
 
   useEffect(() => setMounted(true), [])
 
-  const sessionUser = session?.user as any
+  const sessionUser = session?.user
   const userName = sessionUser?.name || 'Guest'
   const userEmail = sessionUser?.email || ''
   const userRole = sessionUser?.role?.replace(/_/g, ' ') || 'Viewer'

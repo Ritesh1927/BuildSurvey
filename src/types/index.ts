@@ -1,4 +1,6 @@
-export type Role = 'ADMIN' | 'PROJECT_MANAGER' | 'SITE_ENGINEER' | 'SURVEYOR' | 'ARCHITECT' | 'CLIENT' | 'VENDOR' | 'ACCOUNTANT' | 'VIEWER'
+import type { UserRole } from '@/generated/prisma/enums'
+
+export type Role = UserRole
 
 export type ProjectStatus = 'DRAFT' | 'PLANNING' | 'IN_PROGRESS' | 'ON_HOLD' | 'COMPLETED' | 'CANCELLED' | 'ARCHIVED'
 
