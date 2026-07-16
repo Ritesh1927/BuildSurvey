@@ -4,7 +4,7 @@ import { auth } from '@/lib/auth'
 import { requireAuth, requireRole } from '@/lib/api-auth'
 import { ProjectStatus, ProjectType } from '@/generated/prisma/enums'
 
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'ACCOUNTANT'] as const
+const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'ACCOUNTANT', 'CLIENT'] as const
 const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER'] as const
 const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const
 // Fields an Engineer, even one leading the project, cannot change —
@@ -44,6 +44,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     if (role === 'SURVEYOR' && !project.surveys.some((s: any) => s.engineerId === userId)) {
+      return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
+    }
+
+    if (role === 'CLIENT' && project.clientId !== session!.user!.clientId) {
       return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
     }
 

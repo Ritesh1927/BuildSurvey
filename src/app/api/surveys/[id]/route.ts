@@ -4,7 +4,7 @@ import { auth } from '@/lib/auth'
 import { requireAuth, requireRole } from '@/lib/api-auth'
 import { SurveyStatus, SurveyType } from '@/generated/prisma/enums'
 
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR'] as const
+const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'CLIENT'] as const
 const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR'] as const
 const ASSIGN_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
 const APPROVE_ROLES = ['SUPER_ADMIN']
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const survey = await db.survey.findUnique({
       where: { id },
       include: {
-        project: { select: { id: true, name: true, code: true } },
+        project: { select: { id: true, name: true, code: true, clientId: true } },
         engineer: { select: { id: true, firstName: true, lastName: true, email: true } },
         checklistItems: { where: { isDeleted: false } },
         photos: { where: { isDeleted: false } },
@@ -42,7 +42,19 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ success: false, error: 'Survey not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ success: true, data: survey })
+    if (role === 'CLIENT' && survey.project.clientId !== session!.user!.clientId) {
+      return NextResponse.json({ success: false, error: 'Survey not found' }, { status: 404 })
+    }
+
+    const data: any = { ...survey }
+    if (role === 'CLIENT') {
+      data.weatherCondition = undefined
+      data.siteCondition = undefined
+      data.accessDetails = undefined
+      data.notes = undefined
+    }
+
+    return NextResponse.json({ success: true, data })
   } catch (error) {
     console.error('GET /api/surveys/[id] error:', error)
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })

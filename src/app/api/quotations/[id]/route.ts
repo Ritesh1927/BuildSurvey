@@ -4,7 +4,7 @@ import { auth } from '@/lib/auth'
 import { requireAuth, requireRole } from '@/lib/api-auth'
 import { PaymentStatus } from '@/generated/prisma/enums'
 
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT'] as const
+const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT', 'CLIENT'] as const
 const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT'] as const
 const APPROVE_ROLES = ['SUPER_ADMIN', 'ACCOUNTANT']
 const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const
@@ -17,16 +17,23 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   if (roleError) return roleError
 
   try {
+    const session = await auth()
+    const role = session!.user!.role
+
     const { id } = await params
     const quotation = await db.quotation.findUnique({
       where: { id },
       include: {
         items: { where: { isDeleted: false } },
-        project: { select: { id: true, name: true, code: true } },
+        project: { select: { id: true, name: true, code: true, clientId: true } },
       },
     })
 
     if (!quotation || quotation.isDeleted) {
+      return NextResponse.json({ success: false, error: 'Quotation not found' }, { status: 404 })
+    }
+
+    if (role === 'CLIENT' && quotation.project.clientId !== session!.user!.clientId) {
       return NextResponse.json({ success: false, error: 'Quotation not found' }, { status: 404 })
     }
 

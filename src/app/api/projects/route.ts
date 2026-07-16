@@ -4,7 +4,7 @@ import { auth } from '@/lib/auth'
 import { requireAuth, requireRole } from '@/lib/api-auth'
 import { ProjectType } from '@/generated/prisma/enums'
 
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'ACCOUNTANT'] as const
+const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'ACCOUNTANT', 'CLIENT'] as const
 const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
 
 export async function GET(request: NextRequest) {
@@ -44,11 +44,14 @@ export async function GET(request: NextRequest) {
     if (clientId) where.clientId = clientId
 
     // Engineer sees only projects they lead; Surveyor only projects they
-    // have an assigned survey on. Neither can be widened by query params.
+    // have an assigned survey on; Client only their own company's
+    // projects. None of these can be widened by query params.
     if (role === 'ENGINEER') {
       where.leadUserId = userId
     } else if (role === 'SURVEYOR') {
       where.surveys = { some: { engineerId: userId, isDeleted: false } }
+    } else if (role === 'CLIENT') {
+      where.clientId = session!.user!.clientId || '__no_client__'
     }
 
     const [projects, total] = await Promise.all([

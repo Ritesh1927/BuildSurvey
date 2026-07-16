@@ -3,7 +3,7 @@ import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { requireAuth, requireRole } from '@/lib/api-auth'
 
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'ACCOUNTANT'] as const
+const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'ACCOUNTANT', 'CLIENT'] as const
 const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT'] as const
 
 export async function GET(request: NextRequest) {
@@ -45,6 +45,11 @@ export async function GET(request: NextRequest) {
       where.project = { leadUserId: userId }
     } else if (role === 'SURVEYOR') {
       where.project = { surveys: { some: { engineerId: userId, isDeleted: false } } }
+    } else if (role === 'CLIENT') {
+      // Sharing the BOQ with the client it belongs to is standard
+      // practice for most construction contracts — defaulting to allow,
+      // flagged as a judgment call worth confirming.
+      where.project = { clientId: session!.user!.clientId || '__no_client__' }
     }
 
     const [items, total] = await Promise.all([

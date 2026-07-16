@@ -42,7 +42,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   try {
     const { id } = await params
     const body = await req.json()
-    const { firstName, lastName, email, phone, role, isActive, password } = body
+    const { firstName, lastName, email, phone, role, isActive, password, clientId } = body
 
     const existing = await db.user.findUnique({ where: { id } })
     if (!existing) {
@@ -74,6 +74,29 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       )
     }
 
+    const effectiveRole = role || existing.role
+
+    if (effectiveRole === 'CLIENT') {
+      const resolvedClientId = clientId !== undefined ? clientId : existing.clientId
+      if (!resolvedClientId) {
+        return NextResponse.json(
+          { error: 'clientId is required for a CLIENT-role user' },
+          { status: 400 }
+        )
+      }
+      if (clientId !== undefined) {
+        const client = await db.client.findUnique({ where: { id: clientId } })
+        if (!client || client.isDeleted) {
+          return NextResponse.json({ error: 'Client not found' }, { status: 400 })
+        }
+      }
+    } else if (clientId) {
+      return NextResponse.json(
+        { error: 'clientId can only be set for a CLIENT-role user' },
+        { status: 400 }
+      )
+    }
+
     const updateData: any = {}
 
     if (firstName) updateData.firstName = firstName
@@ -90,6 +113,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (phone !== undefined) updateData.phone = phone
     if (role) updateData.role = role
     if (isActive !== undefined) updateData.isActive = isActive
+    if (effectiveRole === 'CLIENT') {
+      if (clientId !== undefined) updateData.clientId = clientId
+    } else if (effectiveRole !== existing.role) {
+      // Role is changing away from CLIENT — clear the now-meaningless link.
+      updateData.clientId = null
+    }
 
     if (password) {
       if (password.length < 8) {
@@ -103,7 +132,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       data: updateData,
       select: {
         id: true, firstName: true, lastName: true, email: true, phone: true,
-        role: true, isActive: true, createdAt: true,
+        role: true, isActive: true, clientId: true, createdAt: true,
       },
     })
 

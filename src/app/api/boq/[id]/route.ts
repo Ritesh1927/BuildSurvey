@@ -3,7 +3,7 @@ import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { requireAuth, requireRole } from '@/lib/api-auth'
 
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'ACCOUNTANT'] as const
+const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'ACCOUNTANT', 'CLIENT'] as const
 const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT'] as const
 const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const
 
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       include: {
         project: {
           select: {
-            id: true, name: true, code: true, leadUserId: true,
+            id: true, name: true, code: true, leadUserId: true, clientId: true,
             surveys: { where: { isDeleted: false }, select: { engineerId: true } },
           },
         },
@@ -40,6 +40,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ success: false, error: 'BOQ item not found' }, { status: 404 })
     }
     if (role === 'SURVEYOR' && !item.project.surveys.some((s: any) => s.engineerId === userId)) {
+      return NextResponse.json({ success: false, error: 'BOQ item not found' }, { status: 404 })
+    }
+    if (role === 'CLIENT' && item.project.clientId !== session!.user!.clientId) {
       return NextResponse.json({ success: false, error: 'BOQ item not found' }, { status: 404 })
     }
 

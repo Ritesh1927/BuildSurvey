@@ -3,7 +3,7 @@ import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { requireAuth, requireRole } from '@/lib/api-auth'
 
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT'] as const
+const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT', 'CLIENT'] as const
 const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT'] as const
 
 export async function GET(request: NextRequest) {
@@ -14,6 +14,9 @@ export async function GET(request: NextRequest) {
   if (roleError) return roleError
 
   try {
+    const session = await auth()
+    const role = session!.user!.role
+
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search') || ''
     const projectId = searchParams.get('projectId') || ''
@@ -33,6 +36,12 @@ export async function GET(request: NextRequest) {
 
     if (projectId) where.projectId = projectId
     if (status) where.status = status
+
+    // Client only sees quotations for their own company's projects —
+    // Quotation has no direct clientId, so scope through the project.
+    if (role === 'CLIENT') {
+      where.project = { clientId: session!.user!.clientId || '__no_client__' }
+    }
 
     const [quotations, total] = await Promise.all([
       db.quotation.findMany({

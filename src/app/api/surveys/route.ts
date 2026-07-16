@@ -4,7 +4,7 @@ import { auth } from '@/lib/auth'
 import { requireAuth, requireRole } from '@/lib/api-auth'
 import { SurveyType } from '@/generated/prisma/enums'
 
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR'] as const
+const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'CLIENT'] as const
 const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR'] as const
 const SCOPED_ROLES = ['ENGINEER', 'SURVEYOR']
 
@@ -42,9 +42,12 @@ export async function GET(request: NextRequest) {
     if (type) where.type = type
     if (projectId) where.projectId = projectId
 
-    // Engineer/Surveyor only ever see surveys assigned to themselves.
+    // Engineer/Surveyor only ever see surveys assigned to themselves;
+    // Client only surveys on their own company's projects.
     if (SCOPED_ROLES.includes(role)) {
       where.engineerId = userId
+    } else if (role === 'CLIENT') {
+      where.project = { clientId: session!.user!.clientId || '__no_client__' }
     }
 
     const [surveys, total] = await Promise.all([
@@ -61,6 +64,11 @@ export async function GET(request: NextRequest) {
       }),
       db.survey.count({ where }),
     ])
+
+    // Internal field-team notes aren't shown to Client — site
+    // conditions/weather/notes read as operational chatter, not
+    // something meant to be customer-facing.
+    const redactInternal = role === 'CLIENT'
 
     return NextResponse.json({
       success: true,
@@ -79,9 +87,9 @@ export async function GET(request: NextRequest) {
         engineerName: s.engineer
           ? `${s.engineer.firstName} ${s.engineer.lastName}`
           : 'Unassigned',
-        weatherCondition: s.weatherCondition,
-        siteCondition: s.siteCondition,
-        notes: s.notes,
+        weatherCondition: redactInternal ? undefined : s.weatherCondition,
+        siteCondition: redactInternal ? undefined : s.siteCondition,
+        notes: redactInternal ? undefined : s.notes,
         checklistCount: s._count.checklistItems,
         photoCount: s._count.photos,
         createdAt: s.createdAt,

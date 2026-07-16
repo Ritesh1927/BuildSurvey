@@ -182,9 +182,18 @@ model User {
   changeOrdersApproved      ChangeOrder[]      @relation("COApprovedBy")
   leadsAssigned             Lead[]             @relation("LeadAssignee")
 
+  // Links a CLIENT-role login to the Client company they represent. Null
+  // for every other role. A direct FK rather than a join table — one
+  // client-side login realistically belongs to exactly one client company;
+  // a many-to-many would be unused complexity for a relationship that is
+  // 1:many in practice (one Client can have several contacts/logins).
+  clientId String?
+  client   Client? @relation("ClientUsers", fields: [clientId], references: [id])
+
   @@index([email])
   @@index([role])
   @@index([isActive])
+  @@index([clientId])
 }
 
 model Client {
@@ -218,6 +227,7 @@ model Client {
 
   projects Project[]
   leads    Lead[]
+  users    User[]   @relation("ClientUsers")
 
   @@index([companyName])
   @@index([email])

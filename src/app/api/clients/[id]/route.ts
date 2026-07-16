@@ -3,7 +3,7 @@ import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { requireAuth, requireRole } from '@/lib/api-auth'
 
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT'] as const
+const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT', 'CLIENT'] as const
 const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
 const DELETE_ROLES = ['SUPER_ADMIN'] as const
 
@@ -19,11 +19,20 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const role = session!.user!.role
 
     const { id } = await params
+
+    // A client login only ever sees their own company record — leads are
+    // excluded from what they can see even for themselves (pre-relationship
+    // sales data: internal notes, priority, source), same reasoning as the
+    // Leads module's own CLIENT denial.
+    if (role === 'CLIENT' && id !== session!.user!.clientId) {
+      return NextResponse.json({ success: false, error: 'Client not found' }, { status: 404 })
+    }
+
     const client = await db.client.findUnique({
       where: { id },
       include: {
         projects: { where: { isDeleted: false }, select: { id: true, name: true, code: true, status: true } },
-        leads: { where: { isDeleted: false }, select: { id: true, name: true, status: true, createdAt: true } },
+        ...(role === 'CLIENT' ? {} : { leads: { where: { isDeleted: false }, select: { id: true, name: true, status: true, createdAt: true } } }),
       },
     })
 

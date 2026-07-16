@@ -83,11 +83,30 @@ export async function POST(req: NextRequest) {
       role,
       isActive,
       initialPassword,
+      clientId,
     } = body
 
     if (!firstName || !lastName || !email || !role || !initialPassword) {
       return NextResponse.json(
         { error: 'First name, last name, email, role, and password are required' },
+        { status: 400 }
+      )
+    }
+
+    if (role === 'CLIENT') {
+      if (!clientId) {
+        return NextResponse.json(
+          { error: 'clientId is required when creating a CLIENT-role user' },
+          { status: 400 }
+        )
+      }
+      const client = await db.client.findUnique({ where: { id: clientId } })
+      if (!client || client.isDeleted) {
+        return NextResponse.json({ error: 'Client not found' }, { status: 400 })
+      }
+    } else if (clientId) {
+      return NextResponse.json(
+        { error: 'clientId can only be set for a CLIENT-role user' },
         { status: 400 }
       )
     }
@@ -134,6 +153,7 @@ export async function POST(req: NextRequest) {
         password: hashedPassword,
         role: role || 'ENGINEER',
         isActive: isActive !== false,
+        clientId: role === 'CLIENT' ? clientId : null,
       },
       select: {
         id: true,
@@ -143,6 +163,7 @@ export async function POST(req: NextRequest) {
         phone: true,
         role: true,
         isActive: true,
+        clientId: true,
         createdAt: true,
       },
     })

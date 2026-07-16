@@ -51,6 +51,7 @@ export type UserMinAggregateOutputType = {
   updatedBy: string | null
   isDeleted: boolean | null
   version: number | null
+  clientId: string | null
 }
 
 export type UserMaxAggregateOutputType = {
@@ -70,6 +71,7 @@ export type UserMaxAggregateOutputType = {
   updatedBy: string | null
   isDeleted: boolean | null
   version: number | null
+  clientId: string | null
 }
 
 export type UserCountAggregateOutputType = {
@@ -89,6 +91,7 @@ export type UserCountAggregateOutputType = {
   updatedBy: number
   isDeleted: number
   version: number
+  clientId: number
   _all: number
 }
 
@@ -118,6 +121,7 @@ export type UserMinAggregateInputType = {
   updatedBy?: true
   isDeleted?: true
   version?: true
+  clientId?: true
 }
 
 export type UserMaxAggregateInputType = {
@@ -137,6 +141,7 @@ export type UserMaxAggregateInputType = {
   updatedBy?: true
   isDeleted?: true
   version?: true
+  clientId?: true
 }
 
 export type UserCountAggregateInputType = {
@@ -156,6 +161,7 @@ export type UserCountAggregateInputType = {
   updatedBy?: true
   isDeleted?: true
   version?: true
+  clientId?: true
   _all?: true
 }
 
@@ -262,6 +268,7 @@ export type UserGroupByOutputType = {
   updatedBy: string | null
   isDeleted: boolean
   version: number
+  clientId: string | null
   _count: UserCountAggregateOutputType | null
   _avg: UserAvgAggregateOutputType | null
   _sum: UserSumAggregateOutputType | null
@@ -304,6 +311,7 @@ export type UserWhereInput = {
   updatedBy?: Prisma.StringNullableFilter<"User"> | string | null
   isDeleted?: Prisma.BoolFilter<"User"> | boolean
   version?: Prisma.IntFilter<"User"> | number
+  clientId?: Prisma.StringNullableFilter<"User"> | string | null
   ledProjects?: Prisma.ProjectListRelationFilter
   managedProjects?: Prisma.ProjectListRelationFilter
   assignedSurveys?: Prisma.SurveyListRelationFilter
@@ -321,6 +329,7 @@ export type UserWhereInput = {
   changeOrdersRequested?: Prisma.ChangeOrderListRelationFilter
   changeOrdersApproved?: Prisma.ChangeOrderListRelationFilter
   leadsAssigned?: Prisma.LeadListRelationFilter
+  client?: Prisma.XOR<Prisma.ClientNullableScalarRelationFilter, Prisma.ClientWhereInput> | null
 }
 
 export type UserOrderByWithRelationInput = {
@@ -340,6 +349,7 @@ export type UserOrderByWithRelationInput = {
   updatedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   isDeleted?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  clientId?: Prisma.SortOrderInput | Prisma.SortOrder
   ledProjects?: Prisma.ProjectOrderByRelationAggregateInput
   managedProjects?: Prisma.ProjectOrderByRelationAggregateInput
   assignedSurveys?: Prisma.SurveyOrderByRelationAggregateInput
@@ -357,6 +367,7 @@ export type UserOrderByWithRelationInput = {
   changeOrdersRequested?: Prisma.ChangeOrderOrderByRelationAggregateInput
   changeOrdersApproved?: Prisma.ChangeOrderOrderByRelationAggregateInput
   leadsAssigned?: Prisma.LeadOrderByRelationAggregateInput
+  client?: Prisma.ClientOrderByWithRelationInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -379,6 +390,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   updatedBy?: Prisma.StringNullableFilter<"User"> | string | null
   isDeleted?: Prisma.BoolFilter<"User"> | boolean
   version?: Prisma.IntFilter<"User"> | number
+  clientId?: Prisma.StringNullableFilter<"User"> | string | null
   ledProjects?: Prisma.ProjectListRelationFilter
   managedProjects?: Prisma.ProjectListRelationFilter
   assignedSurveys?: Prisma.SurveyListRelationFilter
@@ -396,6 +408,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   changeOrdersRequested?: Prisma.ChangeOrderListRelationFilter
   changeOrdersApproved?: Prisma.ChangeOrderListRelationFilter
   leadsAssigned?: Prisma.LeadListRelationFilter
+  client?: Prisma.XOR<Prisma.ClientNullableScalarRelationFilter, Prisma.ClientWhereInput> | null
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -415,6 +428,7 @@ export type UserOrderByWithAggregationInput = {
   updatedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   isDeleted?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  clientId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
   _avg?: Prisma.UserAvgOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
@@ -442,6 +456,7 @@ export type UserScalarWhereWithAggregatesInput = {
   updatedBy?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   isDeleted?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   version?: Prisma.IntWithAggregatesFilter<"User"> | number
+  clientId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
 }
 
 export type UserCreateInput = {
@@ -478,6 +493,7 @@ export type UserCreateInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -497,6 +513,7 @@ export type UserUncheckedCreateInput = {
   updatedBy?: string | null
   isDeleted?: boolean
   version?: number
+  clientId?: string | null
   ledProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutLeadUserInput
   managedProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutManagerInput
   assignedSurveys?: Prisma.SurveyUncheckedCreateNestedManyWithoutEngineerInput
@@ -550,6 +567,7 @@ export type UserUpdateInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -569,6 +587,7 @@ export type UserUncheckedUpdateInput = {
   updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ledProjects?: Prisma.ProjectUncheckedUpdateManyWithoutLeadUserNestedInput
   managedProjects?: Prisma.ProjectUncheckedUpdateManyWithoutManagerNestedInput
   assignedSurveys?: Prisma.SurveyUncheckedUpdateManyWithoutEngineerNestedInput
@@ -605,6 +624,7 @@ export type UserCreateManyInput = {
   updatedBy?: string | null
   isDeleted?: boolean
   version?: number
+  clientId?: string | null
 }
 
 export type UserUpdateManyMutationInput = {
@@ -643,6 +663,7 @@ export type UserUncheckedUpdateManyInput = {
   updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserCountOrderByAggregateInput = {
@@ -662,6 +683,7 @@ export type UserCountOrderByAggregateInput = {
   updatedBy?: Prisma.SortOrder
   isDeleted?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  clientId?: Prisma.SortOrder
 }
 
 export type UserAvgOrderByAggregateInput = {
@@ -685,6 +707,7 @@ export type UserMaxOrderByAggregateInput = {
   updatedBy?: Prisma.SortOrder
   isDeleted?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  clientId?: Prisma.SortOrder
 }
 
 export type UserMinOrderByAggregateInput = {
@@ -704,10 +727,21 @@ export type UserMinOrderByAggregateInput = {
   updatedBy?: Prisma.SortOrder
   isDeleted?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  clientId?: Prisma.SortOrder
 }
 
 export type UserSumOrderByAggregateInput = {
   version?: Prisma.SortOrder
+}
+
+export type UserListRelationFilter = {
+  every?: Prisma.UserWhereInput
+  some?: Prisma.UserWhereInput
+  none?: Prisma.UserWhereInput
+}
+
+export type UserOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type UserNullableScalarRelationFilter = {
@@ -750,6 +784,48 @@ export type IntFieldUpdateOperationsInput = {
   decrement?: number
   multiply?: number
   divide?: number
+}
+
+export type UserCreateNestedManyWithoutClientInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutClientInput, Prisma.UserUncheckedCreateWithoutClientInput> | Prisma.UserCreateWithoutClientInput[] | Prisma.UserUncheckedCreateWithoutClientInput[]
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutClientInput | Prisma.UserCreateOrConnectWithoutClientInput[]
+  createMany?: Prisma.UserCreateManyClientInputEnvelope
+  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+}
+
+export type UserUncheckedCreateNestedManyWithoutClientInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutClientInput, Prisma.UserUncheckedCreateWithoutClientInput> | Prisma.UserCreateWithoutClientInput[] | Prisma.UserUncheckedCreateWithoutClientInput[]
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutClientInput | Prisma.UserCreateOrConnectWithoutClientInput[]
+  createMany?: Prisma.UserCreateManyClientInputEnvelope
+  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+}
+
+export type UserUpdateManyWithoutClientNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutClientInput, Prisma.UserUncheckedCreateWithoutClientInput> | Prisma.UserCreateWithoutClientInput[] | Prisma.UserUncheckedCreateWithoutClientInput[]
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutClientInput | Prisma.UserCreateOrConnectWithoutClientInput[]
+  upsert?: Prisma.UserUpsertWithWhereUniqueWithoutClientInput | Prisma.UserUpsertWithWhereUniqueWithoutClientInput[]
+  createMany?: Prisma.UserCreateManyClientInputEnvelope
+  set?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  disconnect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  delete?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  update?: Prisma.UserUpdateWithWhereUniqueWithoutClientInput | Prisma.UserUpdateWithWhereUniqueWithoutClientInput[]
+  updateMany?: Prisma.UserUpdateManyWithWhereWithoutClientInput | Prisma.UserUpdateManyWithWhereWithoutClientInput[]
+  deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
+}
+
+export type UserUncheckedUpdateManyWithoutClientNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutClientInput, Prisma.UserUncheckedCreateWithoutClientInput> | Prisma.UserCreateWithoutClientInput[] | Prisma.UserUncheckedCreateWithoutClientInput[]
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutClientInput | Prisma.UserCreateOrConnectWithoutClientInput[]
+  upsert?: Prisma.UserUpsertWithWhereUniqueWithoutClientInput | Prisma.UserUpsertWithWhereUniqueWithoutClientInput[]
+  createMany?: Prisma.UserCreateManyClientInputEnvelope
+  set?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  disconnect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  delete?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  update?: Prisma.UserUpdateWithWhereUniqueWithoutClientInput | Prisma.UserUpdateWithWhereUniqueWithoutClientInput[]
+  updateMany?: Prisma.UserUpdateManyWithWhereWithoutClientInput | Prisma.UserUpdateManyWithWhereWithoutClientInput[]
+  deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
 }
 
 export type UserCreateNestedOneWithoutLeadsAssignedInput = {
@@ -1004,6 +1080,127 @@ export type UserUpdateOneWithoutChangeOrdersApprovedNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutChangeOrdersApprovedInput, Prisma.UserUpdateWithoutChangeOrdersApprovedInput>, Prisma.UserUncheckedUpdateWithoutChangeOrdersApprovedInput>
 }
 
+export type UserCreateWithoutClientInput = {
+  id?: string
+  email: string
+  password: string
+  firstName: string
+  lastName: string
+  phone?: string | null
+  avatar?: string | null
+  role?: $Enums.UserRole
+  isActive?: boolean
+  lastLoginAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  createdBy?: string | null
+  updatedBy?: string | null
+  isDeleted?: boolean
+  version?: number
+  ledProjects?: Prisma.ProjectCreateNestedManyWithoutLeadUserInput
+  managedProjects?: Prisma.ProjectCreateNestedManyWithoutManagerInput
+  assignedSurveys?: Prisma.SurveyCreateNestedManyWithoutEngineerInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  signatures?: Prisma.DigitalSignatureCreateNestedManyWithoutUserInput
+  workflowSteps?: Prisma.WorkflowStepCreateNestedManyWithoutAssignedToInput
+  approvalsRequested?: Prisma.ApprovalCreateNestedManyWithoutRequestedByInput
+  approvalsGiven?: Prisma.ApprovalCreateNestedManyWithoutApprovedByInput
+  activities?: Prisma.ActivityCreateNestedManyWithoutUserInput
+  reports?: Prisma.ReportCreateNestedManyWithoutGeneratedByInput
+  documentsUploaded?: Prisma.DocumentCreateNestedManyWithoutUploadedByInput
+  gpsTracking?: Prisma.GpsTrackingCreateNestedManyWithoutUserInput
+  riskAssessmentsIdentified?: Prisma.RiskAssessmentCreateNestedManyWithoutIdentifiedByInput
+  changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
+  changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
+  leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+}
+
+export type UserUncheckedCreateWithoutClientInput = {
+  id?: string
+  email: string
+  password: string
+  firstName: string
+  lastName: string
+  phone?: string | null
+  avatar?: string | null
+  role?: $Enums.UserRole
+  isActive?: boolean
+  lastLoginAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  createdBy?: string | null
+  updatedBy?: string | null
+  isDeleted?: boolean
+  version?: number
+  ledProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutLeadUserInput
+  managedProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutManagerInput
+  assignedSurveys?: Prisma.SurveyUncheckedCreateNestedManyWithoutEngineerInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  signatures?: Prisma.DigitalSignatureUncheckedCreateNestedManyWithoutUserInput
+  workflowSteps?: Prisma.WorkflowStepUncheckedCreateNestedManyWithoutAssignedToInput
+  approvalsRequested?: Prisma.ApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+  approvalsGiven?: Prisma.ApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+  activities?: Prisma.ActivityUncheckedCreateNestedManyWithoutUserInput
+  reports?: Prisma.ReportUncheckedCreateNestedManyWithoutGeneratedByInput
+  documentsUploaded?: Prisma.DocumentUncheckedCreateNestedManyWithoutUploadedByInput
+  gpsTracking?: Prisma.GpsTrackingUncheckedCreateNestedManyWithoutUserInput
+  riskAssessmentsIdentified?: Prisma.RiskAssessmentUncheckedCreateNestedManyWithoutIdentifiedByInput
+  changeOrdersRequested?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutRequestedByInput
+  changeOrdersApproved?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutApprovedByInput
+  leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssignedToInput
+}
+
+export type UserCreateOrConnectWithoutClientInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutClientInput, Prisma.UserUncheckedCreateWithoutClientInput>
+}
+
+export type UserCreateManyClientInputEnvelope = {
+  data: Prisma.UserCreateManyClientInput | Prisma.UserCreateManyClientInput[]
+  skipDuplicates?: boolean
+}
+
+export type UserUpsertWithWhereUniqueWithoutClientInput = {
+  where: Prisma.UserWhereUniqueInput
+  update: Prisma.XOR<Prisma.UserUpdateWithoutClientInput, Prisma.UserUncheckedUpdateWithoutClientInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutClientInput, Prisma.UserUncheckedCreateWithoutClientInput>
+}
+
+export type UserUpdateWithWhereUniqueWithoutClientInput = {
+  where: Prisma.UserWhereUniqueInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutClientInput, Prisma.UserUncheckedUpdateWithoutClientInput>
+}
+
+export type UserUpdateManyWithWhereWithoutClientInput = {
+  where: Prisma.UserScalarWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateManyMutationInput, Prisma.UserUncheckedUpdateManyWithoutClientInput>
+}
+
+export type UserScalarWhereInput = {
+  AND?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
+  OR?: Prisma.UserScalarWhereInput[]
+  NOT?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
+  id?: Prisma.StringFilter<"User"> | string
+  email?: Prisma.StringFilter<"User"> | string
+  password?: Prisma.StringFilter<"User"> | string
+  firstName?: Prisma.StringFilter<"User"> | string
+  lastName?: Prisma.StringFilter<"User"> | string
+  phone?: Prisma.StringNullableFilter<"User"> | string | null
+  avatar?: Prisma.StringNullableFilter<"User"> | string | null
+  role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
+  isActive?: Prisma.BoolFilter<"User"> | boolean
+  lastLoginAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  createdBy?: Prisma.StringNullableFilter<"User"> | string | null
+  updatedBy?: Prisma.StringNullableFilter<"User"> | string | null
+  isDeleted?: Prisma.BoolFilter<"User"> | boolean
+  version?: Prisma.IntFilter<"User"> | number
+  clientId?: Prisma.StringNullableFilter<"User"> | string | null
+}
+
 export type UserCreateWithoutLeadsAssignedInput = {
   id?: string
   email: string
@@ -1037,6 +1234,7 @@ export type UserCreateWithoutLeadsAssignedInput = {
   riskAssessmentsIdentified?: Prisma.RiskAssessmentCreateNestedManyWithoutIdentifiedByInput
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
+  client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateWithoutLeadsAssignedInput = {
@@ -1056,6 +1254,7 @@ export type UserUncheckedCreateWithoutLeadsAssignedInput = {
   updatedBy?: string | null
   isDeleted?: boolean
   version?: number
+  clientId?: string | null
   ledProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutLeadUserInput
   managedProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutManagerInput
   assignedSurveys?: Prisma.SurveyUncheckedCreateNestedManyWithoutEngineerInput
@@ -1123,6 +1322,7 @@ export type UserUpdateWithoutLeadsAssignedInput = {
   riskAssessmentsIdentified?: Prisma.RiskAssessmentUpdateManyWithoutIdentifiedByNestedInput
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
+  client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateWithoutLeadsAssignedInput = {
@@ -1142,6 +1342,7 @@ export type UserUncheckedUpdateWithoutLeadsAssignedInput = {
   updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ledProjects?: Prisma.ProjectUncheckedUpdateManyWithoutLeadUserNestedInput
   managedProjects?: Prisma.ProjectUncheckedUpdateManyWithoutManagerNestedInput
   assignedSurveys?: Prisma.SurveyUncheckedUpdateManyWithoutEngineerNestedInput
@@ -1193,6 +1394,7 @@ export type UserCreateWithoutManagedProjectsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateWithoutManagedProjectsInput = {
@@ -1212,6 +1414,7 @@ export type UserUncheckedCreateWithoutManagedProjectsInput = {
   updatedBy?: string | null
   isDeleted?: boolean
   version?: number
+  clientId?: string | null
   ledProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutLeadUserInput
   assignedSurveys?: Prisma.SurveyUncheckedCreateNestedManyWithoutEngineerInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
@@ -1268,6 +1471,7 @@ export type UserCreateWithoutLedProjectsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateWithoutLedProjectsInput = {
@@ -1287,6 +1491,7 @@ export type UserUncheckedCreateWithoutLedProjectsInput = {
   updatedBy?: string | null
   isDeleted?: boolean
   version?: number
+  clientId?: string | null
   managedProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutManagerInput
   assignedSurveys?: Prisma.SurveyUncheckedCreateNestedManyWithoutEngineerInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
@@ -1354,6 +1559,7 @@ export type UserUpdateWithoutManagedProjectsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateWithoutManagedProjectsInput = {
@@ -1373,6 +1579,7 @@ export type UserUncheckedUpdateWithoutManagedProjectsInput = {
   updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ledProjects?: Prisma.ProjectUncheckedUpdateManyWithoutLeadUserNestedInput
   assignedSurveys?: Prisma.SurveyUncheckedUpdateManyWithoutEngineerNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
@@ -1435,6 +1642,7 @@ export type UserUpdateWithoutLedProjectsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateWithoutLedProjectsInput = {
@@ -1454,6 +1662,7 @@ export type UserUncheckedUpdateWithoutLedProjectsInput = {
   updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   managedProjects?: Prisma.ProjectUncheckedUpdateManyWithoutManagerNestedInput
   assignedSurveys?: Prisma.SurveyUncheckedUpdateManyWithoutEngineerNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
@@ -1505,6 +1714,7 @@ export type UserCreateWithoutAssignedSurveysInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateWithoutAssignedSurveysInput = {
@@ -1524,6 +1734,7 @@ export type UserUncheckedCreateWithoutAssignedSurveysInput = {
   updatedBy?: string | null
   isDeleted?: boolean
   version?: number
+  clientId?: string | null
   ledProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutLeadUserInput
   managedProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutManagerInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
@@ -1591,6 +1802,7 @@ export type UserUpdateWithoutAssignedSurveysInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAssignedSurveysInput = {
@@ -1610,6 +1822,7 @@ export type UserUncheckedUpdateWithoutAssignedSurveysInput = {
   updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ledProjects?: Prisma.ProjectUncheckedUpdateManyWithoutLeadUserNestedInput
   managedProjects?: Prisma.ProjectUncheckedUpdateManyWithoutManagerNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
@@ -1661,6 +1874,7 @@ export type UserCreateWithoutRiskAssessmentsIdentifiedInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateWithoutRiskAssessmentsIdentifiedInput = {
@@ -1680,6 +1894,7 @@ export type UserUncheckedCreateWithoutRiskAssessmentsIdentifiedInput = {
   updatedBy?: string | null
   isDeleted?: boolean
   version?: number
+  clientId?: string | null
   ledProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutLeadUserInput
   managedProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutManagerInput
   assignedSurveys?: Prisma.SurveyUncheckedCreateNestedManyWithoutEngineerInput
@@ -1747,6 +1962,7 @@ export type UserUpdateWithoutRiskAssessmentsIdentifiedInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRiskAssessmentsIdentifiedInput = {
@@ -1766,6 +1982,7 @@ export type UserUncheckedUpdateWithoutRiskAssessmentsIdentifiedInput = {
   updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ledProjects?: Prisma.ProjectUncheckedUpdateManyWithoutLeadUserNestedInput
   managedProjects?: Prisma.ProjectUncheckedUpdateManyWithoutManagerNestedInput
   assignedSurveys?: Prisma.SurveyUncheckedUpdateManyWithoutEngineerNestedInput
@@ -1817,6 +2034,7 @@ export type UserCreateWithoutWorkflowStepsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateWithoutWorkflowStepsInput = {
@@ -1836,6 +2054,7 @@ export type UserUncheckedCreateWithoutWorkflowStepsInput = {
   updatedBy?: string | null
   isDeleted?: boolean
   version?: number
+  clientId?: string | null
   ledProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutLeadUserInput
   managedProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutManagerInput
   assignedSurveys?: Prisma.SurveyUncheckedCreateNestedManyWithoutEngineerInput
@@ -1903,6 +2122,7 @@ export type UserUpdateWithoutWorkflowStepsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateWithoutWorkflowStepsInput = {
@@ -1922,6 +2142,7 @@ export type UserUncheckedUpdateWithoutWorkflowStepsInput = {
   updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ledProjects?: Prisma.ProjectUncheckedUpdateManyWithoutLeadUserNestedInput
   managedProjects?: Prisma.ProjectUncheckedUpdateManyWithoutManagerNestedInput
   assignedSurveys?: Prisma.SurveyUncheckedUpdateManyWithoutEngineerNestedInput
@@ -1973,6 +2194,7 @@ export type UserCreateWithoutApprovalsRequestedInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateWithoutApprovalsRequestedInput = {
@@ -1992,6 +2214,7 @@ export type UserUncheckedCreateWithoutApprovalsRequestedInput = {
   updatedBy?: string | null
   isDeleted?: boolean
   version?: number
+  clientId?: string | null
   ledProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutLeadUserInput
   managedProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutManagerInput
   assignedSurveys?: Prisma.SurveyUncheckedCreateNestedManyWithoutEngineerInput
@@ -2048,6 +2271,7 @@ export type UserCreateWithoutApprovalsGivenInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateWithoutApprovalsGivenInput = {
@@ -2067,6 +2291,7 @@ export type UserUncheckedCreateWithoutApprovalsGivenInput = {
   updatedBy?: string | null
   isDeleted?: boolean
   version?: number
+  clientId?: string | null
   ledProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutLeadUserInput
   managedProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutManagerInput
   assignedSurveys?: Prisma.SurveyUncheckedCreateNestedManyWithoutEngineerInput
@@ -2134,6 +2359,7 @@ export type UserUpdateWithoutApprovalsRequestedInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateWithoutApprovalsRequestedInput = {
@@ -2153,6 +2379,7 @@ export type UserUncheckedUpdateWithoutApprovalsRequestedInput = {
   updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ledProjects?: Prisma.ProjectUncheckedUpdateManyWithoutLeadUserNestedInput
   managedProjects?: Prisma.ProjectUncheckedUpdateManyWithoutManagerNestedInput
   assignedSurveys?: Prisma.SurveyUncheckedUpdateManyWithoutEngineerNestedInput
@@ -2215,6 +2442,7 @@ export type UserUpdateWithoutApprovalsGivenInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateWithoutApprovalsGivenInput = {
@@ -2234,6 +2462,7 @@ export type UserUncheckedUpdateWithoutApprovalsGivenInput = {
   updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ledProjects?: Prisma.ProjectUncheckedUpdateManyWithoutLeadUserNestedInput
   managedProjects?: Prisma.ProjectUncheckedUpdateManyWithoutManagerNestedInput
   assignedSurveys?: Prisma.SurveyUncheckedUpdateManyWithoutEngineerNestedInput
@@ -2285,6 +2514,7 @@ export type UserCreateWithoutSignaturesInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateWithoutSignaturesInput = {
@@ -2304,6 +2534,7 @@ export type UserUncheckedCreateWithoutSignaturesInput = {
   updatedBy?: string | null
   isDeleted?: boolean
   version?: number
+  clientId?: string | null
   ledProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutLeadUserInput
   managedProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutManagerInput
   assignedSurveys?: Prisma.SurveyUncheckedCreateNestedManyWithoutEngineerInput
@@ -2371,6 +2602,7 @@ export type UserUpdateWithoutSignaturesInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSignaturesInput = {
@@ -2390,6 +2622,7 @@ export type UserUncheckedUpdateWithoutSignaturesInput = {
   updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ledProjects?: Prisma.ProjectUncheckedUpdateManyWithoutLeadUserNestedInput
   managedProjects?: Prisma.ProjectUncheckedUpdateManyWithoutManagerNestedInput
   assignedSurveys?: Prisma.SurveyUncheckedUpdateManyWithoutEngineerNestedInput
@@ -2441,6 +2674,7 @@ export type UserCreateWithoutNotificationsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -2460,6 +2694,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   updatedBy?: string | null
   isDeleted?: boolean
   version?: number
+  clientId?: string | null
   ledProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutLeadUserInput
   managedProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutManagerInput
   assignedSurveys?: Prisma.SurveyUncheckedCreateNestedManyWithoutEngineerInput
@@ -2527,6 +2762,7 @@ export type UserUpdateWithoutNotificationsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -2546,6 +2782,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ledProjects?: Prisma.ProjectUncheckedUpdateManyWithoutLeadUserNestedInput
   managedProjects?: Prisma.ProjectUncheckedUpdateManyWithoutManagerNestedInput
   assignedSurveys?: Prisma.SurveyUncheckedUpdateManyWithoutEngineerNestedInput
@@ -2597,6 +2834,7 @@ export type UserCreateWithoutReportsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateWithoutReportsInput = {
@@ -2616,6 +2854,7 @@ export type UserUncheckedCreateWithoutReportsInput = {
   updatedBy?: string | null
   isDeleted?: boolean
   version?: number
+  clientId?: string | null
   ledProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutLeadUserInput
   managedProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutManagerInput
   assignedSurveys?: Prisma.SurveyUncheckedCreateNestedManyWithoutEngineerInput
@@ -2683,6 +2922,7 @@ export type UserUpdateWithoutReportsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReportsInput = {
@@ -2702,6 +2942,7 @@ export type UserUncheckedUpdateWithoutReportsInput = {
   updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ledProjects?: Prisma.ProjectUncheckedUpdateManyWithoutLeadUserNestedInput
   managedProjects?: Prisma.ProjectUncheckedUpdateManyWithoutManagerNestedInput
   assignedSurveys?: Prisma.SurveyUncheckedUpdateManyWithoutEngineerNestedInput
@@ -2753,6 +2994,7 @@ export type UserCreateWithoutDocumentsUploadedInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateWithoutDocumentsUploadedInput = {
@@ -2772,6 +3014,7 @@ export type UserUncheckedCreateWithoutDocumentsUploadedInput = {
   updatedBy?: string | null
   isDeleted?: boolean
   version?: number
+  clientId?: string | null
   ledProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutLeadUserInput
   managedProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutManagerInput
   assignedSurveys?: Prisma.SurveyUncheckedCreateNestedManyWithoutEngineerInput
@@ -2839,6 +3082,7 @@ export type UserUpdateWithoutDocumentsUploadedInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDocumentsUploadedInput = {
@@ -2858,6 +3102,7 @@ export type UserUncheckedUpdateWithoutDocumentsUploadedInput = {
   updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ledProjects?: Prisma.ProjectUncheckedUpdateManyWithoutLeadUserNestedInput
   managedProjects?: Prisma.ProjectUncheckedUpdateManyWithoutManagerNestedInput
   assignedSurveys?: Prisma.SurveyUncheckedUpdateManyWithoutEngineerNestedInput
@@ -2909,6 +3154,7 @@ export type UserCreateWithoutAuditLogsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -2928,6 +3174,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   updatedBy?: string | null
   isDeleted?: boolean
   version?: number
+  clientId?: string | null
   ledProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutLeadUserInput
   managedProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutManagerInput
   assignedSurveys?: Prisma.SurveyUncheckedCreateNestedManyWithoutEngineerInput
@@ -2995,6 +3242,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -3014,6 +3262,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ledProjects?: Prisma.ProjectUncheckedUpdateManyWithoutLeadUserNestedInput
   managedProjects?: Prisma.ProjectUncheckedUpdateManyWithoutManagerNestedInput
   assignedSurveys?: Prisma.SurveyUncheckedUpdateManyWithoutEngineerNestedInput
@@ -3065,6 +3314,7 @@ export type UserCreateWithoutActivitiesInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateWithoutActivitiesInput = {
@@ -3084,6 +3334,7 @@ export type UserUncheckedCreateWithoutActivitiesInput = {
   updatedBy?: string | null
   isDeleted?: boolean
   version?: number
+  clientId?: string | null
   ledProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutLeadUserInput
   managedProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutManagerInput
   assignedSurveys?: Prisma.SurveyUncheckedCreateNestedManyWithoutEngineerInput
@@ -3151,6 +3402,7 @@ export type UserUpdateWithoutActivitiesInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateWithoutActivitiesInput = {
@@ -3170,6 +3422,7 @@ export type UserUncheckedUpdateWithoutActivitiesInput = {
   updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ledProjects?: Prisma.ProjectUncheckedUpdateManyWithoutLeadUserNestedInput
   managedProjects?: Prisma.ProjectUncheckedUpdateManyWithoutManagerNestedInput
   assignedSurveys?: Prisma.SurveyUncheckedUpdateManyWithoutEngineerNestedInput
@@ -3221,6 +3474,7 @@ export type UserCreateWithoutGpsTrackingInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateWithoutGpsTrackingInput = {
@@ -3240,6 +3494,7 @@ export type UserUncheckedCreateWithoutGpsTrackingInput = {
   updatedBy?: string | null
   isDeleted?: boolean
   version?: number
+  clientId?: string | null
   ledProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutLeadUserInput
   managedProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutManagerInput
   assignedSurveys?: Prisma.SurveyUncheckedCreateNestedManyWithoutEngineerInput
@@ -3307,6 +3562,7 @@ export type UserUpdateWithoutGpsTrackingInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGpsTrackingInput = {
@@ -3326,6 +3582,7 @@ export type UserUncheckedUpdateWithoutGpsTrackingInput = {
   updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ledProjects?: Prisma.ProjectUncheckedUpdateManyWithoutLeadUserNestedInput
   managedProjects?: Prisma.ProjectUncheckedUpdateManyWithoutManagerNestedInput
   assignedSurveys?: Prisma.SurveyUncheckedUpdateManyWithoutEngineerNestedInput
@@ -3377,6 +3634,7 @@ export type UserCreateWithoutChangeOrdersRequestedInput = {
   riskAssessmentsIdentified?: Prisma.RiskAssessmentCreateNestedManyWithoutIdentifiedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateWithoutChangeOrdersRequestedInput = {
@@ -3396,6 +3654,7 @@ export type UserUncheckedCreateWithoutChangeOrdersRequestedInput = {
   updatedBy?: string | null
   isDeleted?: boolean
   version?: number
+  clientId?: string | null
   ledProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutLeadUserInput
   managedProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutManagerInput
   assignedSurveys?: Prisma.SurveyUncheckedCreateNestedManyWithoutEngineerInput
@@ -3452,6 +3711,7 @@ export type UserCreateWithoutChangeOrdersApprovedInput = {
   riskAssessmentsIdentified?: Prisma.RiskAssessmentCreateNestedManyWithoutIdentifiedByInput
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateWithoutChangeOrdersApprovedInput = {
@@ -3471,6 +3731,7 @@ export type UserUncheckedCreateWithoutChangeOrdersApprovedInput = {
   updatedBy?: string | null
   isDeleted?: boolean
   version?: number
+  clientId?: string | null
   ledProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutLeadUserInput
   managedProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutManagerInput
   assignedSurveys?: Prisma.SurveyUncheckedCreateNestedManyWithoutEngineerInput
@@ -3538,6 +3799,7 @@ export type UserUpdateWithoutChangeOrdersRequestedInput = {
   riskAssessmentsIdentified?: Prisma.RiskAssessmentUpdateManyWithoutIdentifiedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateWithoutChangeOrdersRequestedInput = {
@@ -3557,6 +3819,7 @@ export type UserUncheckedUpdateWithoutChangeOrdersRequestedInput = {
   updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ledProjects?: Prisma.ProjectUncheckedUpdateManyWithoutLeadUserNestedInput
   managedProjects?: Prisma.ProjectUncheckedUpdateManyWithoutManagerNestedInput
   assignedSurveys?: Prisma.SurveyUncheckedUpdateManyWithoutEngineerNestedInput
@@ -3619,9 +3882,101 @@ export type UserUpdateWithoutChangeOrdersApprovedInput = {
   riskAssessmentsIdentified?: Prisma.RiskAssessmentUpdateManyWithoutIdentifiedByNestedInput
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateWithoutChangeOrdersApprovedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ledProjects?: Prisma.ProjectUncheckedUpdateManyWithoutLeadUserNestedInput
+  managedProjects?: Prisma.ProjectUncheckedUpdateManyWithoutManagerNestedInput
+  assignedSurveys?: Prisma.SurveyUncheckedUpdateManyWithoutEngineerNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  signatures?: Prisma.DigitalSignatureUncheckedUpdateManyWithoutUserNestedInput
+  workflowSteps?: Prisma.WorkflowStepUncheckedUpdateManyWithoutAssignedToNestedInput
+  approvalsRequested?: Prisma.ApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+  approvalsGiven?: Prisma.ApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+  activities?: Prisma.ActivityUncheckedUpdateManyWithoutUserNestedInput
+  reports?: Prisma.ReportUncheckedUpdateManyWithoutGeneratedByNestedInput
+  documentsUploaded?: Prisma.DocumentUncheckedUpdateManyWithoutUploadedByNestedInput
+  gpsTracking?: Prisma.GpsTrackingUncheckedUpdateManyWithoutUserNestedInput
+  riskAssessmentsIdentified?: Prisma.RiskAssessmentUncheckedUpdateManyWithoutIdentifiedByNestedInput
+  changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
+  leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+}
+
+export type UserCreateManyClientInput = {
+  id?: string
+  email: string
+  password: string
+  firstName: string
+  lastName: string
+  phone?: string | null
+  avatar?: string | null
+  role?: $Enums.UserRole
+  isActive?: boolean
+  lastLoginAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  createdBy?: string | null
+  updatedBy?: string | null
+  isDeleted?: boolean
+  version?: number
+}
+
+export type UserUpdateWithoutClientInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  ledProjects?: Prisma.ProjectUpdateManyWithoutLeadUserNestedInput
+  managedProjects?: Prisma.ProjectUpdateManyWithoutManagerNestedInput
+  assignedSurveys?: Prisma.SurveyUpdateManyWithoutEngineerNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  signatures?: Prisma.DigitalSignatureUpdateManyWithoutUserNestedInput
+  workflowSteps?: Prisma.WorkflowStepUpdateManyWithoutAssignedToNestedInput
+  approvalsRequested?: Prisma.ApprovalUpdateManyWithoutRequestedByNestedInput
+  approvalsGiven?: Prisma.ApprovalUpdateManyWithoutApprovedByNestedInput
+  activities?: Prisma.ActivityUpdateManyWithoutUserNestedInput
+  reports?: Prisma.ReportUpdateManyWithoutGeneratedByNestedInput
+  documentsUploaded?: Prisma.DocumentUpdateManyWithoutUploadedByNestedInput
+  gpsTracking?: Prisma.GpsTrackingUpdateManyWithoutUserNestedInput
+  riskAssessmentsIdentified?: Prisma.RiskAssessmentUpdateManyWithoutIdentifiedByNestedInput
+  changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
+  changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
+  leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+}
+
+export type UserUncheckedUpdateWithoutClientInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3653,7 +4008,27 @@ export type UserUncheckedUpdateWithoutChangeOrdersApprovedInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedUpdateManyWithoutUserNestedInput
   riskAssessmentsIdentified?: Prisma.RiskAssessmentUncheckedUpdateManyWithoutIdentifiedByNestedInput
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
+  changeOrdersApproved?: Prisma.ChangeOrderUncheckedUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+}
+
+export type UserUncheckedUpdateManyWithoutClientInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  version?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 
@@ -3848,6 +4223,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   updatedBy?: boolean
   isDeleted?: boolean
   version?: boolean
+  clientId?: boolean
   ledProjects?: boolean | Prisma.User$ledProjectsArgs<ExtArgs>
   managedProjects?: boolean | Prisma.User$managedProjectsArgs<ExtArgs>
   assignedSurveys?: boolean | Prisma.User$assignedSurveysArgs<ExtArgs>
@@ -3865,6 +4241,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   changeOrdersRequested?: boolean | Prisma.User$changeOrdersRequestedArgs<ExtArgs>
   changeOrdersApproved?: boolean | Prisma.User$changeOrdersApprovedArgs<ExtArgs>
   leadsAssigned?: boolean | Prisma.User$leadsAssignedArgs<ExtArgs>
+  client?: boolean | Prisma.User$clientArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -3885,6 +4262,8 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   updatedBy?: boolean
   isDeleted?: boolean
   version?: boolean
+  clientId?: boolean
+  client?: boolean | Prisma.User$clientArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -3904,6 +4283,8 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   updatedBy?: boolean
   isDeleted?: boolean
   version?: boolean
+  clientId?: boolean
+  client?: boolean | Prisma.User$clientArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectScalar = {
@@ -3923,9 +4304,10 @@ export type UserSelectScalar = {
   updatedBy?: boolean
   isDeleted?: boolean
   version?: boolean
+  clientId?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password" | "firstName" | "lastName" | "phone" | "avatar" | "role" | "isActive" | "lastLoginAt" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy" | "isDeleted" | "version", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password" | "firstName" | "lastName" | "phone" | "avatar" | "role" | "isActive" | "lastLoginAt" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy" | "isDeleted" | "version" | "clientId", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ledProjects?: boolean | Prisma.User$ledProjectsArgs<ExtArgs>
   managedProjects?: boolean | Prisma.User$managedProjectsArgs<ExtArgs>
@@ -3944,10 +4326,15 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   changeOrdersRequested?: boolean | Prisma.User$changeOrdersRequestedArgs<ExtArgs>
   changeOrdersApproved?: boolean | Prisma.User$changeOrdersApprovedArgs<ExtArgs>
   leadsAssigned?: boolean | Prisma.User$leadsAssignedArgs<ExtArgs>
+  client?: boolean | Prisma.User$clientArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
-export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
-export type UserIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  client?: boolean | Prisma.User$clientArgs<ExtArgs>
+}
+export type UserIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  client?: boolean | Prisma.User$clientArgs<ExtArgs>
+}
 
 export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "User"
@@ -3969,6 +4356,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     changeOrdersRequested: Prisma.$ChangeOrderPayload<ExtArgs>[]
     changeOrdersApproved: Prisma.$ChangeOrderPayload<ExtArgs>[]
     leadsAssigned: Prisma.$LeadPayload<ExtArgs>[]
+    client: Prisma.$ClientPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3987,6 +4375,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     updatedBy: string | null
     isDeleted: boolean
     version: number
+    clientId: string | null
   }, ExtArgs["result"]["user"]>
   composites: {}
 }
@@ -4398,6 +4787,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   changeOrdersRequested<T extends Prisma.User$changeOrdersRequestedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$changeOrdersRequestedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChangeOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   changeOrdersApproved<T extends Prisma.User$changeOrdersApprovedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$changeOrdersApprovedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChangeOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   leadsAssigned<T extends Prisma.User$leadsAssignedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$leadsAssignedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  client<T extends Prisma.User$clientArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$clientArgs<ExtArgs>>): Prisma.Prisma__ClientClient<runtime.Types.Result.GetResult<Prisma.$ClientPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4443,6 +4833,7 @@ export interface UserFieldRefs {
   readonly updatedBy: Prisma.FieldRef<"User", 'String'>
   readonly isDeleted: Prisma.FieldRef<"User", 'Boolean'>
   readonly version: Prisma.FieldRef<"User", 'Int'>
+  readonly clientId: Prisma.FieldRef<"User", 'String'>
 }
     
 
@@ -4697,6 +5088,10 @@ export type UserCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions
    */
   data: Prisma.UserCreateManyInput | Prisma.UserCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -4767,6 +5162,10 @@ export type UserUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions
    * Limit how many Users to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -5241,6 +5640,25 @@ export type User$leadsAssignedArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.LeadScalarFieldEnum | Prisma.LeadScalarFieldEnum[]
+}
+
+/**
+ * User.client
+ */
+export type User$clientArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Client
+   */
+  select?: Prisma.ClientSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Client
+   */
+  omit?: Prisma.ClientOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClientInclude<ExtArgs> | null
+  where?: Prisma.ClientWhereInput
 }
 
 /**
