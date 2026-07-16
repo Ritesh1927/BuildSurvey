@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo, useCallback } from "react"
+import { useSession } from "next-auth/react"
 import {
   FileText,
   FileSpreadsheet,
@@ -75,11 +76,21 @@ interface BOQItem {
 }
 
 const units = ["Cum", "Sqm", "Rmt", "Nos", "Set", "Mtr"]
+const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT']
+const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT']
+const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN']
 
 export default function BOQPage() {
+  const { data: session } = useSession()
+  const role = session?.user?.role
+  const canCreate = !!role && CREATE_ROLES.includes(role)
+  const canWrite = !!role && WRITE_ROLES.includes(role)
+  const canDelete = !!role && DELETE_ROLES.includes(role)
+
   const [selectedProject, setSelectedProject] = useState("all")
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
   const [showAddModal, setShowAddModal] = useState(false)
+  const [editingItem, setEditingItem] = useState<BOQItem | null>(null)
   const [items, setItems] = useState<BOQItem[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
@@ -213,6 +224,57 @@ export default function BOQPage() {
     }
   }
 
+  const openEditModal = (item: BOQItem) => {
+    setEditingItem(item)
+    setFormDescription(item.description)
+    setFormCategory(item.category)
+    setFormUnit(item.unit)
+    setFormQty(String(item.quantity))
+    setFormRate(String(item.unitRate))
+    setFormProjectId(item.projectId)
+  }
+
+  const handleEditItem = async () => {
+    if (!editingItem) return
+    if (!formDescription || !formCategory || !formUnit || !formQty || !formRate) {
+      showError("All fields are required")
+      return
+    }
+    const qty = parseFloat(formQty)
+    const rate = parseFloat(formRate)
+    if (isNaN(qty) || qty <= 0 || isNaN(rate) || rate <= 0) {
+      showError("Quantity and rate must be positive numbers")
+      return
+    }
+    try {
+      setSubmitting(true)
+      const res = await fetch(`/api/boq/${editingItem.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          description: formDescription,
+          category: formCategory,
+          unit: formUnit,
+          quantity: qty,
+          unitRate: rate,
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        showSuccess("BOQ item updated")
+        setEditingItem(null)
+        resetForm()
+        fetchItems()
+      } else {
+        showError(data.error || "Failed to update BOQ item")
+      }
+    } catch {
+      showError("Failed to update BOQ item")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   const handleDeleteItem = async (id: string) => {
     try {
       setDeletingId(id)
@@ -254,10 +316,12 @@ export default function BOQPage() {
               <Printer className="mr-2 h-4 w-4" />
               Print BOQ
             </Button>
-            <Button onClick={() => { resetForm(); setShowAddModal(true) }}>
-              <Plus className="mr-2 h-4 w-4" />
-              New BOQ Item
-            </Button>
+            {canCreate && (
+              <Button onClick={() => { resetForm(); setShowAddModal(true) }}>
+                <Plus className="mr-2 h-4 w-4" />
+                New BOQ Item
+              </Button>
+            )}
           </div>
         }
       />
@@ -371,22 +435,26 @@ export default function BOQPage() {
                             <TableCell className="text-right font-medium">{formatCurrency(item.amount)}</TableCell>
                             <TableCell className="text-center">
                               <div className="flex items-center justify-center gap-1">
-                                <Button variant="ghost" size="icon" className="h-7 w-7">
-                                  <Pencil className="h-3.5 w-3.5" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7 text-destructive hover:text-destructive"
-                                  onClick={() => handleDeleteItem(item.id)}
-                                  disabled={deletingId === item.id}
-                                >
-                                  {deletingId === item.id ? (
-                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  )}
-                                </Button>
+                                {canWrite && (
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditModal(item)}>
+                                    <Pencil className="h-3.5 w-3.5" />
+                                  </Button>
+                                )}
+                                {canDelete && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 text-destructive hover:text-destructive"
+                                    onClick={() => handleDeleteItem(item.id)}
+                                    disabled={deletingId === item.id}
+                                  >
+                                    {deletingId === item.id ? (
+                                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    )}
+                                  </Button>
+                                )}
                               </div>
                             </TableCell>
                           </TableRow>
@@ -499,6 +567,50 @@ export default function BOQPage() {
                 value={formRate}
                 onChange={(e) => setFormRate(e.target.value)}
               />
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={!!editingItem}
+        onOpenChange={(open) => { if (!open) { setEditingItem(null); resetForm() } }}
+        title="Edit BOQ Item"
+        description="Update this line item"
+        maxWidth="lg"
+        onCancel={() => { setEditingItem(null); resetForm() }}
+        onConfirm={handleEditItem}
+        confirmLabel={submitting ? "Saving..." : "Save Changes"}
+        loading={submitting}
+      >
+        <div className="grid gap-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Description *</Label>
+              <Input placeholder="Item description" value={formDescription} onChange={(e) => setFormDescription(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Category *</Label>
+              <Input placeholder="e.g. Earthwork, Concrete" value={formCategory} onChange={(e) => setFormCategory(e.target.value)} />
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Unit *</Label>
+              <Select value={formUnit} onValueChange={setFormUnit}>
+                <SelectTrigger><SelectValue placeholder="Select unit" /></SelectTrigger>
+                <SelectContent>
+                  {units.map((u) => (<SelectItem key={u} value={u}>{u}</SelectItem>))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Quantity *</Label>
+              <Input type="number" placeholder="0" value={formQty} onChange={(e) => setFormQty(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Rate (₹) *</Label>
+              <Input type="number" placeholder="0" value={formRate} onChange={(e) => setFormRate(e.target.value)} />
             </div>
           </div>
         </div>

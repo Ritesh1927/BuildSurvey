@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo, useCallback } from "react"
+import { useSession } from "next-auth/react"
 import {
   AlertTriangle,
   Download,
@@ -74,7 +75,15 @@ interface Survey {
   projectName: string
 }
 
+const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR']
+const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN']
+
 export default function RisksPage() {
+  const { data: session } = useSession()
+  const role = session?.user?.role
+  const canCreate = !!role && CREATE_ROLES.includes(role)
+  const canDelete = !!role && DELETE_ROLES.includes(role)
+
   const [levelFilter, setLevelFilter] = useState("all")
   const [risks, setRisks] = useState<Risk[]>([])
   const [surveys, setSurveys] = useState<Survey[]>([])
@@ -162,7 +171,6 @@ export default function RisksPage() {
           surveyId: formSurveyId,
           level: formLevel.toUpperCase(),
           mitigation: formMitigation || undefined,
-          identifiedById: "",
         }),
       })
       const data = await res.json()
@@ -227,10 +235,12 @@ export default function RisksPage() {
           { label: "Risks" },
         ]}
         actions={
-          <Button onClick={() => { resetForm(); setShowAddModal(true) }}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Risk
-          </Button>
+          canCreate ? (
+            <Button onClick={() => { resetForm(); setShowAddModal(true) }}>
+              <Plus className="mr-2 h-4 w-4" />
+              New Risk
+            </Button>
+          ) : undefined
         }
       />
 
@@ -388,19 +398,21 @@ export default function RisksPage() {
                           {risk.date ? new Date(risk.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—"}
                         </TableCell>
                         <TableCell className="text-center">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:text-destructive"
-                            onClick={() => handleDeleteRisk(risk.id)}
-                            disabled={deletingId === risk.id}
-                          >
-                            {deletingId === risk.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Trash2 className="h-4 w-4" />
-                            )}
-                          </Button>
+                          {canDelete && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={() => handleDeleteRisk(risk.id)}
+                              disabled={deletingId === risk.id}
+                            >
+                              {deletingId === risk.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </Button>
+                          )}
                         </TableCell>
                       </TableRow>
                     )

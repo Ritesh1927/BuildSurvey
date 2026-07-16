@@ -1,32 +1,31 @@
 "use client"
 
-import { useState, use } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
+import { useSession } from "next-auth/react"
 import {
-  Activity,
   ArrowLeft,
   Building2,
-  Calendar,
-  CheckCircle2,
   Clock,
   Coins,
   DollarSign,
-  Download,
   Edit,
   FileText,
   FolderOpen,
-  GitBranch,
-  MapPin,
-  MoreHorizontal,
-  Settings,
+  Save,
   Target,
+  Trash2,
   TrendingUp,
-  Users,
+  X,
 } from "lucide-react"
 
 import { cn, formatCurrency, formatDate } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Card,
   CardContent,
@@ -38,7 +37,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { PageHeader } from "@/components/ui/page-header"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
 import {
   Select,
   SelectContent,
@@ -54,587 +52,441 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { showSuccess, showError } from "@/components/ui/toast"
 
-const projectData = {
-  id: "PRJ-001",
-  name: "Worli Sky Residences Tower A",
-  code: "PRJ-2024-001",
-  status: "In Progress",
-  type: "Residential Tower",
-  description:
-    "Premium 42-floor residential tower with 240 luxury apartments, 3-level basement parking, rooftop amenities, and ground-floor retail space. Located in the heart of Worli, Mumbai with panoramic sea views.",
-  client: {
-    id: "CLT-001",
-    name: "L&T Realty",
-    contactPerson: "Rajesh Kumar",
-  },
-  manager: {
-    name: "Amit Deshmukh",
-    initials: "AD",
-    role: "Senior Project Manager",
-  },
-  team: [
-    { name: "Priya Nair", initials: "PN", role: "Site Engineer" },
-    { name: "Ravi Shankar", initials: "RS", role: "Surveyor" },
-    { name: "Neha Kulkarni", initials: "NK", role: "Architect" },
-    { name: "Vikram Desai", initials: "VD", role: "Quality Manager" },
-  ],
-  budget: 12500000,
-  spent: 8125000,
-  estimatedCost: 11800000,
-  progress: 65,
-  startDate: "2024-01-15",
-  endDate: "2025-06-30",
-  daysLeft: 345,
-  area: 285000,
-  floors: 42,
-  location: {
-    address: "Plot No. B-16, Worli Sea Face, Worli",
-    city: "Mumbai",
-    state: "Maharashtra",
-    country: "India",
-    lat: "19.0035",
-    lng: "72.8146",
-  },
-  surveys: {
-    total: 12,
-    completed: 8,
-    pending: 4,
-  },
+interface ProjectDetail {
+  id: string
+  name: string
+  code: string
+  description: string | null
+  type: string
+  status: string
+  budget: number | null
+  actualCost: number
+  startDate: string | null
+  endDate: string | null
+  address: string | null
+  city: string | null
+  state: string | null
+  area: number | null
+  floors: number | null
+  clientId: string
+  managerId: string | null
+  client: { id: string; companyName: string; contactPerson: string; email: string; phone: string }
+  manager: { id: string; firstName: string; lastName: string; email: string } | null
+  surveys: { id: string; title: string; status: string; scheduledDate: string | null }[]
+  boqItems: { id: string; serialNumber: number; description: string; category: string; quantity: number; unitRate: number; amount: number }[]
 }
 
-const surveyData = [
-  { id: "SRV-001", name: "Topographic Survey", status: "Completed", date: "2024-01-20", surveyor: "Ravi Shankar" },
-  { id: "SRV-002", name: "Soil Investigation", status: "Completed", date: "2024-01-25", surveyor: "Ravi Shankar" },
-  { id: "SRV-003", name: "Boundary Survey", status: "Completed", date: "2024-02-01", surveyor: "Ravi Shankar" },
-  { id: "SRV-004", name: "Level Survey - Foundation", status: "Completed", date: "2024-03-10", surveyor: "Sanjay Kulkarni" },
-  { id: "SRV-005", name: "Structural Load Survey", status: "Completed", date: "2024-04-05", surveyor: "Ravi Shankar" },
-  { id: "SRV-006", name: "Utility Mapping", status: "Completed", date: "2024-04-20", surveyor: "Sanjay Kulkarni" },
-  { id: "SRV-007", name: "Level Survey - Podium", status: "Completed", date: "2024-05-15", surveyor: "Ravi Shankar" },
-  { id: "SRV-008", name: "As-Built Survey - Basement", status: "Completed", date: "2024-06-01", surveyor: "Sanjay Kulkarni" },
-  { id: "SRV-009", name: "Level Survey - Floor 12", status: "In Progress", date: "2024-07-15", surveyor: "Ravi Shankar" },
-  { id: "SRV-010", name: "Progress Photogrammetry", status: "In Progress", date: "2024-07-20", surveyor: "Sanjay Kulkarni" },
-  { id: "SRV-011", name: "Level Survey - Floor 24", status: "Scheduled", date: "2024-09-01", surveyor: "Ravi Shankar" },
-  { id: "SRV-012", name: "Final As-Built Survey", status: "Scheduled", date: "2025-05-01", surveyor: "Ravi Shankar" },
-]
-
-const boqItems = [
-  { id: 1, item: "Earthwork Excavation", unit: "Cum", qty: 45000, rate: 350, amount: 15750000 },
-  { id: 2, item: "PCC (1:4:8)", unit: "Cum", qty: 2800, rate: 4500, amount: 12600000 },
-  { id: 3, item: "RCC (M30)", unit: "Cum", qty: 18500, rate: 6500, amount: 120250000 },
-  { id: 4, item: "Steel Reinforcement", unit: "MT", qty: 3200, rate: 72000, amount: 230400000 },
-  { id: 5, item: "Formwork (Scaffolding)", unit: "Sq.m", qty: 95000, rate: 850, amount: 80750000 },
-  { id: 6, item: "Brickwork", unit: "Cum", qty: 12000, rate: 5200, amount: 62400000 },
-  { id: 7, item: "Plastering", unit: "Sq.m", qty: 180000, rate: 280, amount: 50400000 },
-  { id: 8, item: "Flooring (Vitrified)", unit: "Sq.m", qty: 75000, rate: 1200, amount: 90000000 },
-]
-
-const activityTimeline = [
-  { date: "2024-07-10", action: "Floor 12 slab casting completed", user: "Amit Deshmukh", type: "milestone" },
-  { date: "2024-07-08", action: "Survey SRV-009 started - Level Survey Floor 12", user: "Ravi Shankar", type: "survey" },
-  { date: "2024-07-05", action: "Monthly progress report submitted to client", user: "Amit Deshmukh", type: "report" },
-  { date: "2024-07-01", action: "Material procurement: 500 MT steel ordered", user: "Procurement Team", type: "procurement" },
-  { date: "2024-06-28", action: "Quality audit passed for basement levels", user: "Vikram Desai", type: "quality" },
-  { date: "2024-06-25", action: "Safety inspection completed", user: "Safety Officer", type: "safety" },
-  { date: "2024-06-20", action: "Client review meeting - design changes approved", user: "Rajesh Kumar", type: "meeting" },
-  { date: "2024-06-15", action: "Invoice INV-003 raised - Phase 2 payment", user: "Accounts Team", type: "finance" },
-  { date: "2024-06-10", action: "Floor 10 slab casting completed", user: "Amit Deshmukh", type: "milestone" },
-  { date: "2024-06-05", action: "Survey SRV-008 completed - As-Built Basement", user: "Sanjay Kulkarni", type: "survey" },
-]
-
-const statusVariantMap: Record<string, "success" | "info" | "warning" | "destructive" | "secondary"> = {
-  "In Progress": "success",
-  Planning: "info",
-  "On Hold": "warning",
-  Completed: "secondary",
-  Cancelled: "destructive",
+const STATUS_META: Record<string, { label: string; variant: "success" | "info" | "warning" | "destructive" | "secondary" }> = {
+  PLANNING: { label: "Planning", variant: "info" },
+  IN_PROGRESS: { label: "In Progress", variant: "success" },
+  ON_HOLD: { label: "On Hold", variant: "warning" },
+  COMPLETED: { label: "Completed", variant: "secondary" },
+  CANCELLED: { label: "Cancelled", variant: "destructive" },
 }
 
-export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
-  const [activeTab, setActiveTab] = useState("overview")
+const TYPE_META: Record<string, string> = {
+  RESIDENTIAL: "Residential", COMMERCIAL: "Commercial", INDUSTRIAL: "Industrial",
+  INFRASTRUCTURE: "Infrastructure", INTERIOR: "Interior", MEP: "MEP", RENOVATION: "Renovation",
+}
 
-  const budgetPercentage = Math.round((projectData.spent / projectData.budget) * 100)
-  const remaining = projectData.budget - projectData.spent
+const SURVEY_STATUS_VARIANT: Record<string, "success" | "info" | "warning" | "destructive" | "secondary"> = {
+  APPROVED: "success", IN_PROGRESS: "info", SUBMITTED: "info", UNDER_REVIEW: "warning",
+  REJECTED: "destructive", ASSIGNED: "secondary", DRAFT: "secondary",
+}
+
+const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER']
+const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN']
+
+export default function ProjectDetailPage() {
+  const params = useParams()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { data: session } = useSession()
+  const role = session?.user?.role
+  const projectId = params.id as string
+
+  const [project, setProject] = useState<ProjectDetail | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isEditing, setIsEditing] = useState(searchParams.get('edit') === 'true')
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({
+    name: '', description: '', status: 'PLANNING', budget: '', startDate: '', endDate: '',
+  })
+
+  const canWrite = !!role && WRITE_ROLES.includes(role)
+  const canDelete = !!role && DELETE_ROLES.includes(role)
+
+  const fetchProject = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(`/api/projects/${projectId}`)
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        setError(data.error || 'Failed to load project')
+        return
+      }
+      setProject(data.data)
+      setForm({
+        name: data.data.name || '',
+        description: data.data.description || '',
+        status: data.data.status,
+        budget: data.data.budget != null ? String(data.data.budget) : '',
+        startDate: data.data.startDate ? data.data.startDate.slice(0, 10) : '',
+        endDate: data.data.endDate ? data.data.endDate.slice(0, 10) : '',
+      })
+    } catch {
+      setError('Network error while loading project')
+    } finally {
+      setLoading(false)
+    }
+  }, [projectId])
+
+  useEffect(() => {
+    fetchProject()
+  }, [fetchProject])
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/projects/${projectId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          description: form.description || null,
+          status: form.status,
+          budget: form.budget !== '' ? form.budget : null,
+          startDate: form.startDate || null,
+          endDate: form.endDate || null,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        showError(data.error || 'Failed to save project')
+        return
+      }
+      showSuccess('Project updated')
+      setIsEditing(false)
+      router.replace(`/projects/${projectId}`)
+      fetchProject()
+    } catch {
+      showError('Network error while saving project')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!project || !confirm(`Delete project "${project.name}"? This cannot be undone from here.`)) return
+    try {
+      const res = await fetch(`/api/projects/${projectId}`, { method: 'DELETE' })
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        showError(data.error || 'Failed to delete project')
+        return
+      }
+      showSuccess('Project deleted')
+      router.push('/projects')
+    } catch {
+      showError('Network error while deleting project')
+    }
+  }
+
+  if (loading) {
+    return <div className="py-24 text-center text-sm text-muted-foreground">Loading project...</div>
+  }
+
+  if (error || !project) {
+    return (
+      <div className="space-y-4 py-12 text-center">
+        <p className="text-sm text-destructive">{error || 'Project not found'}</p>
+        <Button variant="outline" asChild>
+          <Link href="/projects"><ArrowLeft className="mr-1 h-4 w-4" />Back to Projects</Link>
+        </Button>
+      </div>
+    )
+  }
+
+  const budget = project.budget ?? 0
+  const budgetPercentage = budget > 0 ? Math.round((project.actualCost / budget) * 100) : 0
+  const remaining = budget - project.actualCost
+  const daysLeft = project.endDate ? Math.ceil((new Date(project.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null
+  const surveysCompleted = project.surveys.filter((s) => s.status === 'APPROVED').length
+  const boqTotal = project.boqItems.reduce((sum, item) => sum + item.amount, 0)
+  const statusMeta = STATUS_META[project.status] || { label: project.status, variant: 'secondary' as const }
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title={projectData.name}
-        description={projectData.code}
+        title={project.name}
+        description={project.code}
         breadcrumbs={[
           { label: "Dashboard", href: "/" },
           { label: "Projects", href: "/projects" },
-          { label: projectData.name },
+          { label: project.name },
         ]}
         actions={
           <div className="flex items-center gap-2">
             <Button variant="outline" asChild>
-              <Link href="/projects">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back
-              </Link>
+              <Link href="/projects"><ArrowLeft className="mr-2 h-4 w-4" />Back</Link>
             </Button>
-            <Button variant="outline">
-              <Edit className="mr-2 h-4 w-4" />
-              Edit
-            </Button>
-            <Button>
-              <Download className="mr-2 h-4 w-4" />
-              Export Report
-            </Button>
+            {isEditing ? (
+              <>
+                <Button variant="outline" onClick={() => { setIsEditing(false); router.replace(`/projects/${projectId}`) }}>
+                  <X className="mr-2 h-4 w-4" />Cancel
+                </Button>
+                <Button onClick={handleSave} disabled={saving}>
+                  <Save className="mr-2 h-4 w-4" />{saving ? 'Saving...' : 'Save'}
+                </Button>
+              </>
+            ) : (
+              <>
+                {canWrite && (
+                  <Button variant="outline" onClick={() => setIsEditing(true)}>
+                    <Edit className="mr-2 h-4 w-4" />Edit
+                  </Button>
+                )}
+                {canDelete && (
+                  <Button variant="destructive" onClick={handleDelete}>
+                    <Trash2 className="mr-2 h-4 w-4" />Delete
+                  </Button>
+                )}
+              </>
+            )}
           </div>
         }
       />
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Badge variant={statusVariantMap[projectData.status] || "secondary"} className="text-sm px-3 py-1">
-          {projectData.status}
-        </Badge>
-        <Badge variant="outline" className="text-sm px-3 py-1">
-          {projectData.type}
-        </Badge>
-        <span className="text-sm text-muted-foreground">
-          {projectData.client.name}
-        </span>
-      </div>
+      {!isEditing && (
+        <>
+          <div className="flex flex-wrap items-center gap-3">
+            <Badge variant={statusMeta.variant} className="text-sm px-3 py-1">{statusMeta.label}</Badge>
+            <Badge variant="outline" className="text-sm px-3 py-1">{TYPE_META[project.type] || project.type}</Badge>
+            <span className="text-sm text-muted-foreground">{project.client.companyName}</span>
+          </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        <MetricCard
-          icon={<DollarSign className="h-5 w-5" />}
-          label="Budget"
-          value={formatCurrency(projectData.budget)}
-          color="text-blue-600 bg-blue-50"
-        />
-        <MetricCard
-          icon={<Coins className="h-5 w-5" />}
-          label="Spent"
-          value={formatCurrency(projectData.spent)}
-          subtext={`${budgetPercentage}% utilized`}
-          color="text-amber-600 bg-amber-50"
-        />
-        <MetricCard
-          icon={<TrendingUp className="h-5 w-5" />}
-          label="Remaining"
-          value={formatCurrency(remaining)}
-          color="text-emerald-600 bg-emerald-50"
-        />
-        <MetricCard
-          icon={<Target className="h-5 w-5" />}
-          label="Progress"
-          value={`${projectData.progress}%`}
-          color="text-violet-600 bg-violet-50"
-        />
-        <MetricCard
-          icon={<Clock className="h-5 w-5" />}
-          label="Days Left"
-          value={String(projectData.daysLeft)}
-          color="text-rose-600 bg-rose-50"
-        />
-        <MetricCard
-          icon={<CheckCircle2 className="h-5 w-5" />}
-          label="Surveys"
-          value={`${projectData.surveys.completed}/${projectData.surveys.total}`}
-          subtext={`${projectData.surveys.pending} pending`}
-          color="text-teal-600 bg-teal-50"
-        />
-      </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            <MetricCard icon={<DollarSign className="h-5 w-5" />} label="Budget" value={project.budget != null ? formatCurrency(project.budget) : 'Not set'} color="text-blue-600 bg-blue-50" />
+            <MetricCard icon={<Coins className="h-5 w-5" />} label="Spent" value={formatCurrency(project.actualCost)} subtext={project.budget ? `${budgetPercentage}% utilized` : undefined} color="text-amber-600 bg-amber-50" />
+            <MetricCard icon={<TrendingUp className="h-5 w-5" />} label="Remaining" value={formatCurrency(remaining)} color="text-emerald-600 bg-emerald-50" />
+            <MetricCard icon={<Clock className="h-5 w-5" />} label="Days Left" value={daysLeft != null ? String(daysLeft) : '—'} color="text-rose-600 bg-rose-50" />
+            <MetricCard icon={<Target className="h-5 w-5" />} label="Surveys" value={`${surveysCompleted}/${project.surveys.length}`} subtext={`${project.surveys.length - surveysCompleted} pending`} color="text-teal-600 bg-teal-50" />
+          </div>
+        </>
+      )}
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="flex-wrap h-auto gap-1">
-          <TabsTrigger value="overview" className="gap-2">
-            <Building2 className="h-4 w-4" />
-            Overview
-          </TabsTrigger>
-          <TabsTrigger value="surveys" className="gap-2">
-            <Target className="h-4 w-4" />
-            Surveys
-          </TabsTrigger>
-          <TabsTrigger value="boq" className="gap-2">
-            <FileText className="h-4 w-4" />
-            BOQ
-          </TabsTrigger>
-          <TabsTrigger value="documents" className="gap-2">
-            <FolderOpen className="h-4 w-4" />
-            Documents
-          </TabsTrigger>
-          <TabsTrigger value="workflows" className="gap-2">
-            <GitBranch className="h-4 w-4" />
-            Workflows
-          </TabsTrigger>
-          <TabsTrigger value="activity" className="gap-2">
-            <Activity className="h-4 w-4" />
-            Activity
-          </TabsTrigger>
-          <TabsTrigger value="settings" className="gap-2">
-            <Settings className="h-4 w-4" />
-            Settings
-          </TabsTrigger>
-        </TabsList>
+      {isEditing ? (
+        <Card>
+          <CardHeader><CardTitle>Edit Project</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2 sm:col-span-2"><Label>Name</Label><Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} /></div>
+              <div className="space-y-2 sm:col-span-2"><Label>Description</Label><Textarea rows={3} value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} /></div>
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select value={form.status} onValueChange={(v) => setForm((f) => ({ ...f, status: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(STATUS_META).map(([value, meta]) => (
+                      <SelectItem key={value} value={value}>{meta.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2"><Label>Budget (INR)</Label><Input type="number" value={form.budget} onChange={(e) => setForm((f) => ({ ...f, budget: e.target.value }))} /></div>
+              <div className="space-y-2"><Label>Start Date</Label><Input type="date" value={form.startDate} onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))} /></div>
+              <div className="space-y-2"><Label>End Date</Label><Input type="date" value={form.endDate} onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))} /></div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Tabs defaultValue="overview" className="space-y-4">
+          <TabsList className="flex-wrap h-auto gap-1">
+            <TabsTrigger value="overview" className="gap-2"><Building2 className="h-4 w-4" />Overview</TabsTrigger>
+            <TabsTrigger value="surveys" className="gap-2"><Target className="h-4 w-4" />Surveys</TabsTrigger>
+            <TabsTrigger value="boq" className="gap-2"><FileText className="h-4 w-4" />BOQ</TabsTrigger>
+            <TabsTrigger value="documents" className="gap-2"><FolderOpen className="h-4 w-4" />Documents</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-3">
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle>Project Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {projectData.description}
-                </p>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  <InfoItem label="Client" value={projectData.client.name} />
-                  <InfoItem label="Contact" value={projectData.client.contactPerson} />
-                  <InfoItem label="Area" value={`${Number(projectData.area).toLocaleString("en-IN")} sq.ft`} />
-                  <InfoItem label="Floors" value={`${projectData.floors} floors`} />
-                  <InfoItem label="Start Date" value={formatDate(projectData.startDate)} />
-                  <InfoItem label="End Date" value={formatDate(projectData.endDate)} />
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Project Manager</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-12 w-12">
-                      <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                        {projectData.manager.initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium">{projectData.manager.name}</p>
-                      <p className="text-sm text-muted-foreground">{projectData.manager.role}</p>
-                    </div>
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid gap-6 lg:grid-cols-3">
+              <Card className="lg:col-span-2">
+                <CardHeader><CardTitle>Project Information</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  {project.description && (
+                    <p className="text-sm text-muted-foreground leading-relaxed">{project.description}</p>
+                  )}
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <InfoItem label="Client" value={project.client.companyName} />
+                    <InfoItem label="Contact" value={project.client.contactPerson} />
+                    {project.area != null && <InfoItem label="Area" value={`${Number(project.area).toLocaleString("en-IN")} sq.ft`} />}
+                    {project.floors != null && <InfoItem label="Floors" value={`${project.floors}`} />}
+                    <InfoItem label="Start Date" value={project.startDate ? formatDate(project.startDate) : 'Not set'} />
+                    <InfoItem label="End Date" value={project.endDate ? formatDate(project.endDate) : 'Not set'} />
+                    {(project.address || project.city) && (
+                      <InfoItem label="Location" value={[project.address, project.city, project.state].filter(Boolean).join(', ')} />
+                    )}
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Team Members</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {projectData.team.map((member) => (
-                    <div key={member.initials} className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                          {member.initials}
+                <CardHeader><CardTitle className="text-base">Project Manager</CardTitle></CardHeader>
+                <CardContent>
+                  {project.manager ? (
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-12 w-12">
+                        <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                          {project.manager.firstName[0]}{project.manager.lastName[0]}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="text-sm font-medium">{member.name}</p>
-                        <p className="text-xs text-muted-foreground">{member.role}</p>
+                        <p className="font-medium">{project.manager.firstName} {project.manager.lastName}</p>
+                        <p className="text-sm text-muted-foreground">{project.manager.email}</p>
                       </div>
                     </div>
-                  ))}
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No manager assigned</p>
+                  )}
                 </CardContent>
               </Card>
             </div>
-          </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Budget vs Actual</CardTitle>
-              <CardDescription>Budget utilization and cost tracking</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Budget Utilization</span>
-                  <span className="font-medium">{budgetPercentage}%</span>
-                </div>
-                <Progress value={budgetPercentage} className="h-3" />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div className="rounded-lg border p-4">
-                  <p className="text-xs text-muted-foreground">Approved Budget</p>
-                  <p className="text-lg font-bold mt-1">{formatCurrency(projectData.budget)}</p>
-                </div>
-                <div className="rounded-lg border p-4">
-                  <p className="text-xs text-muted-foreground">Amount Spent</p>
-                  <p className="text-lg font-bold mt-1">{formatCurrency(projectData.spent)}</p>
-                </div>
-                <div className="rounded-lg border p-4">
-                  <p className="text-xs text-muted-foreground">Estimated Cost</p>
-                  <p className="text-lg font-bold mt-1">{formatCurrency(projectData.estimatedCost)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Project Timeline</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="relative">
-                <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-border" />
-                <div className="space-y-6 pl-6">
-                  {[
-                    { date: "2024-01-15", event: "Project Kickoff", status: "completed" },
-                    { date: "2024-03-01", event: "Foundation Work Started", status: "completed" },
-                    { date: "2024-06-01", event: "Basement Levels Completed", status: "completed" },
-                    { date: "2024-07-10", event: "Floor 12 Slab Completed", status: "current" },
-                    { date: "2024-09-01", event: "Floor 24 Target", status: "upcoming" },
-                    { date: "2025-01-01", event: "Superstructure Completion", status: "upcoming" },
-                    { date: "2025-04-01", event: "Interior Finishing", status: "upcoming" },
-                    { date: "2025-06-30", event: "Project Handover", status: "upcoming" },
-                  ].map((item, index) => (
-                    <div key={index} className="relative flex items-start gap-4">
-                      <div
-                        className={cn(
-                          "absolute left-[-26px] h-3 w-3 rounded-full border-2 bg-background",
-                          item.status === "completed" && "border-primary bg-primary",
-                          item.status === "current" && "border-primary bg-primary/50",
-                          item.status === "upcoming" && "border-muted-foreground/30"
-                        )}
-                      />
-                      <div>
-                        <p className="text-sm font-medium">{item.event}</p>
-                        <p className="text-xs text-muted-foreground">{formatDate(item.date)}</p>
-                      </div>
+            {project.budget != null && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Budget vs Actual</CardTitle>
+                  <CardDescription>Budget utilization and cost tracking</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Budget Utilization</span>
+                      <span className="font-medium">{budgetPercentage}%</span>
                     </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="surveys" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Surveys ({surveyData.length})</CardTitle>
-                  <CardDescription>
-                    {projectData.surveys.completed} completed, {projectData.surveys.pending} pending
-                  </CardDescription>
-                </div>
-                <Button size="sm">
-                  <Target className="mr-2 h-4 w-4" />
-                  New Survey
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Survey ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Surveyor</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-center">Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {surveyData.map((survey) => (
-                    <TableRow key={survey.id}>
-                      <TableCell className="font-mono text-sm">{survey.id}</TableCell>
-                      <TableCell className="font-medium">{survey.name}</TableCell>
-                      <TableCell className="text-sm">{survey.surveyor}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {formatDate(survey.date)}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <StatusBadge status={survey.status} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="boq" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Bill of Quantities (BOQ)</CardTitle>
-                  <CardDescription>Material and work quantity breakdown</CardDescription>
-                </div>
-                <Button size="sm" variant="outline">
-                  <Download className="mr-2 h-4 w-4" />
-                  Export BOQ
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12">#</TableHead>
-                    <TableHead>Item Description</TableHead>
-                    <TableHead className="text-center">Unit</TableHead>
-                    <TableHead className="text-right">Quantity</TableHead>
-                    <TableHead className="text-right">Rate (INR)</TableHead>
-                    <TableHead className="text-right">Amount (INR)</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {boqItems.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="text-muted-foreground">{item.id}</TableCell>
-                      <TableCell className="font-medium">{item.item}</TableCell>
-                      <TableCell className="text-center text-sm">{item.unit}</TableCell>
-                      <TableCell className="text-right text-sm">
-                        {item.qty.toLocaleString("en-IN")}
-                      </TableCell>
-                      <TableCell className="text-right text-sm">
-                        {item.rate.toLocaleString("en-IN")}
-                      </TableCell>
-                      <TableCell className="text-right text-sm font-medium">
-                        {formatCurrency(item.amount)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  <TableRow className="border-t-2 font-bold">
-                    <TableCell colSpan={5}>Total</TableCell>
-                    <TableCell className="text-right">
-                      {formatCurrency(boqItems.reduce((sum, item) => sum + item.amount, 0))}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="documents" className="space-y-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <FolderOpen className="h-12 w-12 text-muted-foreground/50" />
-                <h3 className="mt-4 text-lg font-semibold">No documents uploaded</h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Upload drawings, specifications, contracts, and other project documents
-                </p>
-                <Button className="mt-4" size="sm">
-                  <Download className="mr-2 h-4 w-4" />
-                  Upload Document
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="workflows" className="space-y-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <GitBranch className="h-12 w-12 text-muted-foreground/50" />
-                <h3 className="mt-4 text-lg font-semibold">No active workflows</h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Set up approval workflows for this project
-                </p>
-                <Button className="mt-4" size="sm">
-                  Create Workflow
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="activity" className="space-y-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="relative space-y-6">
-                <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
-                {activityTimeline.map((item, index) => (
-                  <div key={index} className="relative flex gap-4">
-                    <div
-                      className={cn(
-                        "relative z-10 flex h-8 w-8 items-center justify-center rounded-full border bg-background",
-                        item.type === "milestone" && "border-primary bg-primary/10",
-                        item.type === "survey" && "border-blue-400 bg-blue-50",
-                        item.type === "quality" && "border-emerald-400 bg-emerald-50",
-                        item.type === "safety" && "border-amber-400 bg-amber-50",
-                        item.type === "finance" && "border-violet-400 bg-violet-50",
-                      )}
-                    >
-                      <Activity className="h-4 w-4 text-muted-foreground" />
+                    <Progress value={Math.min(budgetPercentage, 100)} className="h-3" />
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-lg border p-4">
+                      <p className="text-xs text-muted-foreground">Approved Budget</p>
+                      <p className="text-lg font-bold mt-1">{formatCurrency(project.budget)}</p>
                     </div>
-                    <div className="flex-1 pt-1">
-                      <p className="text-sm">{item.action}</p>
-                      <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>{item.user}</span>
-                        <span>&bull;</span>
-                        <span>{formatDate(item.date)}</span>
-                      </div>
+                    <div className="rounded-lg border p-4">
+                      <p className="text-xs text-muted-foreground">Amount Spent</p>
+                      <p className="text-lg font-bold mt-1">{formatCurrency(project.actualCost)}</p>
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
 
-        <TabsContent value="settings" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Project Settings</CardTitle>
-              <CardDescription>Manage project configuration and preferences</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Project Code</label>
-                  <Input value={projectData.code} disabled className="font-mono" />
+          <TabsContent value="surveys" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Surveys ({project.surveys.length})</CardTitle>
+                <CardDescription>{surveysCompleted} approved, {project.surveys.length - surveysCompleted} in progress</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {project.surveys.length === 0 ? (
+                  <p className="py-8 text-center text-sm text-muted-foreground">No surveys yet</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Scheduled Date</TableHead>
+                        <TableHead className="text-center">Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {project.surveys.map((survey) => (
+                        <TableRow key={survey.id} className="cursor-pointer" onClick={() => router.push(`/surveys/${survey.id}`)}>
+                          <TableCell className="font-medium">{survey.title}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {survey.scheduledDate ? formatDate(survey.scheduledDate) : '—'}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant={SURVEY_STATUS_VARIANT[survey.status] || 'secondary'}>{survey.status}</Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="boq" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Bill of Quantities (BOQ)</CardTitle>
+                <CardDescription>Material and work quantity breakdown</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {project.boqItems.length === 0 ? (
+                  <p className="py-8 text-center text-sm text-muted-foreground">No BOQ items yet</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12">#</TableHead>
+                        <TableHead>Item Description</TableHead>
+                        <TableHead className="text-center">Unit</TableHead>
+                        <TableHead className="text-right">Quantity</TableHead>
+                        <TableHead className="text-right">Rate (INR)</TableHead>
+                        <TableHead className="text-right">Amount (INR)</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {project.boqItems.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="text-muted-foreground">{item.serialNumber}</TableCell>
+                          <TableCell className="font-medium">{item.description}</TableCell>
+                          <TableCell className="text-center text-sm">{item.category}</TableCell>
+                          <TableCell className="text-right text-sm">{item.quantity.toLocaleString("en-IN")}</TableCell>
+                          <TableCell className="text-right text-sm">{item.unitRate.toLocaleString("en-IN")}</TableCell>
+                          <TableCell className="text-right text-sm font-medium">{formatCurrency(item.amount)}</TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow className="border-t-2 font-bold">
+                        <TableCell colSpan={5}>Total</TableCell>
+                        <TableCell className="text-right">{formatCurrency(boqTotal)}</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="documents" className="space-y-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <FolderOpen className="h-12 w-12 text-muted-foreground/50" />
+                  <h3 className="mt-4 text-lg font-semibold">No documents uploaded</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">Document uploads aren't wired to this page yet</p>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Status</label>
-                  <Select defaultValue="in-progress">
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="planning">Planning</SelectItem>
-                      <SelectItem value="in-progress">In Progress</SelectItem>
-                      <SelectItem value="on-hold">On Hold</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 pt-4 border-t">
-                <Button>Save Changes</Button>
-                <Button variant="destructive">Archive Project</Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   )
 }
 
-function MetricCard({
-  icon,
-  label,
-  value,
-  subtext,
-  color,
-}: {
-  icon: React.ReactNode
-  label: string
-  value: string
-  subtext?: string
-  color: string
-}) {
+function MetricCard({ icon, label, value, subtext, color }: { icon: React.ReactNode; label: string; value: string; subtext?: string; color: string }) {
   return (
     <Card>
       <CardContent className="p-4">
-        <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg", color)}>
-          {icon}
-        </div>
+        <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg", color)}>{icon}</div>
         <p className="text-xs text-muted-foreground mt-3">{label}</p>
         <p className="text-lg font-bold mt-0.5">{value}</p>
         {subtext && <p className="text-xs text-muted-foreground mt-0.5">{subtext}</p>}
@@ -649,19 +501,5 @@ function InfoItem({ label, value }: { label: string; value: string }) {
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="text-sm font-medium mt-0.5">{value}</p>
     </div>
-  )
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const variantMap: Record<string, "success" | "info" | "warning" | "destructive" | "secondary"> = {
-    Completed: "success",
-    "In Progress": "info",
-    Scheduled: "secondary",
-    Cancelled: "destructive",
-  }
-  return (
-    <Badge variant={variantMap[status] || "secondary"}>
-      {status}
-    </Badge>
   )
 }

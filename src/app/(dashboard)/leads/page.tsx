@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { type ColumnDef } from '@tanstack/react-table'
 import {
   Users,
@@ -23,7 +25,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { StatCard } from '@/components/ui/stat-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -41,160 +42,80 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { DataTable } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
+import { showSuccess, showError } from '@/components/ui/toast'
 import { cn, formatCurrency, formatDate, getInitials } from '@/lib/utils'
 
 interface LeadData {
   id: string
   name: string
-  email: string
-  phone: string
-  company: string
+  email: string | null
+  phone: string | null
+  company: string | null
   status: string
-  statusLabel: string
-  statusColor: string
   priority: string
-  priorityLabel: string
-  priorityColor: string
-  estimatedValue: number
+  estimatedValue: number | null
+  clientId: string | null
   assignedTo: { firstName: string; lastName: string } | null
   createdAt: string
-  source: string
+  source: string | null
 }
 
-const leads: LeadData[] = [
-  {
-    id: 'LED-001', name: 'Vikram Patel', email: 'vikram@heritagebuilders.in', phone: '+91 98765 43210',
-    company: 'Heritage Builders', status: 'NEW', statusLabel: 'New', statusColor: 'bg-blue-100 text-blue-800',
-    priority: 'HIGH', priorityLabel: 'High', priorityColor: 'bg-orange-100 text-orange-800 border-orange-200',
-    estimatedValue: 2500000, assignedTo: { firstName: 'Priya', lastName: 'Sharma' }, createdAt: '2026-07-10T10:00:00',
-    source: 'Website',
-  },
-  {
-    id: 'LED-002', name: 'Ananya Reddy', email: 'ananya@urbanspaces.co', phone: '+91 87654 32109',
-    company: 'Urban Spaces Pvt. Ltd.', status: 'CONTACTED', statusLabel: 'Contacted', statusColor: 'bg-violet-100 text-violet-800',
-    priority: 'MEDIUM', priorityLabel: 'Medium', priorityColor: 'bg-blue-100 text-blue-800 border-blue-200',
-    estimatedValue: 1800000, assignedTo: { firstName: 'Raj', lastName: 'Mehta' }, createdAt: '2026-07-09T14:30:00',
-    source: 'Referral',
-  },
-  {
-    id: 'LED-003', name: 'Deepak Joshi', email: 'deepak@greenfielddev.com', phone: '+91 76543 21098',
-    company: 'Greenfield Developers', status: 'QUALIFIED', statusLabel: 'Qualified', statusColor: 'bg-emerald-100 text-emerald-800',
-    priority: 'HIGH', priorityLabel: 'High', priorityColor: 'bg-orange-100 text-orange-800 border-orange-200',
-    estimatedValue: 4200000, assignedTo: { firstName: 'Neha', lastName: 'Gupta' }, createdAt: '2026-07-08T09:15:00',
-    source: 'LinkedIn',
-  },
-  {
-    id: 'LED-004', name: 'Meera Iyer', email: 'meera@skylinebuilders.in', phone: '+91 65432 10987',
-    company: 'Skyline Builders', status: 'PROPOSAL_SENT', statusLabel: 'Proposal Sent', statusColor: 'bg-amber-100 text-amber-800',
-    priority: 'MEDIUM', priorityLabel: 'Medium', priorityColor: 'bg-blue-100 text-blue-800 border-blue-200',
-    estimatedValue: 3100000, assignedTo: { firstName: 'Saurabh', lastName: 'Verma' }, createdAt: '2026-07-07T11:00:00',
-    source: 'Referral',
-  },
-  {
-    id: 'LED-005', name: 'Arjun Nair', email: 'arjun@metrohousing.co.in', phone: '+91 54321 09876',
-    company: 'Metro Housing Ltd.', status: 'NEGOTIATION', statusLabel: 'Negotiation', statusColor: 'bg-orange-100 text-orange-800',
-    priority: 'CRITICAL', priorityLabel: 'Critical', priorityColor: 'bg-red-100 text-red-800 border-red-200',
-    estimatedValue: 5600000, assignedTo: { firstName: 'Priya', lastName: 'Sharma' }, createdAt: '2026-07-06T16:45:00',
-    source: 'Exhibition',
-  },
-  {
-    id: 'LED-006', name: 'Kavitha Menon', email: 'kavitha@sunriseinfra.com', phone: '+91 43210 98765',
-    company: 'Sunrise Infrastructure', status: 'WON', statusLabel: 'Won', statusColor: 'bg-emerald-100 text-emerald-800',
-    priority: 'MEDIUM', priorityLabel: 'Medium', priorityColor: 'bg-blue-100 text-blue-800 border-blue-200',
-    estimatedValue: 2800000, assignedTo: { firstName: 'Raj', lastName: 'Mehta' }, createdAt: '2026-07-05T13:20:00',
-    source: 'Website',
-  },
-  {
-    id: 'LED-007', name: 'Rohan Gupta', email: 'rohan@pioneerconstruct.in', phone: '+91 32109 87654',
-    company: 'Pioneer Constructions', status: 'NEW', statusLabel: 'New', statusColor: 'bg-blue-100 text-blue-800',
-    priority: 'LOW', priorityLabel: 'Low', priorityColor: 'bg-gray-100 text-gray-700 border-gray-200',
-    estimatedValue: 950000, assignedTo: null, createdAt: '2026-07-10T08:30:00',
-    source: 'Cold Call',
-  },
-  {
-    id: 'LED-008', name: 'Sneha Kapoor', email: 'sneha@apexrealty.co', phone: '+91 21098 76543',
-    company: 'Apex Realty Corp.', status: 'CONTACTED', statusLabel: 'Contacted', statusColor: 'bg-violet-100 text-violet-800',
-    priority: 'MEDIUM', priorityLabel: 'Medium', priorityColor: 'bg-blue-100 text-blue-800 border-blue-200',
-    estimatedValue: 1500000, assignedTo: { firstName: 'Neha', lastName: 'Gupta' }, createdAt: '2026-07-09T10:00:00',
-    source: 'LinkedIn',
-  },
-  {
-    id: 'LED-009', name: 'Manish Tiwari', email: 'manish@buildcraft.in', phone: '+91 10987 65432',
-    company: 'BuildCraft India', status: 'LOST', statusLabel: 'Lost', statusColor: 'bg-red-100 text-red-800',
-    priority: 'HIGH', priorityLabel: 'High', priorityColor: 'bg-orange-100 text-orange-800 border-orange-200',
-    estimatedValue: 1200000, assignedTo: { firstName: 'Saurabh', lastName: 'Verma' }, createdAt: '2026-07-04T09:00:00',
-    source: 'Referral',
-  },
-  {
-    id: 'LED-010', name: 'Pooja Singh', email: 'pooja@landmarkdev.com', phone: '+91 09876 54321',
-    company: 'Landmark Developers', status: 'QUALIFIED', statusLabel: 'Qualified', statusColor: 'bg-emerald-100 text-emerald-800',
-    priority: 'HIGH', priorityLabel: 'High', priorityColor: 'bg-orange-100 text-orange-800 border-orange-200',
-    estimatedValue: 3800000, assignedTo: { firstName: 'Priya', lastName: 'Sharma' }, createdAt: '2026-07-07T15:30:00',
-    source: 'Website',
-  },
-  {
-    id: 'LED-011', name: 'Kiran Deshmukh', email: 'kiran@premierinfra.co.in', phone: '+91 98712 34567',
-    company: 'Premier Infrastructure', status: 'PROPOSAL_SENT', statusLabel: 'Proposal Sent', statusColor: 'bg-amber-100 text-amber-800',
-    priority: 'MEDIUM', priorityLabel: 'Medium', priorityColor: 'bg-blue-100 text-blue-800 border-blue-200',
-    estimatedValue: 2200000, assignedTo: { firstName: 'Raj', lastName: 'Mehta' }, createdAt: '2026-07-06T10:00:00',
-    source: 'Referral',
-  },
-  {
-    id: 'LED-012', name: 'Aishwarya Rao', email: 'aishwarya@zenithgroup.in', phone: '+91 87612 34567',
-    company: 'Zenith Group', status: 'NEW', statusLabel: 'New', statusColor: 'bg-blue-100 text-blue-800',
-    priority: 'LOW', priorityLabel: 'Low', priorityColor: 'bg-gray-100 text-gray-700 border-gray-200',
-    estimatedValue: 800000, assignedTo: { firstName: 'Neha', lastName: 'Gupta' }, createdAt: '2026-07-10T11:00:00',
-    source: 'Cold Call',
-  },
-  {
-    id: 'LED-013', name: 'Sanjay Bhatt', email: 'sanjay@vistarahomes.com', phone: '+91 76512 34567',
-    company: 'Vistaar Homes', status: 'NEGOTIATION', statusLabel: 'Negotiation', statusColor: 'bg-orange-100 text-orange-800',
-    priority: 'CRITICAL', priorityLabel: 'Critical', priorityColor: 'bg-red-100 text-red-800 border-red-200',
-    estimatedValue: 6200000, assignedTo: { firstName: 'Saurabh', lastName: 'Verma' }, createdAt: '2026-07-05T11:30:00',
-    source: 'Exhibition',
-  },
-  {
-    id: 'LED-014', name: 'Nisha Agarwal', email: 'nisha@primestructures.in', phone: '+91 65412 34567',
-    company: 'Prime Structures', status: 'DISQUALIFIED', statusLabel: 'Disqualified', statusColor: 'bg-gray-100 text-gray-800',
-    priority: 'LOW', priorityLabel: 'Low', priorityColor: 'bg-gray-100 text-gray-700 border-gray-200',
-    estimatedValue: 500000, assignedTo: { firstName: 'Raj', lastName: 'Mehta' }, createdAt: '2026-07-03T14:00:00',
-    source: 'Website',
-  },
-  {
-    id: 'LED-015', name: 'Harsh Vardhan', email: 'harsh@atlasconstruction.co', phone: '+91 54312 34567',
-    company: 'Atlas Construction', status: 'WON', statusLabel: 'Won', statusColor: 'bg-emerald-100 text-emerald-800',
-    priority: 'HIGH', priorityLabel: 'High', priorityColor: 'bg-orange-100 text-orange-800 border-orange-200',
-    estimatedValue: 4500000, assignedTo: { firstName: 'Priya', lastName: 'Sharma' }, createdAt: '2026-07-04T16:00:00',
-    source: 'LinkedIn',
-  },
-  {
-    id: 'LED-016', name: 'Tanvi Malhotra', email: 'tanvi@nobleedificers.com', phone: '+91 43212 34567',
-    company: 'Noble Edificers', status: 'NEW', statusLabel: 'New', statusColor: 'bg-blue-100 text-blue-800',
-    priority: 'MEDIUM', priorityLabel: 'Medium', priorityColor: 'bg-blue-100 text-blue-800 border-blue-200',
-    estimatedValue: 1900000, assignedTo: null, createdAt: '2026-07-10T15:00:00',
-    source: 'Referral',
-  },
-  {
-    id: 'LED-017', name: 'Aditya Sharma', email: 'aditya@consortiumdev.in', phone: '+91 32112 34567',
-    company: 'Consortium Developers', status: 'CONTACTED', statusLabel: 'Contacted', statusColor: 'bg-violet-100 text-violet-800',
-    priority: 'HIGH', priorityLabel: 'High', priorityColor: 'bg-orange-100 text-orange-800 border-orange-200',
-    estimatedValue: 3400000, assignedTo: { firstName: 'Neha', lastName: 'Gupta' }, createdAt: '2026-07-08T10:30:00',
-    source: 'Website',
-  },
-]
-
-const statusCounts = {
-  total: leads.length,
-  new: leads.filter((l) => l.status === 'NEW').length,
-  converted: leads.filter((l) => l.status === 'WON').length,
-  conversionRate: Math.round(
-    (leads.filter((l) => l.status === 'WON').length / leads.length) * 100,
-  ),
+const STATUS_META: Record<string, { label: string; color: string }> = {
+  NEW: { label: 'New', color: 'bg-blue-100 text-blue-800' },
+  CONTACTED: { label: 'Contacted', color: 'bg-violet-100 text-violet-800' },
+  QUALIFIED: { label: 'Qualified', color: 'bg-emerald-100 text-emerald-800' },
+  PROPOSAL: { label: 'Proposal Sent', color: 'bg-amber-100 text-amber-800' },
+  NEGOTIATION: { label: 'Negotiation', color: 'bg-orange-100 text-orange-800' },
+  WON: { label: 'Won', color: 'bg-emerald-100 text-emerald-800' },
+  LOST: { label: 'Lost', color: 'bg-red-100 text-red-800' },
 }
+
+const PRIORITY_META: Record<string, { label: string; color: string }> = {
+  LOW: { label: 'Low', color: 'bg-gray-100 text-gray-700 border-gray-200' },
+  MEDIUM: { label: 'Medium', color: 'bg-blue-100 text-blue-800 border-blue-200' },
+  HIGH: { label: 'High', color: 'bg-orange-100 text-orange-800 border-orange-200' },
+  CRITICAL: { label: 'Critical', color: 'bg-red-100 text-red-800 border-red-200' },
+}
+
+// Roles allowed to write via the API — matches src/app/api/leads route
+// gates. Kept in sync manually since there's no shared source of truth
+// for role tiers between frontend and backend yet.
+const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
+const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN']
 
 export default function LeadsPage() {
+  const { data: session } = useSession()
+  const router = useRouter()
+  const role = session?.user?.role
+
+  const [leads, setLeads] = useState<LeadData[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState('all')
   const [priorityFilter, setPriorityFilter] = useState('all')
+
+  const fetchLeads = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/leads?limit=100')
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        setError(data.error || 'Failed to load leads')
+        setLeads([])
+        return
+      }
+      setLeads(data.data)
+    } catch {
+      setError('Network error while loading leads')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchLeads()
+  }, [fetchLeads])
 
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
@@ -202,7 +123,48 @@ export default function LeadsPage() {
       if (priorityFilter !== 'all' && lead.priority !== priorityFilter) return false
       return true
     })
-  }, [statusFilter, priorityFilter])
+  }, [leads, statusFilter, priorityFilter])
+
+  const statusCounts = useMemo(() => {
+    const won = leads.filter((l) => l.status === 'WON').length
+    return {
+      total: leads.length,
+      new: leads.filter((l) => l.status === 'NEW').length,
+      converted: won,
+      conversionRate: leads.length ? Math.round((won / leads.length) * 100) : 0,
+    }
+  }, [leads])
+
+  const handleDelete = async (lead: LeadData) => {
+    if (!confirm(`Delete lead "${lead.name}"? This cannot be undone from here.`)) return
+    try {
+      const res = await fetch(`/api/leads/${lead.id}`, { method: 'DELETE' })
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        showError(data.error || 'Failed to delete lead')
+        return
+      }
+      showSuccess('Lead deleted')
+      setLeads((prev) => prev.filter((l) => l.id !== lead.id))
+    } catch {
+      showError('Network error while deleting lead')
+    }
+  }
+
+  const handleConvert = async (lead: LeadData) => {
+    try {
+      const res = await fetch(`/api/leads/${lead.id}/convert`, { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        showError(data.error || 'Failed to convert lead')
+        return
+      }
+      showSuccess('Lead converted to client')
+      router.push(`/clients/${data.data.clientId}`)
+    } catch {
+      showError('Network error while converting lead')
+    }
+  }
 
   const columns: ColumnDef<LeadData, unknown>[] = [
     {
@@ -217,7 +179,7 @@ export default function LeadsPage() {
           </Avatar>
           <div>
             <p className="text-sm font-medium">{row.original.name}</p>
-            <p className="text-xs text-muted-foreground">{row.original.company}</p>
+            <p className="text-xs text-muted-foreground">{row.original.company || '—'}</p>
           </div>
         </div>
       ),
@@ -229,11 +191,11 @@ export default function LeadsPage() {
         <div className="space-y-0.5">
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Mail className="h-3 w-3" />
-            <span className="truncate max-w-[160px]">{row.original.email}</span>
+            <span className="truncate max-w-[160px]">{row.original.email || '—'}</span>
           </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Phone className="h-3 w-3" />
-            <span>{row.original.phone}</span>
+            <span>{row.original.phone || '—'}</span>
           </div>
         </div>
       ),
@@ -241,26 +203,26 @@ export default function LeadsPage() {
     {
       accessorKey: 'status',
       header: 'Status',
-      cell: ({ row }) => (
-        <Badge className={cn('text-[10px]', row.original.statusColor)}>
-          {row.original.statusLabel}
-        </Badge>
-      ),
+      cell: ({ row }) => {
+        const meta = STATUS_META[row.original.status] || { label: row.original.status, color: 'bg-gray-100 text-gray-800' }
+        return <Badge className={cn('text-[10px]', meta.color)}>{meta.label}</Badge>
+      },
     },
     {
       accessorKey: 'priority',
       header: 'Priority',
-      cell: ({ row }) => (
-        <Badge variant="outline" className={cn('text-[10px]', row.original.priorityColor)}>
-          {row.original.priorityLabel}
-        </Badge>
-      ),
+      cell: ({ row }) => {
+        const meta = PRIORITY_META[row.original.priority] || { label: row.original.priority, color: '' }
+        return <Badge variant="outline" className={cn('text-[10px]', meta.color)}>{meta.label}</Badge>
+      },
     },
     {
       accessorKey: 'estimatedValue',
       header: 'Value',
       cell: ({ row }) => (
-        <span className="text-sm font-medium">{formatCurrency(row.original.estimatedValue)}</span>
+        <span className="text-sm font-medium">
+          {row.original.estimatedValue != null ? formatCurrency(row.original.estimatedValue) : '—'}
+        </span>
       ),
     },
     {
@@ -291,38 +253,66 @@ export default function LeadsPage() {
     {
       id: 'actions',
       header: '',
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreHorizontal className="h-4 w-4" />
+      cell: ({ row }) => {
+        const lead = row.original
+        const canWrite = role && WRITE_ROLES.includes(role)
+        const canDelete = role && DELETE_ROLES.includes(role)
+        const canConvert = canWrite && lead.status === 'WON' && !lead.clientId
+
+        if (!canWrite && !canDelete) {
+          return (
+            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+              <Link href={`/leads/${lead.id}`}>
+                <Eye className="h-4 w-4" />
+              </Link>
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link href={`/leads/${row.original.id}`}>
-                <Eye className="mr-2 h-4 w-4" />
-                View Details
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href={`/leads/${row.original.id}?edit=true`}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <ArrowRightLeft className="mr-2 h-4 w-4" />
-              Convert to Client
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive focus:text-destructive">
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
+          )
+        }
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href={`/leads/${lead.id}`}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  View Details
+                </Link>
+              </DropdownMenuItem>
+              {canWrite && (
+                <DropdownMenuItem asChild>
+                  <Link href={`/leads/${lead.id}?edit=true`}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Edit
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              {canConvert && (
+                <DropdownMenuItem onClick={() => handleConvert(lead)}>
+                  <ArrowRightLeft className="mr-2 h-4 w-4" />
+                  Convert to Client
+                </DropdownMenuItem>
+              )}
+              {canDelete && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    onClick={() => handleDelete(lead)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      },
     },
   ]
 
@@ -336,43 +326,23 @@ export default function LeadsPage() {
           { label: 'Leads' },
         ]}
         actions={
-          <Button asChild>
-            <Link href="/leads/new">
-              <Plus className="mr-1 h-4 w-4" />
-              Add Lead
-            </Link>
-          </Button>
+          role && WRITE_ROLES.includes(role) ? (
+            <Button asChild>
+              <Link href="/leads/new">
+                <Plus className="mr-1 h-4 w-4" />
+                Add Lead
+              </Link>
+            </Button>
+          ) : undefined
         }
       />
 
       {/* Summary Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          icon={<Users className="h-5 w-5" />}
-          label="Total Leads"
-          value={statusCounts.total}
-          color="info"
-        />
-        <StatCard
-          icon={<UserPlus className="h-5 w-5" />}
-          label="New Leads"
-          value={statusCounts.new}
-          color="default"
-        />
-        <StatCard
-          icon={<ArrowUpRight className="h-5 w-5" />}
-          label="Converted"
-          value={statusCounts.converted}
-          color="success"
-        />
-        <StatCard
-          icon={<TrendingUp className="h-5 w-5" />}
-          label="Conversion Rate"
-          value={`${statusCounts.conversionRate}%`}
-          change={8}
-          trend="up"
-          color="success"
-        />
+        <StatCard icon={<Users className="h-5 w-5" />} label="Total Leads" value={statusCounts.total} color="info" />
+        <StatCard icon={<UserPlus className="h-5 w-5" />} label="New Leads" value={statusCounts.new} color="default" />
+        <StatCard icon={<ArrowUpRight className="h-5 w-5" />} label="Converted" value={statusCounts.converted} color="success" />
+        <StatCard icon={<TrendingUp className="h-5 w-5" />} label="Conversion Rate" value={`${statusCounts.conversionRate}%`} color="success" />
       </div>
 
       {/* Filters */}
@@ -387,14 +357,9 @@ export default function LeadsPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="NEW">New</SelectItem>
-            <SelectItem value="CONTACTED">Contacted</SelectItem>
-            <SelectItem value="QUALIFIED">Qualified</SelectItem>
-            <SelectItem value="PROPOSAL_SENT">Proposal Sent</SelectItem>
-            <SelectItem value="NEGOTIATION">Negotiation</SelectItem>
-            <SelectItem value="WON">Won</SelectItem>
-            <SelectItem value="LOST">Lost</SelectItem>
-            <SelectItem value="DISQUALIFIED">Disqualified</SelectItem>
+            {Object.entries(STATUS_META).map(([value, meta]) => (
+              <SelectItem key={value} value={value}>{meta.label}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Select value={priorityFilter} onValueChange={setPriorityFilter}>
@@ -403,10 +368,9 @@ export default function LeadsPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Priorities</SelectItem>
-            <SelectItem value="LOW">Low</SelectItem>
-            <SelectItem value="MEDIUM">Medium</SelectItem>
-            <SelectItem value="HIGH">High</SelectItem>
-            <SelectItem value="CRITICAL">Critical</SelectItem>
+            {Object.entries(PRIORITY_META).map(([value, meta]) => (
+              <SelectItem key={value} value={value}>{meta.label}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         {(statusFilter !== 'all' || priorityFilter !== 'all') && (
@@ -424,15 +388,20 @@ export default function LeadsPage() {
       </div>
 
       {/* Data Table */}
-      {filteredLeads.length === 0 ? (
+      {loading ? (
+        <Card><CardContent className="py-12 text-center text-sm text-muted-foreground">Loading leads...</CardContent></Card>
+      ) : error ? (
+        <Card><CardContent className="py-12 text-center text-sm text-destructive">{error}</CardContent></Card>
+      ) : filteredLeads.length === 0 ? (
         <EmptyState
           icon={<Users className="h-6 w-6" />}
           title="No leads found"
           description="No leads match your current filters. Try adjusting the filters or add a new lead."
-          action={{
-            label: 'Add Lead',
-            onClick: () => (window.location.href = '/leads/new'),
-          }}
+          action={
+            role && WRITE_ROLES.includes(role)
+              ? { label: 'Add Lead', onClick: () => (window.location.href = '/leads/new') }
+              : undefined
+          }
         />
       ) : (
         <DataTable

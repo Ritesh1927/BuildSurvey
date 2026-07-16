@@ -165,11 +165,15 @@ export default function NewQuotationPage() {
       const data = await res.json()
       if (data.success) {
         if (discount > 0) {
-          await fetch(`/api/quotations/${data.data.id}`, {
+          const patchRes = await fetch(`/api/quotations/${data.data.id}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ status: "PENDING", discountAmount: discountAmount }),
+            body: JSON.stringify({ discountAmount }),
           })
+          const patchData = await patchRes.json()
+          if (!patchData.success) {
+            showError(patchData.error || "Quotation saved, but discount could not be applied")
+          }
         }
         showSuccess("Quotation saved as draft")
         router.push("/quotations")
@@ -204,7 +208,7 @@ export default function NewQuotationPage() {
         const patchRes = await fetch(`/api/quotations/${data.data.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "APPROVED", discountAmount: discount > 0 ? discountAmount : undefined }),
+          body: JSON.stringify({ quotationStatus: "SENT", discountAmount: discount > 0 ? discountAmount : undefined }),
         })
         const patchData = await patchRes.json()
         if (patchData.success) {

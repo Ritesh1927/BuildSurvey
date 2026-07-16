@@ -11,7 +11,6 @@ import {
   Building2,
   Mail,
   Phone,
-  Globe,
   FileText,
   Calendar,
   IndianRupee,
@@ -44,7 +43,7 @@ interface StepConfig {
 const steps: StepConfig[] = [
   { id: 1, title: 'Contact Information', description: 'Basic contact details', icon: User },
   { id: 2, title: 'Lead Details', description: 'Source, status & value', icon: FileText },
-  { id: 3, title: 'Assignment & Follow-up', description: 'Team assignment & scheduling', icon: Calendar },
+  { id: 3, title: 'Assignment', description: 'Assign to a team member', icon: Calendar },
 ]
 
 interface FormData {
@@ -52,14 +51,12 @@ interface FormData {
   email: string
   phone: string
   company: string
-  website: string
   source: string
   status: string
   priority: string
   estimatedValue: string
   notes: string
   assignedTo: string
-  followUpDate: string
 }
 
 interface FormErrors {
@@ -71,14 +68,12 @@ const initialFormData: FormData = {
   email: '',
   phone: '',
   company: '',
-  website: '',
   source: '',
   status: 'NEW',
   priority: 'MEDIUM',
   estimatedValue: '',
   notes: '',
   assignedTo: '',
-  followUpDate: '',
 }
 
 interface UserOption {
@@ -171,14 +166,12 @@ export default function NewLeadPage() {
           email: formData.email.trim().toLowerCase(),
           phone: formData.phone.trim(),
           company: formData.company.trim(),
-          website: formData.website.trim() || undefined,
           source: formData.source,
           status: formData.status,
           priority: formData.priority,
           estimatedValue: formData.estimatedValue || undefined,
           notes: formData.notes.trim() || undefined,
           assignedToId: formData.assignedTo || undefined,
-          followUpDate: formData.followUpDate || undefined,
         }),
       })
       const data = await res.json()
@@ -287,20 +280,6 @@ export default function NewLeadPage() {
           )}
         </div>
 
-        <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="website">Website</Label>
-          <div className="relative">
-            <Globe className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="website"
-              placeholder="https://www.company.com"
-              value={formData.website}
-              onChange={(e) => updateField('website', e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <p className="text-xs text-muted-foreground">Optional - include full URL</p>
-        </div>
       </div>
     </div>
   )
@@ -344,7 +323,7 @@ export default function NewLeadPage() {
               <SelectItem value="NEW">New</SelectItem>
               <SelectItem value="CONTACTED">Contacted</SelectItem>
               <SelectItem value="QUALIFIED">Qualified</SelectItem>
-              <SelectItem value="PROPOSAL_SENT">Proposal Sent</SelectItem>
+              <SelectItem value="PROPOSAL">Proposal Sent</SelectItem>
               <SelectItem value="NEGOTIATION">Negotiation</SelectItem>
             </SelectContent>
           </Select>
@@ -425,21 +404,6 @@ export default function NewLeadPage() {
             </SelectContent>
           </Select>
           <p className="text-xs text-muted-foreground">Leave unassigned to keep it in the general pool</p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="followUpDate">Next Follow-up Date</Label>
-          <div className="relative">
-            <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="followUpDate"
-              type="date"
-              value={formData.followUpDate}
-              onChange={(e) => updateField('followUpDate', e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <p className="text-xs text-muted-foreground">Schedule the next follow-up reminder</p>
         </div>
       </div>
 
