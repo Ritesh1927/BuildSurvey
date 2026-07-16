@@ -53,6 +53,7 @@ export type QuotationMinAggregateOutputType = {
   validUntil: Date | null
   terms: string | null
   notes: string | null
+  quotationStatus: $Enums.QuotationStatus | null
   status: $Enums.PaymentStatus | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -74,6 +75,7 @@ export type QuotationMaxAggregateOutputType = {
   validUntil: Date | null
   terms: string | null
   notes: string | null
+  quotationStatus: $Enums.QuotationStatus | null
   status: $Enums.PaymentStatus | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -95,6 +97,7 @@ export type QuotationCountAggregateOutputType = {
   validUntil: number
   terms: number
   notes: number
+  quotationStatus: number
   status: number
   createdAt: number
   updatedAt: number
@@ -134,6 +137,7 @@ export type QuotationMinAggregateInputType = {
   validUntil?: true
   terms?: true
   notes?: true
+  quotationStatus?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -155,6 +159,7 @@ export type QuotationMaxAggregateInputType = {
   validUntil?: true
   terms?: true
   notes?: true
+  quotationStatus?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -176,6 +181,7 @@ export type QuotationCountAggregateInputType = {
   validUntil?: true
   terms?: true
   notes?: true
+  quotationStatus?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -284,6 +290,7 @@ export type QuotationGroupByOutputType = {
   validUntil: Date | null
   terms: string | null
   notes: string | null
+  quotationStatus: $Enums.QuotationStatus
   status: $Enums.PaymentStatus
   createdAt: Date
   updatedAt: Date
@@ -328,6 +335,7 @@ export type QuotationWhereInput = {
   validUntil?: Prisma.DateTimeNullableFilter<"Quotation"> | Date | string | null
   terms?: Prisma.StringNullableFilter<"Quotation"> | string | null
   notes?: Prisma.StringNullableFilter<"Quotation"> | string | null
+  quotationStatus?: Prisma.EnumQuotationStatusFilter<"Quotation"> | $Enums.QuotationStatus
   status?: Prisma.EnumPaymentStatusFilter<"Quotation"> | $Enums.PaymentStatus
   createdAt?: Prisma.DateTimeFilter<"Quotation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Quotation"> | Date | string
@@ -351,6 +359,7 @@ export type QuotationOrderByWithRelationInput = {
   validUntil?: Prisma.SortOrderInput | Prisma.SortOrder
   terms?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  quotationStatus?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -377,6 +386,7 @@ export type QuotationWhereUniqueInput = Prisma.AtLeast<{
   validUntil?: Prisma.DateTimeNullableFilter<"Quotation"> | Date | string | null
   terms?: Prisma.StringNullableFilter<"Quotation"> | string | null
   notes?: Prisma.StringNullableFilter<"Quotation"> | string | null
+  quotationStatus?: Prisma.EnumQuotationStatusFilter<"Quotation"> | $Enums.QuotationStatus
   status?: Prisma.EnumPaymentStatusFilter<"Quotation"> | $Enums.PaymentStatus
   createdAt?: Prisma.DateTimeFilter<"Quotation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Quotation"> | Date | string
@@ -400,6 +410,7 @@ export type QuotationOrderByWithAggregationInput = {
   validUntil?: Prisma.SortOrderInput | Prisma.SortOrder
   terms?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  quotationStatus?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -429,6 +440,7 @@ export type QuotationScalarWhereWithAggregatesInput = {
   validUntil?: Prisma.DateTimeNullableWithAggregatesFilter<"Quotation"> | Date | string | null
   terms?: Prisma.StringNullableWithAggregatesFilter<"Quotation"> | string | null
   notes?: Prisma.StringNullableWithAggregatesFilter<"Quotation"> | string | null
+  quotationStatus?: Prisma.EnumQuotationStatusWithAggregatesFilter<"Quotation"> | $Enums.QuotationStatus
   status?: Prisma.EnumPaymentStatusWithAggregatesFilter<"Quotation"> | $Enums.PaymentStatus
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Quotation"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Quotation"> | Date | string
@@ -450,6 +462,7 @@ export type QuotationCreateInput = {
   validUntil?: Date | string | null
   terms?: string | null
   notes?: string | null
+  quotationStatus?: $Enums.QuotationStatus
   status?: $Enums.PaymentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -472,6 +485,7 @@ export type QuotationUncheckedCreateInput = {
   validUntil?: Date | string | null
   terms?: string | null
   notes?: string | null
+  quotationStatus?: $Enums.QuotationStatus
   status?: $Enums.PaymentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -494,6 +508,7 @@ export type QuotationUpdateInput = {
   validUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quotationStatus?: Prisma.EnumQuotationStatusFieldUpdateOperationsInput | $Enums.QuotationStatus
   status?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -516,6 +531,7 @@ export type QuotationUncheckedUpdateInput = {
   validUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quotationStatus?: Prisma.EnumQuotationStatusFieldUpdateOperationsInput | $Enums.QuotationStatus
   status?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -538,6 +554,7 @@ export type QuotationCreateManyInput = {
   validUntil?: Date | string | null
   terms?: string | null
   notes?: string | null
+  quotationStatus?: $Enums.QuotationStatus
   status?: $Enums.PaymentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -559,6 +576,7 @@ export type QuotationUpdateManyMutationInput = {
   validUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quotationStatus?: Prisma.EnumQuotationStatusFieldUpdateOperationsInput | $Enums.QuotationStatus
   status?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -579,6 +597,7 @@ export type QuotationUncheckedUpdateManyInput = {
   validUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quotationStatus?: Prisma.EnumQuotationStatusFieldUpdateOperationsInput | $Enums.QuotationStatus
   status?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -610,6 +629,7 @@ export type QuotationCountOrderByAggregateInput = {
   validUntil?: Prisma.SortOrder
   terms?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  quotationStatus?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -639,6 +659,7 @@ export type QuotationMaxOrderByAggregateInput = {
   validUntil?: Prisma.SortOrder
   terms?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  quotationStatus?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -660,6 +681,7 @@ export type QuotationMinOrderByAggregateInput = {
   validUntil?: Prisma.SortOrder
   terms?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  quotationStatus?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -725,6 +747,10 @@ export type QuotationUncheckedUpdateManyWithoutProjectNestedInput = {
   deleteMany?: Prisma.QuotationScalarWhereInput | Prisma.QuotationScalarWhereInput[]
 }
 
+export type EnumQuotationStatusFieldUpdateOperationsInput = {
+  set?: $Enums.QuotationStatus
+}
+
 export type EnumPaymentStatusFieldUpdateOperationsInput = {
   set?: $Enums.PaymentStatus
 }
@@ -754,6 +780,7 @@ export type QuotationCreateWithoutProjectInput = {
   validUntil?: Date | string | null
   terms?: string | null
   notes?: string | null
+  quotationStatus?: $Enums.QuotationStatus
   status?: $Enums.PaymentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -775,6 +802,7 @@ export type QuotationUncheckedCreateWithoutProjectInput = {
   validUntil?: Date | string | null
   terms?: string | null
   notes?: string | null
+  quotationStatus?: $Enums.QuotationStatus
   status?: $Enums.PaymentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -825,6 +853,7 @@ export type QuotationScalarWhereInput = {
   validUntil?: Prisma.DateTimeNullableFilter<"Quotation"> | Date | string | null
   terms?: Prisma.StringNullableFilter<"Quotation"> | string | null
   notes?: Prisma.StringNullableFilter<"Quotation"> | string | null
+  quotationStatus?: Prisma.EnumQuotationStatusFilter<"Quotation"> | $Enums.QuotationStatus
   status?: Prisma.EnumPaymentStatusFilter<"Quotation"> | $Enums.PaymentStatus
   createdAt?: Prisma.DateTimeFilter<"Quotation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Quotation"> | Date | string
@@ -846,6 +875,7 @@ export type QuotationCreateWithoutItemsInput = {
   validUntil?: Date | string | null
   terms?: string | null
   notes?: string | null
+  quotationStatus?: $Enums.QuotationStatus
   status?: $Enums.PaymentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -867,6 +897,7 @@ export type QuotationUncheckedCreateWithoutItemsInput = {
   validUntil?: Date | string | null
   terms?: string | null
   notes?: string | null
+  quotationStatus?: $Enums.QuotationStatus
   status?: $Enums.PaymentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -904,6 +935,7 @@ export type QuotationUpdateWithoutItemsInput = {
   validUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quotationStatus?: Prisma.EnumQuotationStatusFieldUpdateOperationsInput | $Enums.QuotationStatus
   status?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -925,6 +957,7 @@ export type QuotationUncheckedUpdateWithoutItemsInput = {
   validUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quotationStatus?: Prisma.EnumQuotationStatusFieldUpdateOperationsInput | $Enums.QuotationStatus
   status?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -946,6 +979,7 @@ export type QuotationCreateManyProjectInput = {
   validUntil?: Date | string | null
   terms?: string | null
   notes?: string | null
+  quotationStatus?: $Enums.QuotationStatus
   status?: $Enums.PaymentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -966,6 +1000,7 @@ export type QuotationUpdateWithoutProjectInput = {
   validUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quotationStatus?: Prisma.EnumQuotationStatusFieldUpdateOperationsInput | $Enums.QuotationStatus
   status?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -987,6 +1022,7 @@ export type QuotationUncheckedUpdateWithoutProjectInput = {
   validUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quotationStatus?: Prisma.EnumQuotationStatusFieldUpdateOperationsInput | $Enums.QuotationStatus
   status?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1008,6 +1044,7 @@ export type QuotationUncheckedUpdateManyWithoutProjectInput = {
   validUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quotationStatus?: Prisma.EnumQuotationStatusFieldUpdateOperationsInput | $Enums.QuotationStatus
   status?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1059,6 +1096,7 @@ export type QuotationSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   validUntil?: boolean
   terms?: boolean
   notes?: boolean
+  quotationStatus?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1083,6 +1121,7 @@ export type QuotationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   validUntil?: boolean
   terms?: boolean
   notes?: boolean
+  quotationStatus?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1105,6 +1144,7 @@ export type QuotationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   validUntil?: boolean
   terms?: boolean
   notes?: boolean
+  quotationStatus?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1127,6 +1167,7 @@ export type QuotationSelectScalar = {
   validUntil?: boolean
   terms?: boolean
   notes?: boolean
+  quotationStatus?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1137,7 +1178,7 @@ export type QuotationSelectScalar = {
   projectId?: boolean
 }
 
-export type QuotationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "quotationNumber" | "title" | "totalAmount" | "taxAmount" | "discountAmount" | "grandTotal" | "validUntil" | "terms" | "notes" | "status" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy" | "isDeleted" | "version" | "projectId", ExtArgs["result"]["quotation"]>
+export type QuotationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "quotationNumber" | "title" | "totalAmount" | "taxAmount" | "discountAmount" | "grandTotal" | "validUntil" | "terms" | "notes" | "quotationStatus" | "status" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy" | "isDeleted" | "version" | "projectId", ExtArgs["result"]["quotation"]>
 export type QuotationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   items?: boolean | Prisma.Quotation$itemsArgs<ExtArgs>
@@ -1167,6 +1208,7 @@ export type $QuotationPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     validUntil: Date | null
     terms: string | null
     notes: string | null
+    quotationStatus: $Enums.QuotationStatus
     status: $Enums.PaymentStatus
     createdAt: Date
     updatedAt: Date
@@ -1610,6 +1652,7 @@ export interface QuotationFieldRefs {
   readonly validUntil: Prisma.FieldRef<"Quotation", 'DateTime'>
   readonly terms: Prisma.FieldRef<"Quotation", 'String'>
   readonly notes: Prisma.FieldRef<"Quotation", 'String'>
+  readonly quotationStatus: Prisma.FieldRef<"Quotation", 'QuotationStatus'>
   readonly status: Prisma.FieldRef<"Quotation", 'PaymentStatus'>
   readonly createdAt: Prisma.FieldRef<"Quotation", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Quotation", 'DateTime'>

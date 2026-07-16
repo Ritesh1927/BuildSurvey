@@ -3783,6 +3783,7 @@ export const QuotationScalarFieldEnum = {
   validUntil: 'validUntil',
   terms: 'terms',
   notes: 'notes',
+  quotationStatus: 'quotationStatus',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -4483,6 +4484,20 @@ export type EnumRiskLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$Prisma
  * Reference to a field of type 'RiskLevel[]'
  */
 export type ListEnumRiskLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RiskLevel[]'>
+    
+
+
+/**
+ * Reference to a field of type 'QuotationStatus'
+ */
+export type EnumQuotationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QuotationStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'QuotationStatus[]'
+ */
+export type ListEnumQuotationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QuotationStatus[]'>
     
 
 

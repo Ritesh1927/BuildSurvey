@@ -127,6 +127,17 @@ export const PaymentStatus = {
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
 
 
+export const QuotationStatus = {
+  DRAFT: 'DRAFT',
+  SENT: 'SENT',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type QuotationStatus = (typeof QuotationStatus)[keyof typeof QuotationStatus]
+
+
 export const NotificationType = {
   INFO: 'INFO',
   WARNING: 'WARNING',

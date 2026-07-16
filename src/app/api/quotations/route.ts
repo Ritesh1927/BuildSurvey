@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { requireAuth, requireRole } from '@/lib/api-auth'
+import { QuotationStatus } from '@/generated/prisma/enums'
 
 const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT', 'CLIENT'] as const
 const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT'] as const
@@ -21,6 +22,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || ''
     const projectId = searchParams.get('projectId') || ''
     const status = searchParams.get('status') || ''
+    const quotationStatus = searchParams.get('quotationStatus') || ''
     const page = parseInt(searchParams.get('page') || '1', 10)
     const limit = Math.min(parseInt(searchParams.get('limit') || '10', 10) || 10, 100)
 
@@ -36,6 +38,7 @@ export async function GET(request: NextRequest) {
 
     if (projectId) where.projectId = projectId
     if (status) where.status = status
+    if (quotationStatus) where.quotationStatus = quotationStatus
 
     // Client only sees quotations for their own company's projects —
     // Quotation has no direct clientId, so scope through the project.
@@ -83,11 +86,18 @@ export async function POST(request: NextRequest) {
     const userId = session!.user!.id
 
     const body = await request.json()
-    const { title, projectId, items, validUntil, terms, notes } = body
+    const { title, projectId, items, validUntil, terms, notes, quotationStatus } = body
 
     if (!title || !projectId || !items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { success: false, error: 'title, projectId, and items (non-empty array) are required' },
+        { status: 400 }
+      )
+    }
+
+    if (quotationStatus && !Object.values(QuotationStatus).includes(quotationStatus)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid quotationStatus value' },
         { status: 400 }
       )
     }
@@ -148,6 +158,7 @@ export async function POST(request: NextRequest) {
         validUntil: validUntil ? new Date(validUntil) : null,
         terms: terms || null,
         notes: notes || null,
+        quotationStatus: quotationStatus || 'DRAFT',
         createdBy: userId,
         items: {
           create: computedItems,

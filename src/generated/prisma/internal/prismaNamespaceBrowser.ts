@@ -450,6 +450,7 @@ export const QuotationScalarFieldEnum = {
   validUntil: 'validUntil',
   terms: 'terms',
   notes: 'notes',
+  quotationStatus: 'quotationStatus',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',

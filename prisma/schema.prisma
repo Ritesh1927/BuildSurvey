@@ -97,6 +97,14 @@ enum PaymentStatus {
   CANCELLED
 }
 
+enum QuotationStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
 enum NotificationType {
   INFO
   WARNING
@@ -586,6 +594,11 @@ model Quotation {
   validUntil      DateTime?
   terms           String?
   notes           String?
+  // Where this quotation is in the sales lifecycle (draft -> sent ->
+  // accepted/rejected). Separate from `status`, which tracks payment
+  // collection and is only meaningful once quotationStatus = ACCEPTED —
+  // the two were previously conflated into one PaymentStatus field.
+  quotationStatus QuotationStatus @default(DRAFT)
   status          PaymentStatus @default(PENDING)
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt

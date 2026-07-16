@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { requireAuth, requireRole } from '@/lib/api-auth'
-import { PaymentStatus } from '@/generated/prisma/enums'
+import { PaymentStatus, QuotationStatus } from '@/generated/prisma/enums'
 
 const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT', 'CLIENT'] as const
 const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT'] as const
@@ -25,7 +25,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       where: { id },
       include: {
         items: { where: { isDeleted: false } },
-        project: { select: { id: true, name: true, code: true, clientId: true } },
+        project: {
+          select: {
+            id: true, name: true, code: true, clientId: true,
+            client: { select: { companyName: true, contactPerson: true } },
+          },
+        },
       },
     })
 
@@ -58,7 +63,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const { id } = await params
     const body = await req.json()
-    const { title, status, validUntil, terms, notes, discountAmount } = body
+    const { title, status, quotationStatus, validUntil, terms, notes, discountAmount } = body
 
     const existing = await db.quotation.findUnique({ where: { id } })
     if (!existing || existing.isDeleted) {
@@ -71,16 +76,21 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       }
       if (!APPROVE_ROLES.includes(role)) {
         return NextResponse.json(
-          { success: false, error: 'Only a Super Admin or Accountant can change quotation status' },
+          { success: false, error: 'Only a Super Admin or Accountant can change payment status' },
           { status: 403 }
         )
       }
+    }
+
+    if (quotationStatus && !Object.values(QuotationStatus).includes(quotationStatus)) {
+      return NextResponse.json({ success: false, error: 'Invalid quotationStatus value' }, { status: 400 })
     }
 
     const updateData: any = { updatedBy: userId }
 
     if (title) updateData.title = title
     if (status) updateData.status = status
+    if (quotationStatus) updateData.quotationStatus = quotationStatus
     if (validUntil !== undefined) updateData.validUntil = validUntil ? new Date(validUntil) : null
     if (terms !== undefined) updateData.terms = terms
     if (notes !== undefined) updateData.notes = notes

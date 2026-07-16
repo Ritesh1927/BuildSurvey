@@ -80,6 +80,8 @@ export async function GET(request: NextRequest) {
         status: s.status,
         scheduledDate: s.scheduledDate,
         completedDate: s.completedDate,
+        gpsLatitude: s.gpsLatitude,
+        gpsLongitude: s.gpsLongitude,
         projectId: s.projectId,
         projectName: s.project?.name || '',
         projectCode: s.project?.code || '',

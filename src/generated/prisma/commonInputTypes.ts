@@ -443,11 +443,28 @@ export type FloatWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedFloatFilter<$PrismaModel>
 }
 
+export type EnumQuotationStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.QuotationStatus | Prisma.EnumQuotationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.QuotationStatus[] | Prisma.ListEnumQuotationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.QuotationStatus[] | Prisma.ListEnumQuotationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumQuotationStatusFilter<$PrismaModel> | $Enums.QuotationStatus
+}
+
 export type EnumPaymentStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.PaymentStatus | Prisma.EnumPaymentStatusFieldRefInput<$PrismaModel>
   in?: $Enums.PaymentStatus[] | Prisma.ListEnumPaymentStatusFieldRefInput<$PrismaModel>
   notIn?: $Enums.PaymentStatus[] | Prisma.ListEnumPaymentStatusFieldRefInput<$PrismaModel>
   not?: Prisma.NestedEnumPaymentStatusFilter<$PrismaModel> | $Enums.PaymentStatus
+}
+
+export type EnumQuotationStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.QuotationStatus | Prisma.EnumQuotationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.QuotationStatus[] | Prisma.ListEnumQuotationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.QuotationStatus[] | Prisma.ListEnumQuotationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumQuotationStatusWithAggregatesFilter<$PrismaModel> | $Enums.QuotationStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumQuotationStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumQuotationStatusFilter<$PrismaModel>
 }
 
 export type EnumPaymentStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -1006,11 +1023,28 @@ export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedFloatFilter<$PrismaModel>
 }
 
+export type NestedEnumQuotationStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.QuotationStatus | Prisma.EnumQuotationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.QuotationStatus[] | Prisma.ListEnumQuotationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.QuotationStatus[] | Prisma.ListEnumQuotationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumQuotationStatusFilter<$PrismaModel> | $Enums.QuotationStatus
+}
+
 export type NestedEnumPaymentStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.PaymentStatus | Prisma.EnumPaymentStatusFieldRefInput<$PrismaModel>
   in?: $Enums.PaymentStatus[] | Prisma.ListEnumPaymentStatusFieldRefInput<$PrismaModel>
   notIn?: $Enums.PaymentStatus[] | Prisma.ListEnumPaymentStatusFieldRefInput<$PrismaModel>
   not?: Prisma.NestedEnumPaymentStatusFilter<$PrismaModel> | $Enums.PaymentStatus
+}
+
+export type NestedEnumQuotationStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.QuotationStatus | Prisma.EnumQuotationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.QuotationStatus[] | Prisma.ListEnumQuotationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.QuotationStatus[] | Prisma.ListEnumQuotationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumQuotationStatusWithAggregatesFilter<$PrismaModel> | $Enums.QuotationStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumQuotationStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumQuotationStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumPaymentStatusWithAggregatesFilter<$PrismaModel = never> = {
