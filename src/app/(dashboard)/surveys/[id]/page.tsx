@@ -528,17 +528,6 @@ export default function SurveyDetailPage() {
                   </Card>
                 )}
 
-                {survey.gpsLatitude != null && survey.gpsLongitude != null && (
-                  <Card>
-                    <CardHeader><CardTitle>Location</CardTitle></CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 p-6 text-center">
-                        <MapPin className="h-10 w-10 mx-auto text-muted-foreground" />
-                      </div>
-                      <p className="text-xs text-muted-foreground">Lat: {survey.gpsLatitude}, Lng: {survey.gpsLongitude}</p>
-                    </CardContent>
-                  </Card>
-                )}
               </div>
             </div>
           </TabsContent>

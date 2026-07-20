@@ -59,7 +59,7 @@ export default function NewSurveyPage() {
   const [formData, setFormData] = useState({
     project: "", surveyType: "", title: "", description: "",
     scheduledDate: "", engineer: "",
-    latitude: "", longitude: "", weatherCondition: "", siteCondition: "",
+    weatherCondition: "", siteCondition: "",
     accessDetails: "",
   })
   const [checklistItems, setChecklistItems] = useState(defaultChecklistItems)
@@ -70,7 +70,6 @@ export default function NewSurveyPage() {
   const [projectsLoading, setProjectsLoading] = useState(true)
   const [engineersLoading, setEngineersLoading] = useState(true)
   const [showSuccess, setShowSuccess] = useState(false)
-  const [gpsLoading, setGpsLoading] = useState(false)
 
   useEffect(() => {
     fetch('/api/projects?limit=200')
@@ -124,26 +123,6 @@ export default function NewSurveyPage() {
     ? Math.round((checklistItems.filter(i => i.checked).length / checklistItems.length) * 100)
     : 0
 
-  const getCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      setSubmitError("Geolocation is not supported by your browser")
-      return
-    }
-    setGpsLoading(true)
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        updateFormData("latitude", position.coords.latitude.toFixed(6))
-        updateFormData("longitude", position.coords.longitude.toFixed(6))
-        setGpsLoading(false)
-      },
-      (error) => {
-        setSubmitError(`Unable to get location: ${error.message}`)
-        setGpsLoading(false)
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    )
-  }
-
   const canProceed = () => {
     switch (currentStep) {
       case 1: return !!(formData.project && formData.surveyType && formData.title)
@@ -169,8 +148,6 @@ export default function NewSurveyPage() {
           weatherCondition: formData.weatherCondition || undefined,
           siteCondition: formData.siteCondition || undefined,
           accessDetails: formData.accessDetails || undefined,
-          gpsLatitude: formData.latitude || undefined,
-          gpsLongitude: formData.longitude || undefined,
           checklistItems: checklistItems.map((i) => ({
             category: i.category,
             item: i.item,
@@ -343,27 +320,6 @@ export default function NewSurveyPage() {
               {/* Step 3: Site Details */}
               {currentStep === 3 && (
                 <div className="space-y-6">
-                  <div className="space-y-3">
-                    <Label className="text-base font-semibold flex items-center gap-2"><MapPin className="h-4 w-4" /> GPS Location</Label>
-                    <Button variant="outline" size="sm" onClick={getCurrentLocation} disabled={gpsLoading}>
-                      {gpsLoading ? (
-                        <><span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />Getting Location...</>
-                      ) : (
-                        <><MapPin className="h-4 w-4 mr-2" />Get Current Location</>
-                      )}
-                    </Button>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Latitude</Label>
-                        <Input placeholder="e.g., 19.0760" value={formData.latitude} onChange={(e) => updateFormData("latitude", e.target.value)} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Longitude</Label>
-                        <Input placeholder="e.g., 72.8777" value={formData.longitude} onChange={(e) => updateFormData("longitude", e.target.value)} />
-                      </div>
-                    </div>
-                  </div>
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Weather Condition</Label>
@@ -477,8 +433,8 @@ export default function NewSurveyPage() {
                         <Button variant="ghost" size="sm" onClick={() => setCurrentStep(3)}>Edit</Button>
                       </div>
                       <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div><span className="text-muted-foreground">Location:</span> <span className="font-medium">{formData.latitude && formData.longitude ? `${formData.latitude}, ${formData.longitude}` : "—"}</span></div>
                         <div><span className="text-muted-foreground">Weather:</span> <span className="font-medium">{formData.weatherCondition || "—"}</span></div>
+                        <div><span className="text-muted-foreground">Site Condition:</span> <span className="font-medium">{formData.siteCondition || "—"}</span></div>
                       </div>
                     </div>
 
