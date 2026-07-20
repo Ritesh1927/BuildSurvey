@@ -30,7 +30,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         project: { select: { id: true, name: true, code: true, clientId: true, latitude: true, longitude: true } },
         engineer: { select: { id: true, firstName: true, lastName: true, email: true } },
         checklistItems: { where: { isDeleted: false } },
-        photos: { where: { isDeleted: false } },
+        photos: { where: { isDeleted: false }, orderBy: { takenAt: 'asc' } },
+        measurements: { where: { isDeleted: false } },
+        materialRequirements: { where: { isDeleted: false } },
       },
     })
 
