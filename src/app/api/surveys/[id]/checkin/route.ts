@@ -38,8 +38,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ success: false, error: 'Survey not found' }, { status: 404 })
     }
 
-    if (survey.checkedInAt) {
-      return NextResponse.json({ success: false, error: 'Already checked in to this survey' }, { status: 409 })
+    // Re-submission is allowed up until checkout — a surveyor who checked in
+    // from off-site needs to be able to retry once they're actually on site,
+    // rather than being permanently stuck on their first, invalid attempt.
+    if (survey.checkedOutAt) {
+      return NextResponse.json({ success: false, error: 'This survey has already been checked out' }, { status: 409 })
     }
 
     const lat = parseFloat(latitude)
@@ -61,7 +64,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const now = new Date()
 
-    const [, updatedSurvey] = await db.$transaction([
+    const [, , updatedSurvey] = await db.$transaction([
+      db.photo.deleteMany({
+        where: { surveyId: id, caption: 'Check-In' },
+      }),
       db.photo.create({
         data: {
           surveyId: id,

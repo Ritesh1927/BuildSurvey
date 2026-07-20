@@ -170,6 +170,7 @@ export default function SurveyDetailPage() {
 
   const [checkInPhoto, setCheckInPhoto] = useState<string | null>(null)
   const [checkingIn, setCheckingIn] = useState(false)
+  const [resubmittingCheckIn, setResubmittingCheckIn] = useState(false)
   const [checkOutPhoto, setCheckOutPhoto] = useState<string | null>(null)
   const [checkingOut, setCheckingOut] = useState(false)
   const [measurementDrafts, setMeasurementDrafts] = useState<MeasurementDraft[]>([])
@@ -297,6 +298,7 @@ export default function SurveyDetailPage() {
             : 'Checked in successfully'
       )
       setCheckInPhoto(null)
+      setResubmittingCheckIn(false)
       fetchSurvey()
     } catch (e: any) {
       showError(e?.message?.includes('geolocation') || e?.code === 1
@@ -401,6 +403,11 @@ export default function SurveyDetailPage() {
   const checklistCompleted = survey.checklistItems.filter((i) => i.isCompleted).length
   const checklistProgress = checklistTotal > 0 ? Math.round((checklistCompleted / checklistTotal) * 100) : 0
   const checklistCategories = [...new Set(survey.checklistItems.map((i) => i.category))]
+
+  const checkInPhotoRecord = survey.photos.find((p) => p.caption === 'Check-In')
+  const checkInSiteCheck = checkInPhotoRecord
+    ? siteStatus(checkInPhotoRecord.latitude, checkInPhotoRecord.longitude, survey.project.latitude, survey.project.longitude)
+    : { onSite: null, distanceMeters: null }
 
   return (
     <div className="space-y-6">
@@ -537,27 +544,28 @@ export default function SurveyDetailPage() {
               <Card>
                 <CardHeader><CardTitle className="flex items-center gap-2"><LogIn className="h-5 w-5" />Check-In</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
-                  {survey.checkedInAt ? (
+                  {survey.checkedInAt && !resubmittingCheckIn ? (
                     <div className="space-y-3">
-                      {survey.photos.find((p) => p.caption === 'Check-In') && (
+                      {checkInPhotoRecord && (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={survey.photos.find((p) => p.caption === 'Check-In')!.url}
+                          src={checkInPhotoRecord.url}
                           alt="Check-in"
                           className="w-full max-w-xs rounded-lg border object-cover"
                         />
                       )}
                       <div className="flex items-center gap-2 text-sm text-emerald-600"><CheckCircle2 className="h-4 w-4" />Checked in {formatDate(survey.checkedInAt)}</div>
-                      {survey.photos.find((p) => p.caption === 'Check-In') && (() => {
-                        const p = survey.photos.find((p) => p.caption === 'Check-In')!
-                        const { onSite, distanceMeters } = siteStatus(p.latitude, p.longitude, survey.project.latitude, survey.project.longitude)
-                        return (
-                          <div className="space-y-1">
-                            <p className="text-xs text-muted-foreground">Lat: {p.latitude}, Lng: {p.longitude}</p>
-                            <SiteBadge onSite={onSite} distanceMeters={distanceMeters} />
-                          </div>
-                        )
-                      })()}
+                      {checkInPhotoRecord && (
+                        <div className="space-y-1">
+                          <p className="text-xs text-muted-foreground">Lat: {checkInPhotoRecord.latitude}, Lng: {checkInPhotoRecord.longitude}</p>
+                          <SiteBadge onSite={checkInSiteCheck.onSite} distanceMeters={checkInSiteCheck.distanceMeters} />
+                        </div>
+                      )}
+                      {checkInSiteCheck.onSite === false && canCheckInOut && !survey.checkedOutAt && (
+                        <Button variant="outline" onClick={() => setResubmittingCheckIn(true)}>
+                          <LogIn className="mr-2 h-4 w-4" />Resubmit Check-In
+                        </Button>
+                      )}
                     </div>
                   ) : canCheckInOut ? (
                     <div className="space-y-3">
@@ -576,9 +584,12 @@ export default function SurveyDetailPage() {
                         {checkInPhoto && (
                           <Button variant="outline" onClick={() => setCheckInPhoto(null)} disabled={checkingIn}>Retake</Button>
                         )}
+                        {resubmittingCheckIn && (
+                          <Button variant="ghost" onClick={() => { setResubmittingCheckIn(false); setCheckInPhoto(null) }} disabled={checkingIn}>Cancel</Button>
+                        )}
                         <Button className="flex-1" onClick={handleCheckIn} disabled={!checkInPhoto || checkingIn}>
                           {checkingIn ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogIn className="mr-2 h-4 w-4" />}
-                          {checkingIn ? 'Checking in...' : 'Check In'}
+                          {checkingIn ? 'Checking in...' : resubmittingCheckIn ? 'Resubmit Check In' : 'Check In'}
                         </Button>
                       </div>
                     </div>
@@ -611,6 +622,8 @@ export default function SurveyDetailPage() {
                     </div>
                   ) : !survey.checkedInAt ? (
                     <p className="text-sm text-muted-foreground">Check in first before you can check out.</p>
+                  ) : checkInSiteCheck.onSite === false ? (
+                    <p className="text-sm text-amber-600">Your check-in was off-site — resubmit your check-in from the project location before you can check out.</p>
                   ) : canCheckInOut ? (
                     <div className="space-y-4">
                       <p className="text-sm text-muted-foreground">Take a checkout photo, then record what you measured and what materials are needed.</p>
