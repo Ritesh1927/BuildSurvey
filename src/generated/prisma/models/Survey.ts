@@ -52,6 +52,8 @@ export type SurveyMinAggregateOutputType = {
   siteCondition: string | null
   accessDetails: string | null
   notes: string | null
+  checkedInAt: Date | null
+  checkedOutAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
   createdBy: string | null
@@ -76,6 +78,8 @@ export type SurveyMaxAggregateOutputType = {
   siteCondition: string | null
   accessDetails: string | null
   notes: string | null
+  checkedInAt: Date | null
+  checkedOutAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
   createdBy: string | null
@@ -100,6 +104,8 @@ export type SurveyCountAggregateOutputType = {
   siteCondition: number
   accessDetails: number
   notes: number
+  checkedInAt: number
+  checkedOutAt: number
   createdAt: number
   updatedAt: number
   createdBy: number
@@ -138,6 +144,8 @@ export type SurveyMinAggregateInputType = {
   siteCondition?: true
   accessDetails?: true
   notes?: true
+  checkedInAt?: true
+  checkedOutAt?: true
   createdAt?: true
   updatedAt?: true
   createdBy?: true
@@ -162,6 +170,8 @@ export type SurveyMaxAggregateInputType = {
   siteCondition?: true
   accessDetails?: true
   notes?: true
+  checkedInAt?: true
+  checkedOutAt?: true
   createdAt?: true
   updatedAt?: true
   createdBy?: true
@@ -186,6 +196,8 @@ export type SurveyCountAggregateInputType = {
   siteCondition?: true
   accessDetails?: true
   notes?: true
+  checkedInAt?: true
+  checkedOutAt?: true
   createdAt?: true
   updatedAt?: true
   createdBy?: true
@@ -297,6 +309,8 @@ export type SurveyGroupByOutputType = {
   siteCondition: string | null
   accessDetails: string | null
   notes: string | null
+  checkedInAt: Date | null
+  checkedOutAt: Date | null
   createdAt: Date
   updatedAt: Date
   createdBy: string | null
@@ -344,6 +358,8 @@ export type SurveyWhereInput = {
   siteCondition?: Prisma.StringNullableFilter<"Survey"> | string | null
   accessDetails?: Prisma.StringNullableFilter<"Survey"> | string | null
   notes?: Prisma.StringNullableFilter<"Survey"> | string | null
+  checkedInAt?: Prisma.DateTimeNullableFilter<"Survey"> | Date | string | null
+  checkedOutAt?: Prisma.DateTimeNullableFilter<"Survey"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Survey"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Survey"> | Date | string
   createdBy?: Prisma.StringNullableFilter<"Survey"> | string | null
@@ -378,6 +394,8 @@ export type SurveyOrderByWithRelationInput = {
   siteCondition?: Prisma.SortOrderInput | Prisma.SortOrder
   accessDetails?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  checkedInAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  checkedOutAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -415,6 +433,8 @@ export type SurveyWhereUniqueInput = Prisma.AtLeast<{
   siteCondition?: Prisma.StringNullableFilter<"Survey"> | string | null
   accessDetails?: Prisma.StringNullableFilter<"Survey"> | string | null
   notes?: Prisma.StringNullableFilter<"Survey"> | string | null
+  checkedInAt?: Prisma.DateTimeNullableFilter<"Survey"> | Date | string | null
+  checkedOutAt?: Prisma.DateTimeNullableFilter<"Survey"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Survey"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Survey"> | Date | string
   createdBy?: Prisma.StringNullableFilter<"Survey"> | string | null
@@ -449,6 +469,8 @@ export type SurveyOrderByWithAggregationInput = {
   siteCondition?: Prisma.SortOrderInput | Prisma.SortOrder
   accessDetails?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  checkedInAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  checkedOutAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -481,6 +503,8 @@ export type SurveyScalarWhereWithAggregatesInput = {
   siteCondition?: Prisma.StringNullableWithAggregatesFilter<"Survey"> | string | null
   accessDetails?: Prisma.StringNullableWithAggregatesFilter<"Survey"> | string | null
   notes?: Prisma.StringNullableWithAggregatesFilter<"Survey"> | string | null
+  checkedInAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Survey"> | Date | string | null
+  checkedOutAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Survey"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Survey"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Survey"> | Date | string
   createdBy?: Prisma.StringNullableWithAggregatesFilter<"Survey"> | string | null
@@ -505,6 +529,8 @@ export type SurveyCreateInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -537,6 +563,8 @@ export type SurveyUncheckedCreateInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -569,6 +597,8 @@ export type SurveyUpdateInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -601,6 +631,8 @@ export type SurveyUncheckedUpdateInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -633,6 +665,8 @@ export type SurveyCreateManyInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -657,6 +691,8 @@ export type SurveyUpdateManyMutationInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -679,6 +715,8 @@ export type SurveyUncheckedUpdateManyInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -713,6 +751,8 @@ export type SurveyCountOrderByAggregateInput = {
   siteCondition?: Prisma.SortOrder
   accessDetails?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  checkedInAt?: Prisma.SortOrder
+  checkedOutAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrder
@@ -743,6 +783,8 @@ export type SurveyMaxOrderByAggregateInput = {
   siteCondition?: Prisma.SortOrder
   accessDetails?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  checkedInAt?: Prisma.SortOrder
+  checkedOutAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrder
@@ -767,6 +809,8 @@ export type SurveyMinOrderByAggregateInput = {
   siteCondition?: Prisma.SortOrder
   accessDetails?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  checkedInAt?: Prisma.SortOrder
+  checkedOutAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrder
@@ -1006,6 +1050,8 @@ export type SurveyCreateWithoutEngineerInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -1037,6 +1083,8 @@ export type SurveyUncheckedCreateWithoutEngineerInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -1097,6 +1145,8 @@ export type SurveyScalarWhereInput = {
   siteCondition?: Prisma.StringNullableFilter<"Survey"> | string | null
   accessDetails?: Prisma.StringNullableFilter<"Survey"> | string | null
   notes?: Prisma.StringNullableFilter<"Survey"> | string | null
+  checkedInAt?: Prisma.DateTimeNullableFilter<"Survey"> | Date | string | null
+  checkedOutAt?: Prisma.DateTimeNullableFilter<"Survey"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Survey"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Survey"> | Date | string
   createdBy?: Prisma.StringNullableFilter<"Survey"> | string | null
@@ -1121,6 +1171,8 @@ export type SurveyCreateWithoutProjectInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -1152,6 +1204,8 @@ export type SurveyUncheckedCreateWithoutProjectInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -1209,6 +1263,8 @@ export type SurveyCreateWithoutChecklistItemsInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -1240,6 +1296,8 @@ export type SurveyUncheckedCreateWithoutChecklistItemsInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -1287,6 +1345,8 @@ export type SurveyUpdateWithoutChecklistItemsInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1318,6 +1378,8 @@ export type SurveyUncheckedUpdateWithoutChecklistItemsInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1349,6 +1411,8 @@ export type SurveyCreateWithoutPhotosInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -1380,6 +1444,8 @@ export type SurveyUncheckedCreateWithoutPhotosInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -1427,6 +1493,8 @@ export type SurveyUpdateWithoutPhotosInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1458,6 +1526,8 @@ export type SurveyUncheckedUpdateWithoutPhotosInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1489,6 +1559,8 @@ export type SurveyCreateWithoutVideosInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -1520,6 +1592,8 @@ export type SurveyUncheckedCreateWithoutVideosInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -1567,6 +1641,8 @@ export type SurveyUpdateWithoutVideosInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1598,6 +1674,8 @@ export type SurveyUncheckedUpdateWithoutVideosInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1629,6 +1707,8 @@ export type SurveyCreateWithoutVoiceNotesInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -1660,6 +1740,8 @@ export type SurveyUncheckedCreateWithoutVoiceNotesInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -1707,6 +1789,8 @@ export type SurveyUpdateWithoutVoiceNotesInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1738,6 +1822,8 @@ export type SurveyUncheckedUpdateWithoutVoiceNotesInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1769,6 +1855,8 @@ export type SurveyCreateWithoutSketchesInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -1800,6 +1888,8 @@ export type SurveyUncheckedCreateWithoutSketchesInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -1847,6 +1937,8 @@ export type SurveyUpdateWithoutSketchesInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1878,6 +1970,8 @@ export type SurveyUncheckedUpdateWithoutSketchesInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1909,6 +2003,8 @@ export type SurveyCreateWithoutMeasurementsInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -1940,6 +2036,8 @@ export type SurveyUncheckedCreateWithoutMeasurementsInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -1987,6 +2085,8 @@ export type SurveyUpdateWithoutMeasurementsInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2018,6 +2118,8 @@ export type SurveyUncheckedUpdateWithoutMeasurementsInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2049,6 +2151,8 @@ export type SurveyCreateWithoutRiskAssessmentsInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -2080,6 +2184,8 @@ export type SurveyUncheckedCreateWithoutRiskAssessmentsInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -2127,6 +2233,8 @@ export type SurveyUpdateWithoutRiskAssessmentsInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2158,6 +2266,8 @@ export type SurveyUncheckedUpdateWithoutRiskAssessmentsInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2189,6 +2299,8 @@ export type SurveyCreateWithoutMaterialRequirementsInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -2220,6 +2332,8 @@ export type SurveyUncheckedCreateWithoutMaterialRequirementsInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -2267,6 +2381,8 @@ export type SurveyUpdateWithoutMaterialRequirementsInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2298,6 +2414,8 @@ export type SurveyUncheckedUpdateWithoutMaterialRequirementsInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2329,6 +2447,8 @@ export type SurveyCreateManyEngineerInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -2352,6 +2472,8 @@ export type SurveyUpdateWithoutEngineerInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2383,6 +2505,8 @@ export type SurveyUncheckedUpdateWithoutEngineerInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2414,6 +2538,8 @@ export type SurveyUncheckedUpdateManyWithoutEngineerInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2437,6 +2563,8 @@ export type SurveyCreateManyProjectInput = {
   siteCondition?: string | null
   accessDetails?: string | null
   notes?: string | null
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -2460,6 +2588,8 @@ export type SurveyUpdateWithoutProjectInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2491,6 +2621,8 @@ export type SurveyUncheckedUpdateWithoutProjectInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2522,6 +2654,8 @@ export type SurveyUncheckedUpdateManyWithoutProjectInput = {
   siteCondition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accessDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2639,6 +2773,8 @@ export type SurveySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   siteCondition?: boolean
   accessDetails?: boolean
   notes?: boolean
+  checkedInAt?: boolean
+  checkedOutAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   createdBy?: boolean
@@ -2674,6 +2810,8 @@ export type SurveySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   siteCondition?: boolean
   accessDetails?: boolean
   notes?: boolean
+  checkedInAt?: boolean
+  checkedOutAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   createdBy?: boolean
@@ -2700,6 +2838,8 @@ export type SurveySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   siteCondition?: boolean
   accessDetails?: boolean
   notes?: boolean
+  checkedInAt?: boolean
+  checkedOutAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   createdBy?: boolean
@@ -2726,6 +2866,8 @@ export type SurveySelectScalar = {
   siteCondition?: boolean
   accessDetails?: boolean
   notes?: boolean
+  checkedInAt?: boolean
+  checkedOutAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   createdBy?: boolean
@@ -2736,7 +2878,7 @@ export type SurveySelectScalar = {
   engineerId?: boolean
 }
 
-export type SurveyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "type" | "status" | "scheduledDate" | "completedDate" | "gpsLatitude" | "gpsLongitude" | "weatherCondition" | "siteCondition" | "accessDetails" | "notes" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy" | "isDeleted" | "version" | "projectId" | "engineerId", ExtArgs["result"]["survey"]>
+export type SurveyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "type" | "status" | "scheduledDate" | "completedDate" | "gpsLatitude" | "gpsLongitude" | "weatherCondition" | "siteCondition" | "accessDetails" | "notes" | "checkedInAt" | "checkedOutAt" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy" | "isDeleted" | "version" | "projectId" | "engineerId", ExtArgs["result"]["survey"]>
 export type SurveyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   engineer?: boolean | Prisma.Survey$engineerArgs<ExtArgs>
@@ -2787,6 +2929,8 @@ export type $SurveyPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     siteCondition: string | null
     accessDetails: string | null
     notes: string | null
+    checkedInAt: Date | null
+    checkedOutAt: Date | null
     createdAt: Date
     updatedAt: Date
     createdBy: string | null
@@ -3241,6 +3385,8 @@ export interface SurveyFieldRefs {
   readonly siteCondition: Prisma.FieldRef<"Survey", 'String'>
   readonly accessDetails: Prisma.FieldRef<"Survey", 'String'>
   readonly notes: Prisma.FieldRef<"Survey", 'String'>
+  readonly checkedInAt: Prisma.FieldRef<"Survey", 'DateTime'>
+  readonly checkedOutAt: Prisma.FieldRef<"Survey", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Survey", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Survey", 'DateTime'>
   readonly createdBy: Prisma.FieldRef<"Survey", 'String'>

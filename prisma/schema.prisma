@@ -338,6 +338,8 @@ model Survey {
   siteCondition    String?
   accessDetails    String?
   notes            String?
+  checkedInAt      DateTime?
+  checkedOutAt     DateTime?
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
   createdBy        String?

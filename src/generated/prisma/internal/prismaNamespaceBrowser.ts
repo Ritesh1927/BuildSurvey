@@ -230,6 +230,8 @@ export const SurveyScalarFieldEnum = {
   siteCondition: 'siteCondition',
   accessDetails: 'accessDetails',
   notes: 'notes',
+  checkedInAt: 'checkedInAt',
+  checkedOutAt: 'checkedOutAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   createdBy: 'createdBy',
