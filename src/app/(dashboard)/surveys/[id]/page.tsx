@@ -7,7 +7,8 @@ import { useSession } from "next-auth/react"
 import {
   ArrowLeft, MapPin, Calendar, Cloud,
   CheckCircle2, Clock, AlertTriangle, Camera,
-  Save, Edit, Trash2, X, AlertCircle,
+  Save, Edit, Trash2, X, AlertCircle, Plus, Loader2, LogIn, LogOut,
+  XCircle, HelpCircle,
 } from "lucide-react"
 import { PageHeader } from "@/components/ui/page-header"
 import { Button } from "@/components/ui/button"
@@ -24,6 +25,7 @@ import {
 } from "@/components/ui/select"
 import { showSuccess, showError } from "@/components/ui/toast"
 import { formatDate } from "@/lib/utils"
+import { siteStatus } from "@/lib/geo"
 
 interface SurveyDetail {
   id: string
@@ -41,9 +43,73 @@ interface SurveyDetail {
   notes?: string | null
   projectId: string
   engineerId: string | null
-  project: { id: string; name: string; code: string }
+  checkedInAt: string | null
+  checkedOutAt: string | null
+  project: { id: string; name: string; code: string; latitude: number | null; longitude: number | null }
   engineer: { id: string; firstName: string; lastName: string; email: string } | null
   checklistItems: { id: string; category: string; item: string; isCompleted: boolean; notes: string | null }[]
+  photos: { id: string; url: string; caption: string | null; latitude: number | null; longitude: number | null; takenAt: string | null }[]
+  measurements: { id: string; category: string; description: string | null; length: number | null; width: number | null; height: number | null; unit: string; notes: string | null }[]
+  materialRequirements: { id: string; materialName: string; specification: string | null; quantity: number; unit: string; estimatedCost: number | null; notes: string | null }[]
+}
+
+interface MeasurementDraft {
+  category: string; description: string; length: string; width: string; height: string; unit: string
+}
+
+interface MaterialDraft {
+  materialName: string; specification: string; quantity: string; unit: string; estimatedCost: string
+}
+
+// Phone camera photos routinely land at 3-10MB. Storing that raw in the DB
+// makes every check-in/check-out write take 8-20s and blow past Prisma's
+// transaction timeout. Downscaling to a sane max dimension + JPEG quality
+// keeps photos at a few hundred KB while still being clearly legible.
+function compressImage(file: File, maxDimension = 1280, quality = 0.7): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    const objectUrl = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl)
+      const scale = Math.min(1, maxDimension / Math.max(img.width, img.height))
+      const canvas = document.createElement('canvas')
+      canvas.width = Math.round(img.width * scale)
+      canvas.height = Math.round(img.height * scale)
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        reject(new Error('Canvas is not supported by this browser'))
+        return
+      }
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      resolve(canvas.toDataURL('image/jpeg', quality))
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl)
+      reject(new Error('Failed to read the photo'))
+    }
+    img.src = objectUrl
+  })
+}
+
+function getCurrentPosition(): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation is not supported by this browser'))
+      return
+    }
+    navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 15000 })
+  })
+}
+
+function SiteBadge({ onSite, distanceMeters }: { onSite: boolean | null; distanceMeters: number | null }) {
+  if (onSite === null) {
+    return <Badge variant="secondary" className="text-[10px] gap-1"><HelpCircle className="h-3 w-3" />Site status unknown</Badge>
+  }
+  return onSite ? (
+    <Badge variant="success" className="text-[10px] gap-1"><CheckCircle2 className="h-3 w-3" />On Site</Badge>
+  ) : (
+    <Badge variant="destructive" className="text-[10px] gap-1"><XCircle className="h-3 w-3" />Off Site ({distanceMeters}m from site)</Badge>
+  )
 }
 
 interface RiskItem {
@@ -99,6 +165,15 @@ export default function SurveyDetailPage() {
   const canWrite = !!role && WRITE_ROLES.includes(role)
   const canDelete = !!role && DELETE_ROLES.includes(role)
   const canApprove = !!role && APPROVE_ROLES.includes(role)
+  const isAssignedToMe = !!session?.user?.id && survey?.engineerId === session.user.id
+  const canCheckInOut = (role === 'ENGINEER' || role === 'SURVEYOR') && isAssignedToMe
+
+  const [checkInPhoto, setCheckInPhoto] = useState<string | null>(null)
+  const [checkingIn, setCheckingIn] = useState(false)
+  const [checkOutPhoto, setCheckOutPhoto] = useState<string | null>(null)
+  const [checkingOut, setCheckingOut] = useState(false)
+  const [measurementDrafts, setMeasurementDrafts] = useState<MeasurementDraft[]>([])
+  const [materialDrafts, setMaterialDrafts] = useState<MaterialDraft[]>([])
 
   const fetchSurvey = useCallback(async () => {
     setLoading(true)
@@ -177,6 +252,132 @@ export default function SurveyDetailPage() {
       router.push('/surveys')
     } catch {
       showError('Network error while deleting survey')
+    }
+  }
+
+  const handleCheckInPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setCheckInPhoto(await compressImage(file))
+  }
+
+  const handleCheckOutPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setCheckOutPhoto(await compressImage(file))
+  }
+
+  const handleCheckIn = async () => {
+    if (!checkInPhoto) {
+      showError('Take a check-in photo first')
+      return
+    }
+    setCheckingIn(true)
+    try {
+      const position = await getCurrentPosition()
+      const res = await fetch(`/api/surveys/${surveyId}/checkin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          photo: checkInPhoto,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        showError(data.error || 'Failed to check in')
+        return
+      }
+      showSuccess(
+        data.onSite === true
+          ? 'Checked in successfully — On Site'
+          : data.onSite === false
+            ? `Checked in — Off Site (${data.distanceMeters}m from the project location)`
+            : 'Checked in successfully'
+      )
+      setCheckInPhoto(null)
+      fetchSurvey()
+    } catch (e: any) {
+      showError(e?.message?.includes('geolocation') || e?.code === 1
+        ? 'Location permission is required to check in'
+        : 'Failed to check in')
+    } finally {
+      setCheckingIn(false)
+    }
+  }
+
+  const addMeasurementDraft = () => {
+    setMeasurementDrafts((prev) => [...prev, { category: '', description: '', length: '', width: '', height: '', unit: 'm' }])
+  }
+  const removeMeasurementDraft = (index: number) => {
+    setMeasurementDrafts((prev) => prev.filter((_, i) => i !== index))
+  }
+  const updateMeasurementDraft = (index: number, field: keyof MeasurementDraft, value: string) => {
+    setMeasurementDrafts((prev) => prev.map((m, i) => (i === index ? { ...m, [field]: value } : m)))
+  }
+
+  const addMaterialDraft = () => {
+    setMaterialDrafts((prev) => [...prev, { materialName: '', specification: '', quantity: '', unit: '', estimatedCost: '' }])
+  }
+  const removeMaterialDraft = (index: number) => {
+    setMaterialDrafts((prev) => prev.filter((_, i) => i !== index))
+  }
+  const updateMaterialDraft = (index: number, field: keyof MaterialDraft, value: string) => {
+    setMaterialDrafts((prev) => prev.map((m, i) => (i === index ? { ...m, [field]: value } : m)))
+  }
+
+  const handleCheckOut = async () => {
+    if (!checkOutPhoto) {
+      showError('Take a check-out photo first')
+      return
+    }
+    const incompleteMeasurement = measurementDrafts.find((m) => !m.category.trim())
+    if (incompleteMeasurement) {
+      showError('Every measurement needs a category')
+      return
+    }
+    const incompleteMaterial = materialDrafts.find((m) => !m.materialName.trim() || !m.quantity || !m.unit.trim())
+    if (incompleteMaterial) {
+      showError('Every material needs a name, quantity, and unit')
+      return
+    }
+    setCheckingOut(true)
+    try {
+      const position = await getCurrentPosition()
+      const res = await fetch(`/api/surveys/${surveyId}/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          photo: checkOutPhoto,
+          measurements: measurementDrafts,
+          materials: materialDrafts,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        showError(data.error || 'Failed to check out')
+        return
+      }
+      showSuccess(
+        data.onSite === true
+          ? 'Checked out successfully — On Site'
+          : data.onSite === false
+            ? `Checked out — Off Site (${data.distanceMeters}m from the project location)`
+            : 'Checked out successfully'
+      )
+      setCheckOutPhoto(null)
+      setMeasurementDrafts([])
+      setMaterialDrafts([])
+      fetchSurvey()
+    } catch (e: any) {
+      showError(e?.message?.includes('geolocation') || e?.code === 1
+        ? 'Location permission is required to check out'
+        : 'Failed to check out')
+    } finally {
+      setCheckingOut(false)
     }
   }
 
@@ -267,10 +468,16 @@ export default function SurveyDetailPage() {
           </CardContent>
         </Card>
       ) : (
-        <Tabs defaultValue="overview">
+        <Tabs defaultValue={canCheckInOut && !survey.checkedOutAt ? "site-visit" : "overview"}>
           <TabsList className="flex-wrap h-auto">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="site-visit">
+              Site Visit {survey.checkedInAt && !survey.checkedOutAt && <Badge variant="info" className="ml-1.5 text-[10px]">In Progress</Badge>}
+              {survey.checkedOutAt && <CheckCircle2 className="ml-1.5 h-3.5 w-3.5 text-emerald-500" />}
+            </TabsTrigger>
             <TabsTrigger value="checklist">Checklist</TabsTrigger>
+            <TabsTrigger value="measurements">Measurements {survey.measurements.length > 0 && `(${survey.measurements.length})`}</TabsTrigger>
+            <TabsTrigger value="materials">Materials {survey.materialRequirements.length > 0 && `(${survey.materialRequirements.length})`}</TabsTrigger>
             <TabsTrigger value="risks">Risks {risks.length > 0 && `(${risks.length})`}</TabsTrigger>
             <TabsTrigger value="media">Media &amp; Attachments</TabsTrigger>
           </TabsList>
@@ -336,6 +543,149 @@ export default function SurveyDetailPage() {
             </div>
           </TabsContent>
 
+          <TabsContent value="site-visit" className="space-y-6 mt-4">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card>
+                <CardHeader><CardTitle className="flex items-center gap-2"><LogIn className="h-5 w-5" />Check-In</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  {survey.checkedInAt ? (
+                    <div className="space-y-3">
+                      {survey.photos.find((p) => p.caption === 'Check-In') && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={survey.photos.find((p) => p.caption === 'Check-In')!.url}
+                          alt="Check-in"
+                          className="w-full max-w-xs rounded-lg border object-cover"
+                        />
+                      )}
+                      <div className="flex items-center gap-2 text-sm text-emerald-600"><CheckCircle2 className="h-4 w-4" />Checked in {formatDate(survey.checkedInAt)}</div>
+                      {survey.photos.find((p) => p.caption === 'Check-In') && (() => {
+                        const p = survey.photos.find((p) => p.caption === 'Check-In')!
+                        const { onSite, distanceMeters } = siteStatus(p.latitude, p.longitude, survey.project.latitude, survey.project.longitude)
+                        return (
+                          <div className="space-y-1">
+                            <p className="text-xs text-muted-foreground">Lat: {p.latitude}, Lng: {p.longitude}</p>
+                            <SiteBadge onSite={onSite} distanceMeters={distanceMeters} />
+                          </div>
+                        )
+                      })()}
+                    </div>
+                  ) : canCheckInOut ? (
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground">Take a photo of yourself at the site to check in. Your location will be captured automatically.</p>
+                      {checkInPhoto ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={checkInPhoto} alt="Check-in preview" className="w-full max-w-xs rounded-lg border object-cover" />
+                      ) : (
+                        <label className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-8 text-center cursor-pointer hover:bg-muted/50">
+                          <Camera className="h-8 w-8 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">Tap to take a photo</span>
+                          <input type="file" accept="image/*" capture="user" className="hidden" onChange={handleCheckInPhoto} />
+                        </label>
+                      )}
+                      <div className="flex gap-2">
+                        {checkInPhoto && (
+                          <Button variant="outline" onClick={() => setCheckInPhoto(null)} disabled={checkingIn}>Retake</Button>
+                        )}
+                        <Button className="flex-1" onClick={handleCheckIn} disabled={!checkInPhoto || checkingIn}>
+                          {checkingIn ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogIn className="mr-2 h-4 w-4" />}
+                          {checkingIn ? 'Checking in...' : 'Check In'}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Not checked in yet.</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader><CardTitle className="flex items-center gap-2"><LogOut className="h-5 w-5" />Check-Out</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  {survey.checkedOutAt ? (
+                    <div className="space-y-3">
+                      {survey.photos.find((p) => p.caption === 'Check-Out') && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={survey.photos.find((p) => p.caption === 'Check-Out')!.url}
+                          alt="Check-out"
+                          className="w-full max-w-xs rounded-lg border object-cover"
+                        />
+                      )}
+                      <div className="flex items-center gap-2 text-sm text-emerald-600"><CheckCircle2 className="h-4 w-4" />Checked out {formatDate(survey.checkedOutAt)}</div>
+                      {survey.photos.find((p) => p.caption === 'Check-Out') && (() => {
+                        const p = survey.photos.find((p) => p.caption === 'Check-Out')!
+                        const { onSite, distanceMeters } = siteStatus(p.latitude, p.longitude, survey.project.latitude, survey.project.longitude)
+                        return <SiteBadge onSite={onSite} distanceMeters={distanceMeters} />
+                      })()}
+                      <p className="text-xs text-muted-foreground">{survey.measurements.length} measurement(s), {survey.materialRequirements.length} material(s) submitted — see the Measurements and Materials tabs.</p>
+                    </div>
+                  ) : !survey.checkedInAt ? (
+                    <p className="text-sm text-muted-foreground">Check in first before you can check out.</p>
+                  ) : canCheckInOut ? (
+                    <div className="space-y-4">
+                      <p className="text-sm text-muted-foreground">Take a checkout photo, then record what you measured and what materials are needed.</p>
+                      {checkOutPhoto ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={checkOutPhoto} alt="Check-out preview" className="w-full max-w-xs rounded-lg border object-cover" />
+                      ) : (
+                        <label className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-8 text-center cursor-pointer hover:bg-muted/50">
+                          <Camera className="h-8 w-8 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">Tap to take a photo</span>
+                          <input type="file" accept="image/*" capture="user" className="hidden" onChange={handleCheckOutPhoto} />
+                        </label>
+                      )}
+                      {checkOutPhoto && (
+                        <Button variant="outline" size="sm" onClick={() => setCheckOutPhoto(null)} disabled={checkingOut}>Retake</Button>
+                      )}
+
+                      <div className="space-y-2 border-t pt-4">
+                        <div className="flex items-center justify-between">
+                          <Label>Measurements</Label>
+                          <Button variant="outline" size="sm" onClick={addMeasurementDraft}><Plus className="mr-1 h-3.5 w-3.5" />Add</Button>
+                        </div>
+                        {measurementDrafts.map((m, i) => (
+                          <div key={i} className="grid grid-cols-6 gap-2 items-end rounded-lg border p-2">
+                            <Input className="col-span-2" placeholder="Category *" value={m.category} onChange={(e) => updateMeasurementDraft(i, 'category', e.target.value)} />
+                            <Input className="col-span-2" placeholder="Description" value={m.description} onChange={(e) => updateMeasurementDraft(i, 'description', e.target.value)} />
+                            <Input placeholder="L" type="number" value={m.length} onChange={(e) => updateMeasurementDraft(i, 'length', e.target.value)} />
+                            <div className="flex gap-1">
+                              <Input placeholder="W" type="number" value={m.width} onChange={(e) => updateMeasurementDraft(i, 'width', e.target.value)} />
+                              <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0 text-destructive" onClick={() => removeMeasurementDraft(i)}><Trash2 className="h-4 w-4" /></Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="space-y-2 border-t pt-4">
+                        <div className="flex items-center justify-between">
+                          <Label>Material Requirements</Label>
+                          <Button variant="outline" size="sm" onClick={addMaterialDraft}><Plus className="mr-1 h-3.5 w-3.5" />Add</Button>
+                        </div>
+                        {materialDrafts.map((m, i) => (
+                          <div key={i} className="grid grid-cols-6 gap-2 items-end rounded-lg border p-2">
+                            <Input className="col-span-2" placeholder="Material *" value={m.materialName} onChange={(e) => updateMaterialDraft(i, 'materialName', e.target.value)} />
+                            <Input placeholder="Qty *" type="number" value={m.quantity} onChange={(e) => updateMaterialDraft(i, 'quantity', e.target.value)} />
+                            <Input placeholder="Unit *" value={m.unit} onChange={(e) => updateMaterialDraft(i, 'unit', e.target.value)} />
+                            <Input placeholder="Est. Cost" type="number" value={m.estimatedCost} onChange={(e) => updateMaterialDraft(i, 'estimatedCost', e.target.value)} />
+                            <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0 text-destructive" onClick={() => removeMaterialDraft(i)}><Trash2 className="h-4 w-4" /></Button>
+                          </div>
+                        ))}
+                      </div>
+
+                      <Button className="w-full" onClick={handleCheckOut} disabled={!checkOutPhoto || checkingOut}>
+                        {checkingOut ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogOut className="mr-2 h-4 w-4" />}
+                        {checkingOut ? 'Checking out...' : 'Check Out'}
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Checked in, not checked out yet.</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
           <TabsContent value="checklist" className="space-y-6 mt-4">
             <Card>
               <CardHeader>
@@ -386,6 +736,52 @@ export default function SurveyDetailPage() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="measurements" className="space-y-6 mt-4">
+            <Card>
+              <CardHeader><CardTitle>Measurements</CardTitle></CardHeader>
+              <CardContent>
+                {survey.measurements.length === 0 ? (
+                  <p className="py-8 text-center text-sm text-muted-foreground">No measurements recorded yet — submitted at checkout</p>
+                ) : (
+                  <div className="space-y-2">
+                    {survey.measurements.map((m) => (
+                      <div key={m.id} className="flex items-center justify-between rounded-lg border p-3">
+                        <div>
+                          <p className="text-sm font-medium">{m.category}{m.description ? ` — ${m.description}` : ''}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {[m.length && `L: ${m.length}`, m.width && `W: ${m.width}`, m.height && `H: ${m.height}`].filter(Boolean).join(' · ') || 'No dimensions'} {m.unit}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="materials" className="space-y-6 mt-4">
+            <Card>
+              <CardHeader><CardTitle>Material Requirements</CardTitle></CardHeader>
+              <CardContent>
+                {survey.materialRequirements.length === 0 ? (
+                  <p className="py-8 text-center text-sm text-muted-foreground">No material requirements recorded yet — submitted at checkout</p>
+                ) : (
+                  <div className="space-y-2">
+                    {survey.materialRequirements.map((m) => (
+                      <div key={m.id} className="flex items-center justify-between rounded-lg border p-3">
+                        <div>
+                          <p className="text-sm font-medium">{m.materialName}{m.specification ? ` (${m.specification})` : ''}</p>
+                          <p className="text-xs text-muted-foreground">{m.quantity} {m.unit}{m.estimatedCost ? ` · est. ₹${m.estimatedCost.toLocaleString('en-IN')}` : ''}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           <TabsContent value="risks" className="space-y-6 mt-4">
             <Card>
               <CardHeader><CardTitle>Risk Assessment</CardTitle></CardHeader>
@@ -418,14 +814,27 @@ export default function SurveyDetailPage() {
 
           <TabsContent value="media" className="space-y-6 mt-4">
             <Card>
-              <CardContent className="pt-6">
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Camera className="h-12 w-12 text-muted-foreground/50" />
-                  <h3 className="mt-4 text-lg font-semibold">Photos, videos, voice notes & sketches</h3>
-                  <p className="mt-1 text-sm text-muted-foreground max-w-md">
-                    File uploads aren't wired up yet — this needs storage infrastructure (Vercel Blob/S3, per the project roadmap) before these can be built.
-                  </p>
-                </div>
+              <CardHeader><CardTitle>Photos ({survey.photos.length})</CardTitle></CardHeader>
+              <CardContent>
+                {survey.photos.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <Camera className="h-12 w-12 text-muted-foreground/50" />
+                    <h3 className="mt-4 text-lg font-semibold">No photos yet</h3>
+                    <p className="mt-1 text-sm text-muted-foreground max-w-md">Check-in/check-out photos will show up here automatically.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {survey.photos.map((photo) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <div key={photo.id} className="space-y-1">
+                        <img src={photo.url} alt={photo.caption || 'Survey photo'} className="w-full aspect-square rounded-lg border object-cover" />
+                        <p className="text-xs font-medium">{photo.caption || 'Photo'}</p>
+                        {photo.takenAt && <p className="text-[10px] text-muted-foreground">{formatDate(photo.takenAt)}</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <p className="mt-4 text-xs text-muted-foreground">Videos, voice notes, and sketches aren't wired up yet — same storage infra, not yet built for those media types.</p>
               </CardContent>
             </Card>
           </TabsContent>

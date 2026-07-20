@@ -27,7 +27,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const survey = await db.survey.findUnique({
       where: { id },
       include: {
-        project: { select: { id: true, name: true, code: true, clientId: true } },
+        project: { select: { id: true, name: true, code: true, clientId: true, latitude: true, longitude: true } },
         engineer: { select: { id: true, firstName: true, lastName: true, email: true } },
         checklistItems: { where: { isDeleted: false } },
         photos: { where: { isDeleted: false } },
