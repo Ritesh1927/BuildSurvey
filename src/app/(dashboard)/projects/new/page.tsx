@@ -49,14 +49,13 @@ const steps = [
 ]
 
 const projectTypes = [
-  "Residential Tower",
-  "Commercial Complex",
-  "Infrastructure",
-  "Industrial",
-  "Highway",
-  "Bridge",
-  "Institutional",
-  "Mixed Use",
+  { value: "RESIDENTIAL", label: "Residential" },
+  { value: "COMMERCIAL", label: "Commercial" },
+  { value: "INDUSTRIAL", label: "Industrial" },
+  { value: "INFRASTRUCTURE", label: "Infrastructure" },
+  { value: "INTERIOR", label: "Interior" },
+  { value: "MEP", label: "MEP" },
+  { value: "RENOVATION", label: "Renovation" },
 ]
 
 
@@ -89,12 +88,10 @@ interface FormData {
   floors: string
   // Step 3: Financial
   budget: string
-  estimatedCost: string
   startDate: string
   endDate: string
   // Step 4: Assignment
   managerId: string
-  teamMemberIds: string[]
   notes: string
 }
 
@@ -126,20 +123,17 @@ export default function NewProjectPage() {
     area: "",
     floors: "",
     budget: "",
-    estimatedCost: "",
     startDate: "",
     endDate: "",
     managerId: "",
-    teamMemberIds: [],
     notes: "",
   })
 
   useEffect(() => {
-    fetch('/api/clients')
+    fetch('/api/clients?limit=200')
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data)) setClientList(data)
-        else if (data.clients) setClientList(data.clients)
+        if (data.success && Array.isArray(data.data)) setClientList(data.data)
       })
       .catch(() => {})
       .finally(() => setClientsLoading(false))
@@ -154,17 +148,8 @@ export default function NewProjectPage() {
       .finally(() => setUsersLoading(false))
   }, [])
 
-  const updateField = (field: keyof FormData, value: string | string[]) => {
+  const updateField = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
-  }
-
-  const toggleTeamMember = (id: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      teamMemberIds: prev.teamMemberIds.includes(id)
-        ? prev.teamMemberIds.filter((i) => i !== id)
-        : [...prev.teamMemberIds, id],
-    }))
   }
 
   const canProceed = (): boolean => {
@@ -175,8 +160,6 @@ export default function NewProjectPage() {
         return !!formData.city && !!formData.state
       case 3:
         return !!formData.budget && !!formData.startDate && !!formData.endDate
-      case 4:
-        return !!formData.managerId
       default:
         return true
     }
@@ -198,7 +181,6 @@ export default function NewProjectPage() {
           startDate: formData.startDate || undefined,
           endDate: formData.endDate || undefined,
           budget: formData.budget ? Number(formData.budget) : undefined,
-          estimatedCost: formData.estimatedCost ? Number(formData.estimatedCost) : undefined,
           notes: formData.notes.trim() || undefined,
           address: formData.address.trim() || undefined,
           city: formData.city.trim() || undefined,
@@ -247,6 +229,12 @@ export default function NewProjectPage() {
         <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">
           <CheckCircle2 className="h-5 w-5" />
           <span className="font-medium">Project created successfully! Redirecting...</span>
+        </div>
+      )}
+
+      {errors.submit && (
+        <div className="rounded-lg bg-red-50 dark:bg-red-950/30 p-3 text-sm text-red-600 dark:text-red-400">
+          {errors.submit}
         </div>
       )}
 
@@ -363,8 +351,8 @@ export default function NewProjectPage() {
                         </SelectTrigger>
                         <SelectContent>
                           {projectTypes.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {type}
+                            <SelectItem key={type.value} value={type.value}>
+                              {type.label}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -499,35 +487,20 @@ export default function NewProjectPage() {
 
               {currentStep === 3 && (
                 <div className="space-y-4">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="budget">
-                        Project Budget (INR) <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="budget"
-                        type="number"
-                        placeholder="e.g., 12500000"
-                        value={formData.budget}
-                        onChange={(e) => updateField("budget", e.target.value)}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Total approved budget for the project
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="estimatedCost">Estimated Cost (INR)</Label>
-                      <Input
-                        id="estimatedCost"
-                        type="number"
-                        placeholder="e.g., 11800000"
-                        value={formData.estimatedCost}
-                        onChange={(e) => updateField("estimatedCost", e.target.value)}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Internal estimated cost for delivery
-                      </p>
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="budget">
+                      Project Budget (INR) <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="budget"
+                      type="number"
+                      placeholder="e.g., 12500000"
+                      value={formData.budget}
+                      onChange={(e) => updateField("budget", e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Total approved budget for the project
+                    </p>
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
@@ -576,7 +549,7 @@ export default function NewProjectPage() {
                           <SelectItem value="__none" disabled>No users found</SelectItem>
                         ) : (
                           teamMembers
-                            .filter((m) => m.role === "MANAGER" || m.role === "Project Manager")
+                            .filter((m) => m.role === "MANAGER")
                             .map((member) => (
                               <SelectItem key={member.id} value={member.id}>
                                 {member.firstName} {member.lastName} - {member.role}
@@ -585,48 +558,7 @@ export default function NewProjectPage() {
                         )}
                       </SelectContent>
                     </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Team Members</Label>
-                    <p className="text-xs text-muted-foreground">Select team members to assign to this project</p>
-                      <div className="grid gap-2 sm:grid-cols-2">
-                      {usersLoading ? (
-                        <p className="text-sm text-muted-foreground">Loading team members...</p>
-                      ) : teamMembers.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">No team members found</p>
-                      ) : (
-                        teamMembers.map((member) => (
-                          <div
-                            key={member.id}
-                            className={cn(
-                              "flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors",
-                              formData.teamMemberIds.includes(member.id)
-                                ? "border-primary bg-primary/5"
-                                : "hover:bg-muted/50"
-                            )}
-                            onClick={() => toggleTeamMember(member.id)}
-                          >
-                            <div
-                              className={cn(
-                                "flex h-5 w-5 items-center justify-center rounded border",
-                                formData.teamMemberIds.includes(member.id)
-                                  ? "border-primary bg-primary text-primary-foreground"
-                                  : "border-muted-foreground/30"
-                              )}
-                            >
-                              {formData.teamMemberIds.includes(member.id) && (
-                                <Check className="h-3 w-3" />
-                              )}
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium">{member.firstName} {member.lastName}</p>
-                              <p className="text-xs text-muted-foreground">{member.role}</p>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
+                    <p className="text-xs text-muted-foreground">Optional — can be assigned later</p>
                   </div>
 
                   <div className="space-y-2">
@@ -714,7 +646,7 @@ export default function NewProjectPage() {
               {formData.type && (
                 <div>
                   <p className="text-muted-foreground text-xs">Type</p>
-                  <p className="font-medium">{formData.type}</p>
+                  <p className="font-medium">{projectTypes.find((t) => t.value === formData.type)?.label}</p>
                 </div>
               )}
               {formData.clientId && (
@@ -749,12 +681,6 @@ export default function NewProjectPage() {
                     {" - "}
                     {new Date(formData.endDate).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}
                   </p>
-                </div>
-              )}
-              {formData.teamMemberIds.length > 0 && (
-                <div>
-                  <p className="text-muted-foreground text-xs">Team</p>
-                  <p className="font-medium">{formData.teamMemberIds.length} members assigned</p>
                 </div>
               )}
             </CardContent>

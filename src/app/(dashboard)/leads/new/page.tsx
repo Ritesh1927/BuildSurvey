@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import {
   ArrowLeft,
   ArrowRight,
@@ -83,8 +84,12 @@ interface UserOption {
   role: string
 }
 
+const BACKFILL_ROLES = ['SUPER_ADMIN', 'ADMIN']
+
 export default function NewLeadPage() {
   const router = useRouter()
+  const { data: session } = useSession()
+  const canSetInitialStatus = !!session?.user?.role && BACKFILL_ROLES.includes(session.user.role)
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState<FormData>(initialFormData)
   const [errors, setErrors] = useState<FormErrors>({})
@@ -313,21 +318,24 @@ export default function NewLeadPage() {
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label>Status</Label>
-          <Select value={formData.status} onValueChange={(v) => updateField('status', v)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="NEW">New</SelectItem>
-              <SelectItem value="CONTACTED">Contacted</SelectItem>
-              <SelectItem value="QUALIFIED">Qualified</SelectItem>
-              <SelectItem value="PROPOSAL">Proposal Sent</SelectItem>
-              <SelectItem value="NEGOTIATION">Negotiation</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {canSetInitialStatus && (
+          <div className="space-y-2">
+            <Label>Status</Label>
+            <Select value={formData.status} onValueChange={(v) => updateField('status', v)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="NEW">New</SelectItem>
+                <SelectItem value="CONTACTED">Contacted</SelectItem>
+                <SelectItem value="QUALIFIED">Qualified</SelectItem>
+                <SelectItem value="PROPOSAL">Proposal Sent</SelectItem>
+                <SelectItem value="NEGOTIATION">Negotiation</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">Backfill/migration override — normally every lead starts as New</p>
+          </div>
+        )}
 
         <div className="space-y-2">
           <Label>Priority</Label>

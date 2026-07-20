@@ -5,9 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import {
   Menu,
-  Search,
-  Bell,
-  User,
   Settings,
   LogOut,
   Moon,
@@ -30,7 +27,7 @@ import Breadcrumbs from '@/components/layout/breadcrumbs'
 export default function Header() {
   const router = useRouter()
   const { data: session } = useSession()
-  const { setSidebarOpen, setNotificationsOpen, notifications } = useUIStore()
+  const { setSidebarOpen } = useUIStore()
   const { setTheme, resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
@@ -41,8 +38,6 @@ export default function Header() {
   const userEmail = sessionUser?.email || ''
   const userRole = sessionUser?.role?.replace(/_/g, ' ') || 'Viewer'
   const userInitials = userName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
-
-  const unreadCount = notifications.filter((n) => !n.isRead).length
 
   const handleLogout = useCallback(() => {
     signOut({ callbackUrl: '/login' })
@@ -62,31 +57,8 @@ export default function Header() {
         <Breadcrumbs className="hidden sm:flex" />
       </div>
 
-      {/* Center: Search */}
-      <div className="hidden md:block flex-shrink-0 px-4">
-        <button
-          onClick={() => {}}
-          className="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-border hover:bg-background"
-        >
-          <Search className="h-4 w-4" />
-          <span className="hidden lg:inline">Search...</span>
-          <kbd className="ml-2 hidden rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground lg:inline">
-            {'\u2318'}K
-          </kbd>
-        </button>
-      </div>
-
       {/* Right: Actions */}
       <div className="flex items-center gap-1">
-        {/* Mobile search */}
-        <button
-          onClick={() => {}}
-          className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground md:hidden"
-          aria-label="Search"
-        >
-          <Search className="h-5 w-5" />
-        </button>
-
         {/* Theme toggle */}
         <button
           onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
@@ -103,20 +75,6 @@ export default function Header() {
           aria-label="User Manual"
         >
           <BookOpen className="h-5 w-5" />
-        </button>
-
-        {/* Notifications */}
-        <button
-          onClick={() => setNotificationsOpen(true)}
-          className="relative rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-          aria-label="Notifications"
-        >
-          <Bell className="h-5 w-5" />
-          {unreadCount > 0 && (
-            <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white">
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </span>
-          )}
         </button>
 
         {/* User Dropdown */}
@@ -144,10 +102,6 @@ export default function Header() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push('/settings')}>
-              <User className="mr-2 h-4 w-4" />
-              Profile
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push('/settings')}>
               <Settings className="mr-2 h-4 w-4" />
               Settings

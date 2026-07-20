@@ -5,7 +5,6 @@ import { useUIStore } from '@/stores/ui-store'
 import Sidebar from '@/components/layout/sidebar'
 import Header from '@/components/layout/header'
 import MobileSidebar from '@/components/layout/mobile-sidebar'
-import NotificationPanel from '@/components/layout/notification-panel'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { sidebarCollapsed } = useUIStore()
@@ -19,9 +18,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Mobile Sidebar */}
       <MobileSidebar />
-
-      {/* Notification Panel */}
-      <NotificationPanel />
 
       {/* Main Content Area */}
       <div
