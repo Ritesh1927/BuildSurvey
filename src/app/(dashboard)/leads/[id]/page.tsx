@@ -181,6 +181,14 @@ export default function LeadDetailPage() {
       .catch(() => {})
   }, [canWrite])
 
+  // Arriving via the leads list's "Convert to Client" action (?convert=true)
+  // opens the dialog straight away instead of requiring an extra click.
+  useEffect(() => {
+    if (canConvert && searchParams.get('convert') === 'true') {
+      setConvertDialogOpen(true)
+    }
+  }, [canConvert, searchParams])
+
   const handleSave = async () => {
     setSaving(true)
     try {

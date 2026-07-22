@@ -151,19 +151,12 @@ export default function LeadsPage() {
     }
   }
 
-  const handleConvert = async (lead: LeadData) => {
-    try {
-      const res = await fetch(`/api/leads/${lead.id}/convert`, { method: 'POST' })
-      const data = await res.json()
-      if (!res.ok || !data.success) {
-        showError(data.error || 'Failed to convert lead')
-        return
-      }
-      showSuccess('Lead converted to client')
-      router.push(`/clients/${data.data.clientId}`)
-    } catch {
-      showError('Network error while converting lead')
-    }
+  const handleConvert = (lead: LeadData) => {
+    // Conversion itself (and the dialog that collects the client-only
+    // fields a lead never captures) lives on the lead detail page — this
+    // just gets there and opens it, rather than duplicating that form here
+    // or converting instantly with everything left blank.
+    router.push(`/leads/${lead.id}?convert=true`)
   }
 
   const columns: ColumnDef<LeadData, unknown>[] = [
