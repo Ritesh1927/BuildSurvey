@@ -14,11 +14,19 @@ interface StatCardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const colorMap = {
-  default: "bg-primary/10 text-primary",
-  success: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400",
-  warning: "bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400",
-  danger: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400",
-  info: "bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400",
+  default: "bg-gradient-to-br from-primary/15 to-primary/5 text-primary",
+  success: "bg-gradient-to-br from-emerald-100 to-emerald-50 text-emerald-600 dark:from-emerald-900/50 dark:to-emerald-900/20 dark:text-emerald-400",
+  warning: "bg-gradient-to-br from-amber-100 to-amber-50 text-amber-600 dark:from-amber-900/50 dark:to-amber-900/20 dark:text-amber-400",
+  danger: "bg-gradient-to-br from-red-100 to-red-50 text-red-600 dark:from-red-900/50 dark:to-red-900/20 dark:text-red-400",
+  info: "bg-gradient-to-br from-blue-100 to-blue-50 text-blue-600 dark:from-blue-900/50 dark:to-blue-900/20 dark:text-blue-400",
+}
+
+const barMap = {
+  default: "bg-primary",
+  success: "bg-emerald-500",
+  warning: "bg-amber-500",
+  danger: "bg-red-500",
+  info: "bg-blue-500",
 }
 
 function StatCard({
@@ -32,17 +40,18 @@ function StatCard({
   ...props
 }: StatCardProps) {
   return (
-    <Card className={cn("", className)} {...props}>
+    <Card className={cn("relative overflow-hidden", className)} {...props}>
+      <span className={cn("absolute inset-x-0 top-0 h-1", barMap[color])} />
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <p className="text-sm font-medium text-muted-foreground">{label}</p>
-            <p className="text-2xl font-bold">{value}</p>
+            <p className="text-3xl font-bold tracking-tight">{value}</p>
           </div>
           {icon && (
             <div
               className={cn(
-                "flex h-12 w-12 items-center justify-center rounded-lg",
+                "flex h-12 w-12 items-center justify-center rounded-xl",
                 colorMap[color]
               )}
             >

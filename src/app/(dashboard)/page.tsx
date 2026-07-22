@@ -83,26 +83,32 @@ export default function DashboardPage() {
   )
 
   const firstName = session?.user?.name?.split(' ')[0] || 'there'
+  const roleLabel = session?.user?.role?.replace(/_/g, ' ')
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Welcome back, {firstName}
-          </h1>
-          <p className="text-muted-foreground">{today}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button asChild size="sm">
-            <Link href="/surveys/new"><ClipboardList className="mr-1 h-4 w-4" />New Survey</Link>
-          </Button>
-          <Button asChild size="sm" variant="outline">
-            <Link href="/projects/new"><FolderKanban className="mr-1 h-4 w-4" />New Project</Link>
-          </Button>
-          <Button asChild size="sm" variant="outline">
-            <Link href="/quotations/new"><FileText className="mr-1 h-4 w-4" />Create Quotation</Link>
-          </Button>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 p-6 text-white shadow-lg sm:p-8">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-blue-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-blue-400/10 blur-3xl" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-blue-300">{today}</p>
+            <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
+              Welcome back, {firstName}
+            </h1>
+            {roleLabel && <p className="mt-1 text-sm text-blue-200/80">{roleLabel}</p>}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild size="sm" className="bg-white text-slate-900 shadow-sm hover:bg-white/90">
+              <Link href="/surveys/new"><ClipboardList className="mr-1 h-4 w-4" />New Survey</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="border-white/25 bg-white/5 text-white hover:bg-white/15 hover:text-white">
+              <Link href="/projects/new"><FolderKanban className="mr-1 h-4 w-4" />New Project</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="border-white/25 bg-white/5 text-white hover:bg-white/15 hover:text-white">
+              <Link href="/quotations/new"><FileText className="mr-1 h-4 w-4" />Create Quotation</Link>
+            </Button>
+          </div>
         </div>
       </div>
 

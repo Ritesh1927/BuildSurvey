@@ -3,7 +3,7 @@
 import { useCallback, createElement } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import {
   ChevronLeft,
   ChevronRight,
@@ -13,7 +13,6 @@ import {
 import { cn } from '@/lib/utils'
 import { APP_NAME, SIDEBAR_NAV_ITEMS } from '@/lib/constants'
 import { useUIStore } from '@/stores/ui-store'
-import { useAuthStore } from '@/stores/auth-store'
 import { getIcon } from '@/components/layout/icon-map'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
@@ -86,8 +85,10 @@ export default function Sidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const userRole = session?.user?.role
+  const userName = session?.user?.name ?? 'Guest User'
+  const userInitials = userName.split(' ').map((n) => n[0]).filter(Boolean).join('').toUpperCase() || '?'
   const { sidebarCollapsed, toggleSidebarCollapsed } = useUIStore()
-  const { user, logout } = useAuthStore()
+  const logout = useCallback(() => signOut({ callbackUrl: '/login' }), [])
 
   const isActiveRoute = useCallback(
     (href: string) => {
@@ -195,21 +196,17 @@ export default function Sidebar() {
           ) : (
             <div className="flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.avatar ?? undefined} alt={user?.name ?? ''} />
+                <AvatarImage src={session?.user?.image ?? undefined} alt={userName} />
                 <AvatarFallback className="bg-blue-600 text-xs font-semibold">
-                  {user?.name
-                    ?.split(' ')
-                    .map((n) => n[0])
-                    .join('')
-                    .toUpperCase() ?? '?'}
+                  {userInitials}
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-1 flex-col overflow-hidden">
                 <span className="truncate text-sm font-medium text-white">
-                  {user?.name ?? 'Guest User'}
+                  {userName}
                 </span>
                 <span className="truncate text-[11px] text-slate-400">
-                  {user?.role?.replace(/_/g, ' ') ?? 'Viewer'}
+                  {userRole?.replace(/_/g, ' ') ?? 'Viewer'}
                 </span>
               </div>
               <button
