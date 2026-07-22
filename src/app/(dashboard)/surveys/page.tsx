@@ -57,11 +57,11 @@ const TYPE_META: Record<string, string> = {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  INITIAL: "bg-blue-100 text-blue-800 border-blue-200",
-  DETAILED: "bg-purple-100 text-purple-800 border-purple-200",
-  FOLLOW_UP: "bg-amber-100 text-amber-800 border-amber-200",
-  FINAL: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  AS_BUILT: "bg-cyan-100 text-cyan-800 border-cyan-200",
+  INITIAL: "bg-blue-600 text-white border-transparent",
+  DETAILED: "bg-purple-600 text-white border-transparent",
+  FOLLOW_UP: "bg-amber-600 text-white border-transparent",
+  FINAL: "bg-emerald-600 text-white border-transparent",
+  AS_BUILT: "bg-cyan-600 text-white border-transparent",
 }
 
 const ITEMS_PER_PAGE_OPTIONS = [10, 15, 20, 25]
@@ -245,7 +245,7 @@ export default function SurveysPage() {
                         </TableCell>
                         <TableCell className="max-w-[180px] truncate text-sm">{survey.projectName}</TableCell>
                         <TableCell>
-                          <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${TYPE_COLORS[survey.type] || "bg-gray-100 text-gray-800"}`}>
+                          <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${TYPE_COLORS[survey.type] || "bg-gray-600 text-white border-transparent"}`}>
                             {TYPE_META[survey.type] || survey.type}
                           </span>
                         </TableCell>

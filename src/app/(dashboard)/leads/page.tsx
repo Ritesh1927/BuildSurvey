@@ -61,20 +61,20 @@ interface LeadData {
 }
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
-  NEW: { label: 'New', color: 'bg-blue-100 text-blue-800' },
-  CONTACTED: { label: 'Contacted', color: 'bg-violet-100 text-violet-800' },
-  QUALIFIED: { label: 'Qualified', color: 'bg-emerald-100 text-emerald-800' },
-  PROPOSAL: { label: 'Proposal Sent', color: 'bg-amber-100 text-amber-800' },
-  NEGOTIATION: { label: 'Negotiation', color: 'bg-orange-100 text-orange-800' },
-  WON: { label: 'Won', color: 'bg-emerald-100 text-emerald-800' },
-  LOST: { label: 'Lost', color: 'bg-red-100 text-red-800' },
+  NEW: { label: 'New', color: 'bg-blue-600 text-white' },
+  CONTACTED: { label: 'Contacted', color: 'bg-violet-600 text-white' },
+  QUALIFIED: { label: 'Qualified', color: 'bg-emerald-600 text-white' },
+  PROPOSAL: { label: 'Proposal Sent', color: 'bg-amber-600 text-white' },
+  NEGOTIATION: { label: 'Negotiation', color: 'bg-orange-600 text-white' },
+  WON: { label: 'Won', color: 'bg-emerald-600 text-white' },
+  LOST: { label: 'Lost', color: 'bg-red-600 text-white' },
 }
 
 const PRIORITY_META: Record<string, { label: string; color: string }> = {
-  LOW: { label: 'Low', color: 'bg-gray-100 text-gray-700 border-gray-200' },
-  MEDIUM: { label: 'Medium', color: 'bg-blue-100 text-blue-800 border-blue-200' },
-  HIGH: { label: 'High', color: 'bg-orange-100 text-orange-800 border-orange-200' },
-  CRITICAL: { label: 'Critical', color: 'bg-red-100 text-red-800 border-red-200' },
+  LOW: { label: 'Low', color: 'text-gray-600 border-gray-300' },
+  MEDIUM: { label: 'Medium', color: 'text-blue-700 border-blue-300' },
+  HIGH: { label: 'High', color: 'text-orange-700 border-orange-300' },
+  CRITICAL: { label: 'Critical', color: 'text-red-700 border-red-400' },
 }
 
 // Roles allowed to write via the API — matches src/app/api/leads route
@@ -198,7 +198,7 @@ export default function LeadsPage() {
       accessorKey: 'status',
       header: 'Status',
       cell: ({ row }) => {
-        const meta = STATUS_META[row.original.status] || { label: row.original.status, color: 'bg-gray-100 text-gray-800' }
+        const meta = STATUS_META[row.original.status] || { label: row.original.status, color: 'bg-gray-600 text-white' }
         return (
           <div className="flex flex-wrap items-center gap-1">
             <Badge className={cn('text-[10px]', meta.color)}>{meta.label}</Badge>

@@ -44,10 +44,10 @@ const riskLevels = ["Critical", "High", "Medium", "Low"] as const
 type RiskLevel = (typeof riskLevels)[number]
 
 const levelColors: Record<RiskLevel, string> = {
-  Critical: "bg-red-100 text-red-800 border-red-300",
-  High: "bg-orange-100 text-orange-800 border-orange-300",
-  Medium: "bg-amber-100 text-amber-800 border-amber-300",
-  Low: "bg-emerald-100 text-emerald-800 border-emerald-300",
+  Critical: "bg-red-600 text-white border-transparent",
+  High: "bg-orange-600 text-white border-transparent",
+  Medium: "bg-amber-600 text-white border-transparent",
+  Low: "bg-emerald-600 text-white border-transparent",
 }
 
 const apiLevelMap: Record<string, RiskLevel> = {

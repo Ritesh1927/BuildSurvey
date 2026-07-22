@@ -265,7 +265,7 @@ export default function NewQuotationPage() {
                 step === s.number
                   ? "bg-primary text-primary-foreground"
                   : step > s.number
-                  ? "bg-emerald-100 text-emerald-800"
+                  ? "bg-emerald-600 text-white"
                   : "bg-muted text-muted-foreground"
               )}
             >

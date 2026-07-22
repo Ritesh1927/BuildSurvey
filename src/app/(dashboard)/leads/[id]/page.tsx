@@ -86,20 +86,20 @@ interface UserOption {
 }
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
-  NEW: { label: 'New', color: 'bg-blue-100 text-blue-800' },
-  CONTACTED: { label: 'Contacted', color: 'bg-violet-100 text-violet-800' },
-  QUALIFIED: { label: 'Qualified', color: 'bg-emerald-100 text-emerald-800' },
-  PROPOSAL: { label: 'Proposal Sent', color: 'bg-amber-100 text-amber-800' },
-  NEGOTIATION: { label: 'Negotiation', color: 'bg-orange-100 text-orange-800' },
-  WON: { label: 'Won', color: 'bg-emerald-100 text-emerald-800' },
-  LOST: { label: 'Lost', color: 'bg-red-100 text-red-800' },
+  NEW: { label: 'New', color: 'bg-blue-600 text-white' },
+  CONTACTED: { label: 'Contacted', color: 'bg-violet-600 text-white' },
+  QUALIFIED: { label: 'Qualified', color: 'bg-emerald-600 text-white' },
+  PROPOSAL: { label: 'Proposal Sent', color: 'bg-amber-600 text-white' },
+  NEGOTIATION: { label: 'Negotiation', color: 'bg-orange-600 text-white' },
+  WON: { label: 'Won', color: 'bg-emerald-600 text-white' },
+  LOST: { label: 'Lost', color: 'bg-red-600 text-white' },
 }
 
 const PRIORITY_META: Record<string, { label: string; color: string }> = {
-  LOW: { label: 'Low', color: 'bg-gray-100 text-gray-700 border-gray-200' },
-  MEDIUM: { label: 'Medium', color: 'bg-blue-100 text-blue-800 border-blue-200' },
-  HIGH: { label: 'High', color: 'bg-orange-100 text-orange-800 border-orange-200' },
-  CRITICAL: { label: 'Critical', color: 'bg-red-100 text-red-800 border-red-200' },
+  LOW: { label: 'Low', color: 'text-gray-600 border-gray-300' },
+  MEDIUM: { label: 'Medium', color: 'text-blue-700 border-blue-300' },
+  HIGH: { label: 'High', color: 'text-orange-700 border-orange-300' },
+  CRITICAL: { label: 'Critical', color: 'text-red-700 border-red-400' },
 }
 
 // Forward pipeline order for the progress display. LOST is a terminal
@@ -287,7 +287,7 @@ export default function LeadDetailPage() {
     )
   }
 
-  const statusMeta = STATUS_META[lead.status] || { label: lead.status, color: 'bg-gray-100 text-gray-800' }
+  const statusMeta = STATUS_META[lead.status] || { label: lead.status, color: 'bg-gray-600 text-white' }
   const priorityMeta = PRIORITY_META[lead.priority] || { label: lead.priority, color: '' }
   const currentStepIndex = PIPELINE.indexOf(lead.status)
 
@@ -538,7 +538,7 @@ export default function LeadDetailPage() {
               </CardHeader>
               <CardContent>
                 {lead.status === 'LOST' ? (
-                  <Badge className="bg-red-100 text-red-800">Lost — pipeline ended</Badge>
+                  <Badge className="bg-red-600 text-white">Lost — pipeline ended</Badge>
                 ) : (
                   <div className="flex items-center justify-between overflow-x-auto pb-2">
                     {PIPELINE.map((step, index) => {
