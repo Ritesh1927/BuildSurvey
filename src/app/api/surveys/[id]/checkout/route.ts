@@ -52,6 +52,20 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ success: false, error: 'A check-out photo is required' }, { status: 400 })
     }
 
+    // Checkout is only valid from the site itself - reject up front (before
+    // touching photo storage or the DB) rather than recording a checkout
+    // that later shows as off-site with no way to undo it.
+    const checkoutSiteCheck = siteStatus(lat, lng, survey.project.latitude, survey.project.longitude)
+    if (checkoutSiteCheck.onSite === false) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `You're off-site (${checkoutSiteCheck.distanceMeters}m from the project location) — checkout is only allowed from the site. Move to the site and try again.`,
+        },
+        { status: 400 }
+      )
+    }
+
     const measurementList = Array.isArray(measurements) ? measurements : []
     for (const m of measurementList) {
       if (!m?.category || typeof m.category !== 'string') {
@@ -128,9 +142,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       }),
     ], { timeout: 20000 })
 
-    const { onSite, distanceMeters } = siteStatus(lat, lng, survey.project.latitude, survey.project.longitude)
-
-    return NextResponse.json({ success: true, data: updatedSurvey, photoUrl, onSite, distanceMeters }, { status: 201 })
+    return NextResponse.json({ success: true, data: updatedSurvey, photoUrl, onSite: checkoutSiteCheck.onSite, distanceMeters: checkoutSiteCheck.distanceMeters }, { status: 201 })
   } catch (error) {
     console.error('POST /api/surveys/[id]/checkout error:', error)
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
