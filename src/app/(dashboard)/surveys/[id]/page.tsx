@@ -8,7 +8,7 @@ import {
   ArrowLeft, MapPin, Calendar, Cloud,
   CheckCircle2, Clock, AlertTriangle, Camera,
   Save, Edit, Trash2, X, AlertCircle, Plus, Loader2, LogIn, LogOut,
-  XCircle, HelpCircle,
+  XCircle, HelpCircle, Navigation,
 } from "lucide-react"
 import { PageHeader } from "@/components/ui/page-header"
 import { Button } from "@/components/ui/button"
@@ -569,6 +569,17 @@ export default function SurveyDetailPage() {
                     </div>
                   ) : canCheckInOut ? (
                     <div className="space-y-3">
+                      {survey.project.latitude != null && survey.project.longitude != null && (
+                        <Button variant="outline" className="w-full" asChild>
+                          <a
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${survey.project.latitude},${survey.project.longitude}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Navigation className="mr-2 h-4 w-4" />Get Directions to Site
+                          </a>
+                        </Button>
+                      )}
                       <p className="text-sm text-muted-foreground">Take a photo of yourself at the site to check in. Your location will be captured automatically.</p>
                       {checkInPhoto ? (
                         // eslint-disable-next-line @next/next/no-img-element
