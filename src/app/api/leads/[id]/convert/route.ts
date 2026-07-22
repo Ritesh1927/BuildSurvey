@@ -18,7 +18,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const { id } = await params
     const body = await req.json().catch(() => ({}))
-    const { clientId } = body
+    const {
+      clientId,
+      address, city, state, zipCode, country,
+      gstNumber, panNumber, website, clientType,
+    } = body
 
     const lead = await db.lead.findUnique({ where: { id } })
     if (!lead || lead.isDeleted) {
@@ -71,6 +75,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             email: lead.email,
             phone: lead.phone,
             notes: lead.notes || null,
+            address: address || null,
+            city: city || null,
+            state: state || null,
+            zipCode: zipCode || null,
+            country: country || null,
+            gstNumber: gstNumber || null,
+            panNumber: panNumber || null,
+            website: website || null,
+            clientType: clientType || null,
             createdBy: userId,
           },
         })
