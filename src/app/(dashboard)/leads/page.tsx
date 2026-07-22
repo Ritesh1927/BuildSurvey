@@ -127,11 +127,12 @@ export default function LeadsPage() {
 
   const statusCounts = useMemo(() => {
     const won = leads.filter((l) => l.status === 'WON').length
+    const converted = leads.filter((l) => !!l.clientId).length
     return {
       total: leads.length,
       new: leads.filter((l) => l.status === 'NEW').length,
-      converted: won,
-      conversionRate: leads.length ? Math.round((won / leads.length) * 100) : 0,
+      converted,
+      conversionRate: leads.length ? Math.round((converted / leads.length) * 100) : 0,
     }
   }, [leads])
 
@@ -198,7 +199,14 @@ export default function LeadsPage() {
       header: 'Status',
       cell: ({ row }) => {
         const meta = STATUS_META[row.original.status] || { label: row.original.status, color: 'bg-gray-100 text-gray-800' }
-        return <Badge className={cn('text-[10px]', meta.color)}>{meta.label}</Badge>
+        return (
+          <div className="flex flex-wrap items-center gap-1">
+            <Badge className={cn('text-[10px]', meta.color)}>{meta.label}</Badge>
+            {row.original.clientId && (
+              <Badge variant="outline" className="text-[10px] border-emerald-300 text-emerald-700 dark:text-emerald-400">Converted</Badge>
+            )}
+          </div>
+        )
       },
     },
     {

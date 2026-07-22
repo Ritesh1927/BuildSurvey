@@ -357,6 +357,9 @@ export default function LeadDetailPage() {
                   <div className="flex items-center gap-2">
                     <Badge className={cn('text-[10px]', statusMeta.color)}>{statusMeta.label}</Badge>
                     <Badge variant="outline" className={cn('text-[10px]', priorityMeta.color)}>{priorityMeta.label}</Badge>
+                    {lead.clientId && (
+                      <Badge variant="outline" className="text-[10px] border-emerald-300 text-emerald-700 dark:text-emerald-400">Converted</Badge>
+                    )}
                   </div>
                 )}
               </div>
