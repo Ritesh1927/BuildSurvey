@@ -199,6 +199,12 @@ export default function LoginPage() {
                 Request Access
               </Link>
             </p>
+            <p className="mt-2 text-center text-sm text-muted-foreground">
+              Looking for our services?{' '}
+              <Link href="/contact" className="font-medium text-blue-600 hover:underline dark:text-blue-400">
+                Get a Quote
+              </Link>
+            </p>
           </div>
         </div>
       </div>
