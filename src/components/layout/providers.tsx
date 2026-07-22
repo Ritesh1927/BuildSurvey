@@ -28,7 +28,10 @@ function getInitialTheme(): Theme {
   } catch {
     /* noop */
   }
-  return 'system'
+  // Default to light regardless of OS/browser preference — a visitor's
+  // first impression shouldn't depend on their system dark-mode setting.
+  // Once they explicitly pick a theme, that choice persists via localStorage.
+  return 'light'
 }
 
 function getInitialResolved(theme: Theme): 'light' | 'dark' {

@@ -62,10 +62,18 @@ export default function Header() {
         {/* Theme toggle */}
         <button
           onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-          className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          className="mr-1 flex items-center gap-1.5 rounded-full border border-border bg-muted/50 px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-accent"
           aria-label="Toggle theme"
         >
-          {mounted ? (resolvedTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />) : <Moon className="h-5 w-5" />}
+          {mounted ? (
+            resolvedTheme === 'dark' ? (
+              <><Sun className="h-4 w-4 text-amber-500" />Light</>
+            ) : (
+              <><Moon className="h-4 w-4 text-primary" />Dark</>
+            )
+          ) : (
+            <><Moon className="h-4 w-4" />Dark</>
+          )}
         </button>
 
         {/* Help */}
