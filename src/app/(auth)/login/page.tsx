@@ -61,7 +61,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex bg-background">
       {/* Left Panel — Branding (hidden on mobile, visible on lg+) */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-blue-600 p-10 xl:p-14 text-white relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-primary via-primary to-slate-900 p-10 xl:p-14 text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-16">
@@ -106,7 +106,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           {/* Mobile Logo (visible only on lg以下) */}
           <div className="mb-8 text-center lg:hidden">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/25">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/25">
               <HardHat className="h-8 w-8 text-white" />
             </div>
             <h1 className="mt-4 text-2xl font-bold text-foreground">{APP_NAME}</h1>

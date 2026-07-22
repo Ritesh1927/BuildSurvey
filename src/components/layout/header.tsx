@@ -82,7 +82,7 @@ export default function Header() {
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-accent ml-1">
               <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-blue-600 text-xs font-semibold text-white">
+                <AvatarFallback className="bg-primary text-xs font-semibold text-white">
                   {userInitials}
                 </AvatarFallback>
               </Avatar>

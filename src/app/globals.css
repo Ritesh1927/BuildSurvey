@@ -35,8 +35,8 @@
 :root {
   --background: #f4f6fa;
   --foreground: #0f172a;
-  --primary: #2554e8;
-  --primary-hover: #1c42c4;
+  --primary: #1e3a8a;
+  --primary-hover: #2c4fa8;
   --primary-light: #dbeafe;
   --success: #10b981;
   --success-light: #d1fae5;
@@ -45,7 +45,7 @@
   --danger: #ef4444;
   --danger-light: #fee2e2;
   --border: #e2e8f0;
-  --ring: #2554e8;
+  --ring: #1e3a8a;
   --radius: 0.625rem;
 
   --muted: #f1f5f9;

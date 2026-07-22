@@ -96,7 +96,7 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       {/* Left: Features */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-center bg-blue-600 p-12 text-white">
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-center bg-gradient-to-br from-primary via-primary to-slate-900 p-12 text-white">
         <div className="flex items-center gap-3 mb-8">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20">
             <HardHat className="h-7 w-7" />
@@ -131,7 +131,7 @@ export default function ContactPage() {
       <div className="flex flex-1 items-center justify-center p-6">
         <div className="w-full max-w-md">
           <div className="mb-6 text-center lg:hidden">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
               <HardHat className="h-7 w-7 text-white" />
             </div>
             <h1 className="mt-3 text-xl font-bold text-foreground">{APP_NAME}</h1>
