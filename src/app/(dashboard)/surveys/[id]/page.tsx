@@ -175,6 +175,16 @@ export default function SurveyDetailPage() {
   const [checkingOut, setCheckingOut] = useState(false)
   const [measurementDrafts, setMeasurementDrafts] = useState<MeasurementDraft[]>([])
   const [materialDrafts, setMaterialDrafts] = useState<MaterialDraft[]>([])
+  const [checklistUpdatingId, setChecklistUpdatingId] = useState<string | null>(null)
+
+  // The checklist is a record of what was actually observed on site - only
+  // the assigned surveyor, and only during the on-site window itself (after
+  // check-in, before check-out), should be able to tick items off. Admin/
+  // Manager can always correct entries after the fact.
+  const isOnSiteWindow = !!survey?.checkedInAt && !survey?.checkedOutAt
+  const canEditChecklist =
+    (isAssignedToMe && (role === 'ENGINEER' || role === 'SURVEYOR') && isOnSiteWindow) ||
+    (!!role && ['SUPER_ADMIN', 'ADMIN', 'MANAGER'].includes(role))
 
   const fetchSurvey = useCallback(async () => {
     setLoading(true)
@@ -383,6 +393,27 @@ export default function SurveyDetailPage() {
     }
   }
 
+  const handleToggleChecklistItem = async (itemId: string, nextValue: boolean) => {
+    setChecklistUpdatingId(itemId)
+    try {
+      const res = await fetch(`/api/surveys/${surveyId}/checklist/${itemId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isCompleted: nextValue }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        showError(data.error || 'Failed to update checklist item')
+        return
+      }
+      fetchSurvey()
+    } catch {
+      showError('Network error while updating checklist item')
+    } finally {
+      setChecklistUpdatingId(null)
+    }
+  }
+
   if (loading) {
     return <div className="py-24 text-center text-sm text-muted-foreground">Loading survey...</div>
   }
@@ -408,6 +439,55 @@ export default function SurveyDetailPage() {
   const checkInSiteCheck = checkInPhotoRecord
     ? siteStatus(checkInPhotoRecord.latitude, checkInPhotoRecord.longitude, survey.project.latitude, survey.project.longitude)
     : { onSite: null, distanceMeters: null }
+
+  const renderChecklistBody = () => {
+    if (checklistTotal === 0) {
+      return <p className="py-8 text-center text-sm text-muted-foreground">No checklist items for this survey</p>
+    }
+    return (
+      <>
+        <Progress value={checklistProgress} className="mb-6 h-3" />
+        <div className="space-y-6">
+          {checklistCategories.map((category) => {
+            const items = survey.checklistItems.filter((i) => i.category === category)
+            const catCompleted = items.filter((i) => i.isCompleted).length
+            return (
+              <div key={category}>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-semibold text-muted-foreground uppercase">{category}</h4>
+                  <span className="text-xs text-muted-foreground">{catCompleted}/{items.length}</span>
+                </div>
+                <Progress value={(catCompleted / items.length) * 100} className="h-1.5 mb-3" />
+                <div className="space-y-1">
+                  {items.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => canEditChecklist && checklistUpdatingId !== item.id && handleToggleChecklistItem(item.id, !item.isCompleted)}
+                      disabled={!canEditChecklist || checklistUpdatingId === item.id}
+                      className={`flex w-full items-start gap-3 rounded-lg p-2 text-left transition-colors ${canEditChecklist ? 'cursor-pointer hover:bg-muted/50' : 'cursor-default'}`}
+                    >
+                      {checklistUpdatingId === item.id ? (
+                        <Loader2 className="mt-0.5 h-5 w-5 shrink-0 animate-spin text-muted-foreground" />
+                      ) : item.isCompleted ? (
+                        <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
+                      ) : (
+                        <div className="mt-0.5 h-5 w-5 shrink-0 rounded-full border-2 border-muted-foreground/30" />
+                      )}
+                      <div className="flex-1">
+                        <span className={`text-sm ${item.isCompleted ? 'text-muted-foreground line-through' : ''}`}>{item.item}</span>
+                        {item.notes && <p className="mt-0.5 text-xs italic text-muted-foreground">{item.notes}</p>}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -482,7 +562,6 @@ export default function SurveyDetailPage() {
               Site Visit {survey.checkedInAt && !survey.checkedOutAt && <Badge variant="info" className="ml-1.5 text-[10px]">In Progress</Badge>}
               {survey.checkedOutAt && <CheckCircle2 className="ml-1.5 h-3.5 w-3.5 text-emerald-500" />}
             </TabsTrigger>
-            <TabsTrigger value="checklist">Checklist</TabsTrigger>
             <TabsTrigger value="measurements">Measurements {survey.measurements.length > 0 && `(${survey.measurements.length})`}</TabsTrigger>
             <TabsTrigger value="materials">Materials {survey.materialRequirements.length > 0 && `(${survey.materialRequirements.length})`}</TabsTrigger>
             <TabsTrigger value="risks">Risks {risks.length > 0 && `(${risks.length})`}</TabsTrigger>
@@ -697,55 +776,24 @@ export default function SurveyDetailPage() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
 
-          <TabsContent value="checklist" className="space-y-6 mt-4">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
-                  <span>Survey Checklist</span>
+                  <span>Site Checklist</span>
                   <Badge variant="secondary">{checklistCompleted}/{checklistTotal} completed</Badge>
                 </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {checklistTotal === 0 ? (
-                  <p className="py-8 text-center text-sm text-muted-foreground">No checklist items for this survey</p>
-                ) : (
-                  <>
-                    <Progress value={checklistProgress} className="mb-6 h-3" />
-                    <div className="space-y-6">
-                      {checklistCategories.map((category) => {
-                        const items = survey.checklistItems.filter((i) => i.category === category)
-                        const catCompleted = items.filter((i) => i.isCompleted).length
-                        return (
-                          <div key={category}>
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="text-sm font-semibold text-muted-foreground uppercase">{category}</h4>
-                              <span className="text-xs text-muted-foreground">{catCompleted}/{items.length}</span>
-                            </div>
-                            <Progress value={(catCompleted / items.length) * 100} className="h-1.5 mb-3" />
-                            <div className="space-y-1">
-                              {items.map((item) => (
-                                <div key={item.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50">
-                                  {item.isCompleted ? (
-                                    <CheckCircle2 className="h-5 w-5 text-emerald-500 mt-0.5 shrink-0" />
-                                  ) : (
-                                    <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30 mt-0.5 shrink-0" />
-                                  )}
-                                  <div className="flex-1">
-                                    <span className={`text-sm ${item.isCompleted ? "text-muted-foreground line-through" : ""}`}>{item.item}</span>
-                                    {item.notes && <p className="text-xs text-muted-foreground mt-0.5 italic">{item.notes}</p>}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </>
+                {canCheckInOut && !canEditChecklist && (
+                  <p className="text-xs text-muted-foreground">
+                    {!survey.checkedInAt
+                      ? 'Check in first to start filling this out.'
+                      : survey.checkedOutAt
+                        ? 'Checked out — this checklist is now locked.'
+                        : ''}
+                  </p>
                 )}
-              </CardContent>
+              </CardHeader>
+              <CardContent>{renderChecklistBody()}</CardContent>
             </Card>
           </TabsContent>
 
