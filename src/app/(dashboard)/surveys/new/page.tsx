@@ -40,15 +40,15 @@ interface ProjectOption { id: string; name: string }
 interface EngineerOption { id: string; firstName: string; lastName: string; role: string }
 
 const defaultChecklistItems = [
-  { id: 1, category: "Structural", item: "Foundation condition assessment", checked: false, notes: "" },
-  { id: 2, category: "Structural", item: "Column and beam inspection", checked: false, notes: "" },
-  { id: 3, category: "Structural", item: "Load-bearing wall evaluation", checked: false, notes: "" },
-  { id: 4, category: "Electrical", item: "Main distribution panel inspection", checked: false, notes: "" },
-  { id: 5, category: "Electrical", item: "Wiring and conduit assessment", checked: false, notes: "" },
-  { id: 6, category: "Plumbing", item: "Water supply line inspection", checked: false, notes: "" },
-  { id: 7, category: "Plumbing", item: "Drainage system assessment", checked: false, notes: "" },
-  { id: 8, category: "Safety", item: "Fire exit accessibility check", checked: false, notes: "" },
-  { id: 9, category: "Safety", item: "PPE availability check", checked: false, notes: "" },
+  { id: 1, category: "Quality Check", item: "Before starting the work, check the material quality is up to the mark or not.", checked: false, notes: "" },
+  { id: 2, category: "Quality Check", item: "Material should be free from any type of scratches, and any type of other defects.", checked: false, notes: "" },
+  { id: 3, category: "Quality Check", item: "Checked the size & thickness of tube as per work order / specifications.", checked: false, notes: "" },
+  { id: 4, category: "Quality Check", item: "Checked the HPL sheet colour as required.", checked: false, notes: "" },
+  { id: 5, category: "Quality Check", item: "At the time of work, the fixing should be accurate & maintain the correct shape, size accordingly.", checked: false, notes: "" },
+  { id: 6, category: "Quality Check", item: "While fixing, sheet should be proper.", checked: false, notes: "" },
+  { id: 7, category: "Quality Check", item: "Maintain groove line also.", checked: false, notes: "" },
+  { id: 8, category: "Quality Check", item: "Rivet fixed properly.", checked: false, notes: "" },
+  { id: 9, category: "Quality Check", item: "After completion, clean the surface / area also.", checked: false, notes: "" },
 ]
 
 export default function NewSurveyPage() {

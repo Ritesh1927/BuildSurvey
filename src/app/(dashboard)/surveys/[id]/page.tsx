@@ -186,8 +186,12 @@ export default function SurveyDetailPage() {
     (isAssignedToMe && (role === 'ENGINEER' || role === 'SURVEYOR') && isOnSiteWindow) ||
     (!!role && ['SUPER_ADMIN', 'ADMIN', 'MANAGER'].includes(role))
 
-  const fetchSurvey = useCallback(async () => {
-    setLoading(true)
+  const fetchSurvey = useCallback(async (showLoading = true) => {
+    // showLoading=false is used for in-place refreshes (checklist toggle,
+    // check-in/check-out) - setting loading=true there would unmount the
+    // whole page down to the "Loading survey..." placeholder and back,
+    // which is exactly what was throwing the scroll position to the top.
+    if (showLoading) setLoading(true)
     setError(null)
     try {
       const res = await fetch(`/api/surveys/${surveyId}`)
@@ -206,7 +210,7 @@ export default function SurveyDetailPage() {
     } catch {
       setError('Network error while loading survey')
     } finally {
-      setLoading(false)
+      if (showLoading) setLoading(false)
     }
   }, [surveyId])
 
@@ -309,7 +313,7 @@ export default function SurveyDetailPage() {
       )
       setCheckInPhoto(null)
       setResubmittingCheckIn(false)
-      fetchSurvey()
+      fetchSurvey(false)
     } catch (e: any) {
       showError(e?.message?.includes('geolocation') || e?.code === 1
         ? 'Location permission is required to check in'
@@ -383,7 +387,7 @@ export default function SurveyDetailPage() {
       setCheckOutPhoto(null)
       setMeasurementDrafts([])
       setMaterialDrafts([])
-      fetchSurvey()
+      fetchSurvey(false)
     } catch (e: any) {
       showError(e?.message?.includes('geolocation') || e?.code === 1
         ? 'Location permission is required to check out'
@@ -406,7 +410,7 @@ export default function SurveyDetailPage() {
         showError(data.error || 'Failed to update checklist item')
         return
       }
-      fetchSurvey()
+      fetchSurvey(false)
     } catch {
       showError('Network error while updating checklist item')
     } finally {
@@ -709,6 +713,13 @@ export default function SurveyDetailPage() {
                         return <SiteBadge onSite={onSite} distanceMeters={distanceMeters} />
                       })()}
                       <p className="text-xs text-muted-foreground">{survey.measurements.length} measurement(s), {survey.materialRequirements.length} material(s) submitted — see the Measurements and Materials tabs.</p>
+                      {checklistTotal > 0 && (
+                        <div className="flex items-center gap-2 text-xs">
+                          <Badge variant={checklistCompleted === checklistTotal ? 'success' : 'warning'}>
+                            Checklist: {checklistCompleted}/{checklistTotal} completed
+                          </Badge>
+                        </div>
+                      )}
                     </div>
                   ) : !survey.checkedInAt ? (
                     <p className="text-sm text-muted-foreground">Check in first before you can check out.</p>
