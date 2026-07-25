@@ -84,13 +84,13 @@ export default function QuotationsPage() {
       const res = await fetch('/api/quotations?limit=200')
       const data = await res.json()
       if (!res.ok || !data.success) {
-        setError(data.error || 'Failed to load quotations')
+        setError(data.error || 'Failed to load invoices')
         setQuotations([])
         return
       }
       setQuotations(data.data)
     } catch {
-      setError('Network error while loading quotations')
+      setError('Network error while loading invoices')
     } finally {
       setLoading(false)
     }
@@ -114,23 +114,23 @@ export default function QuotationsPage() {
   }, [quotations, statusFilter, projectFilter])
 
   const handleDelete = async (quotation: QuotationRow) => {
-    if (!confirm(`Delete quotation "${quotation.quotationNumber}"? This cannot be undone from here.`)) return
+    if (!confirm(`Delete invoice "${quotation.quotationNumber}"? This cannot be undone from here.`)) return
     try {
       const res = await fetch(`/api/quotations/${quotation.id}`, { method: 'DELETE' })
       const data = await res.json()
       if (!res.ok || !data.success) {
-        showError(data.error || 'Failed to delete quotation')
+        showError(data.error || 'Failed to delete invoice')
         return
       }
-      showSuccess('Quotation deleted')
+      showSuccess('Invoice deleted')
       setQuotations((prev) => prev.filter((q) => q.id !== quotation.id))
     } catch {
-      showError('Network error while deleting quotation')
+      showError('Network error while deleting invoice')
     }
   }
 
   const handleExport = () => {
-    const headers = ["Quotation #", "Title", "Project", "Total Amount", "Tax", "Grand Total", "Valid Until", "Status"]
+    const headers = ["Invoice #", "Title", "Project", "Total Amount", "Tax", "Grand Total", "Valid Until", "Status"]
     const rows = filteredQuotations.map(q => [
       q.quotationNumber, q.title, q.project?.name || '', q.totalAmount, q.taxAmount, q.grandTotal, q.validUntil || '', q.quotationStatus
     ])
@@ -139,10 +139,10 @@ export default function QuotationsPage() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = `quotations-export-${new Date().toISOString().split("T")[0]}.csv`
+    a.download = `invoices-export-${new Date().toISOString().split("T")[0]}.csv`
     a.click()
     URL.revokeObjectURL(url)
-    showSuccess("Quotation data exported as CSV")
+    showSuccess("Invoice data exported as CSV")
   }
 
   const totalValue = quotations.reduce((s, q) => s + q.grandTotal, 0)
@@ -153,11 +153,11 @@ export default function QuotationsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Quotations"
-        description="Create, manage and track project quotations"
+        title="Invoices"
+        description="Create, manage and track project invoices"
         breadcrumbs={[
           { label: "Dashboard", href: "/" },
-          { label: "Quotations" },
+          { label: "Invoices" },
         ]}
         actions={
           <div className="flex items-center gap-2">
@@ -167,7 +167,7 @@ export default function QuotationsPage() {
             </Button>
             {role && CREATE_ROLES.includes(role) && (
               <Link href="/quotations/new">
-                <Button><Plus className="mr-2 h-4 w-4" />New Quotation</Button>
+                <Button><Plus className="mr-2 h-4 w-4" />New Invoice</Button>
               </Link>
             )}
           </div>
@@ -175,7 +175,7 @@ export default function QuotationsPage() {
       />
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
-        <StatCard label="Total Quotations" value={quotations.length} icon={<FileText className="h-6 w-6" />} color="default" />
+        <StatCard label="Total Invoices" value={quotations.length} icon={<FileText className="h-6 w-6" />} color="default" />
         <StatCard label="Draft" value={draftCount} icon={<Pencil className="h-6 w-6" />} color="warning" />
         <StatCard label="Sent" value={sentCount} icon={<Send className="h-6 w-6" />} color="info" />
         <StatCard label="Accepted" value={acceptedCount} icon={<Eye className="h-6 w-6" />} color="success" />
@@ -208,7 +208,7 @@ export default function QuotationsPage() {
           </div>
 
           {loading ? (
-            <div className="py-12 text-center text-sm text-muted-foreground">Loading quotations...</div>
+            <div className="py-12 text-center text-sm text-muted-foreground">Loading invoices...</div>
           ) : error ? (
             <div className="py-12 text-center text-sm text-destructive">{error}</div>
           ) : (
@@ -216,7 +216,7 @@ export default function QuotationsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Quotation #</TableHead>
+                    <TableHead>Invoice #</TableHead>
                     <TableHead>Title</TableHead>
                     <TableHead>Project</TableHead>
                     <TableHead className="text-right">Total Amount</TableHead>
@@ -274,7 +274,7 @@ export default function QuotationsPage() {
               {filteredQuotations.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <FileText className="h-12 w-12 text-muted-foreground/50" />
-                  <h3 className="mt-4 text-lg font-semibold">No quotations found</h3>
+                  <h3 className="mt-4 text-lg font-semibold">No invoices found</h3>
                   <p className="mt-1 text-sm text-muted-foreground">Try adjusting your filters</p>
                 </div>
               )}

@@ -430,7 +430,7 @@ export default function SettingsPage() {
                       setGeneralSettings({ ...generalSettings, gstRate: e.target.value })
                     }
                   />
-                  <p className="text-xs text-muted-foreground">Applied to BOQ and Quotation totals across the app</p>
+                  <p className="text-xs text-muted-foreground">Applied to BOQ and Invoice totals across the app</p>
                 </div>
               </div>
               <Separator />

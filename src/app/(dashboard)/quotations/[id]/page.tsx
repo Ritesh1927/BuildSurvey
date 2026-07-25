@@ -93,7 +93,7 @@ export default function QuotationDetailPage() {
       const res = await fetch(`/api/quotations/${quotationId}`)
       const data = await res.json()
       if (!res.ok || !data.success) {
-        setError(data.error || 'Failed to load quotation')
+        setError(data.error || 'Failed to load invoice')
         return
       }
       setQ(data.data)
@@ -105,7 +105,7 @@ export default function QuotationDetailPage() {
         discountAmount: String(data.data.discountAmount || 0),
       })
     } catch {
-      setError('Network error while loading quotation')
+      setError('Network error while loading invoice')
     } finally {
       setLoading(false)
     }
@@ -124,14 +124,14 @@ export default function QuotationDetailPage() {
       })
       const data = await res.json()
       if (!res.ok || !data.success) {
-        showError(data.error || 'Failed to update quotation')
+        showError(data.error || 'Failed to update invoice')
         return false
       }
       showSuccess(successMsg)
       fetchQuotation()
       return true
     } catch {
-      showError('Network error while updating quotation')
+      showError('Network error while updating invoice')
       return false
     }
   }
@@ -144,7 +144,7 @@ export default function QuotationDetailPage() {
       terms: form.terms || null,
       notes: form.notes || null,
       discountAmount: form.discountAmount,
-    }, 'Quotation updated')
+    }, 'Invoice updated')
     setSaving(false)
     if (ok) {
       setIsEditing(false)
@@ -154,8 +154,8 @@ export default function QuotationDetailPage() {
 
   const handleDownloadPDF = () => {
     if (!q) return
-    showSuccess("Download started — the quotation will be saved to your downloads folder")
-    const content = `Quotation: ${q.quotationNumber}\nTitle: ${q.title}\nProject: ${q.project.name}\nClient: ${q.project.client.companyName}\n\nLine Items:\n${q.items.map((i, idx) => `${idx + 1}. ${i.description} | ${i.unit} | ${i.quantity} | ₹${i.unitRate} | ₹${i.amount}`).join("\n")}\n\nTotal: ₹${q.totalAmount}\nDiscount: ₹${q.discountAmount}\nTax: ₹${q.taxAmount}\nGrand Total: ₹${q.grandTotal}\n\nTerms:\n${q.terms || ''}`
+    showSuccess("Download started — the invoice will be saved to your downloads folder")
+    const content = `Invoice: ${q.quotationNumber}\nTitle: ${q.title}\nProject: ${q.project.name}\nClient: ${q.project.client.companyName}\n\nLine Items:\n${q.items.map((i, idx) => `${idx + 1}. ${i.description} | ${i.unit} | ${i.quantity} | ₹${i.unitRate} | ₹${i.amount}`).join("\n")}\n\nTotal: ₹${q.totalAmount}\nDiscount: ₹${q.discountAmount}\nTax: ₹${q.taxAmount}\nGrand Total: ₹${q.grandTotal}\n\nTerms:\n${q.terms || ''}`
     const blob = new Blob([content], { type: "text/plain" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
@@ -166,15 +166,15 @@ export default function QuotationDetailPage() {
   }
 
   if (loading) {
-    return <div className="py-24 text-center text-sm text-muted-foreground">Loading quotation...</div>
+    return <div className="py-24 text-center text-sm text-muted-foreground">Loading invoice...</div>
   }
 
   if (error || !q) {
     return (
       <div className="space-y-4 py-12 text-center">
-        <p className="text-sm text-destructive">{error || 'Quotation not found'}</p>
+        <p className="text-sm text-destructive">{error || 'Invoice not found'}</p>
         <Button variant="outline" asChild>
-          <Link href="/quotations"><ArrowLeft className="mr-1 h-4 w-4" />Back to Quotations</Link>
+          <Link href="/quotations"><ArrowLeft className="mr-1 h-4 w-4" />Back to Invoices</Link>
         </Button>
       </div>
     )
@@ -189,7 +189,7 @@ export default function QuotationDetailPage() {
         description={q.title}
         breadcrumbs={[
           { label: "Dashboard", href: "/" },
-          { label: "Quotations", href: "/quotations" },
+          { label: "Invoices", href: "/quotations" },
           { label: q.quotationNumber },
         ]}
         actions={
@@ -233,7 +233,7 @@ export default function QuotationDetailPage() {
                     <p className="text-sm text-muted-foreground mt-1">Survey & Estimation Division</p>
                   </div>
                   <div className="text-right">
-                    <Badge variant="outline" className="text-base px-4 py-1.5">QUOTATION</Badge>
+                    <Badge variant="outline" className="text-base px-4 py-1.5">INVOICE</Badge>
                     <p className="text-sm font-mono font-bold mt-2">{q.quotationNumber}</p>
                     <p className="text-sm text-muted-foreground">Date: {formatDate(q.createdAt)}</p>
                     {q.validUntil && <p className="text-sm text-muted-foreground">Valid Until: {formatDate(q.validUntil)}</p>}
@@ -311,7 +311,7 @@ export default function QuotationDetailPage() {
                     </div>
                     <div className="space-y-2"><Label>Terms & Conditions</Label><Textarea rows={4} value={form.terms} onChange={(e) => setForm((f) => ({ ...f, terms: e.target.value }))} /></div>
                     <div className="space-y-2"><Label>Notes</Label><Textarea rows={2} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} /></div>
-                    <p className="text-xs text-muted-foreground">Line items aren't editable here yet — create a new quotation for a different scope of work.</p>
+                    <p className="text-xs text-muted-foreground">Line items aren't editable here yet — create a new invoice for a different scope of work.</p>
                   </div>
                 ) : (
                   q.terms && (
@@ -329,7 +329,7 @@ export default function QuotationDetailPage() {
         {!isEditing && (
           <div className="space-y-6">
             <Card>
-              <CardHeader><CardTitle className="text-base">Quotation Summary</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">Invoice Summary</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Status</span>
@@ -369,16 +369,16 @@ export default function QuotationDetailPage() {
             {canWrite && (
               <div className="flex flex-col gap-2">
                 {q.quotationStatus === 'DRAFT' && (
-                  <Button className="w-full" onClick={() => patchQuotation({ quotationStatus: 'SENT' }, 'Quotation marked as sent')}>
+                  <Button className="w-full" onClick={() => patchQuotation({ quotationStatus: 'SENT' }, 'Invoice marked as sent')}>
                     <Send className="mr-2 h-4 w-4" />Mark as Sent
                   </Button>
                 )}
                 {q.quotationStatus === 'SENT' && (
                   <>
-                    <Button className="w-full" onClick={() => patchQuotation({ quotationStatus: 'ACCEPTED' }, 'Quotation accepted')}>
+                    <Button className="w-full" onClick={() => patchQuotation({ quotationStatus: 'ACCEPTED' }, 'Invoice accepted')}>
                       <CheckCircle className="mr-2 h-4 w-4" />Mark Accepted
                     </Button>
-                    <Button className="w-full" variant="destructive" onClick={() => patchQuotation({ quotationStatus: 'REJECTED' }, 'Quotation rejected')}>
+                    <Button className="w-full" variant="destructive" onClick={() => patchQuotation({ quotationStatus: 'REJECTED' }, 'Invoice rejected')}>
                       <XCircle className="mr-2 h-4 w-4" />Mark Rejected
                     </Button>
                   </>
@@ -388,15 +388,15 @@ export default function QuotationDetailPage() {
                     className="w-full"
                     variant="outline"
                     onClick={async () => {
-                      if (!confirm(`Delete quotation "${q.quotationNumber}"? This cannot be undone from here.`)) return
+                      if (!confirm(`Delete invoice "${q.quotationNumber}"? This cannot be undone from here.`)) return
                       const res = await fetch(`/api/quotations/${quotationId}`, { method: 'DELETE' })
                       const data = await res.json()
-                      if (!res.ok || !data.success) { showError(data.error || 'Failed to delete quotation'); return }
-                      showSuccess('Quotation deleted')
+                      if (!res.ok || !data.success) { showError(data.error || 'Failed to delete invoice'); return }
+                      showSuccess('Invoice deleted')
                       router.push('/quotations')
                     }}
                   >
-                    Delete Quotation
+                    Delete Invoice
                   </Button>
                 )}
               </div>

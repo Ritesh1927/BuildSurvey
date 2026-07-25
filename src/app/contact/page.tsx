@@ -19,7 +19,7 @@ import { APP_NAME } from '@/lib/constants'
 const features = [
   { icon: MapPin, title: 'Digital Site Surveys', desc: 'GPS-verified inspections by our field team' },
   { icon: BarChart3, title: 'Transparent Tracking', desc: 'Stay updated on your project status' },
-  { icon: FileText, title: 'Detailed Quotations', desc: 'Clear, itemized cost estimates' },
+  { icon: FileText, title: 'Detailed Invoices', desc: 'Clear, itemized cost estimates' },
   { icon: MessageSquare, title: 'Direct Communication', desc: "Our team reaches out once they've reviewed your request" },
 ]
 
@@ -110,7 +110,7 @@ export default function ContactPage() {
           Tell us about<br />your project.
         </h2>
         <p className="text-blue-100 mb-8 max-w-md">
-          Share a few details and our team will get in touch to discuss a site survey and quotation.
+          Share a few details and our team will get in touch to discuss a site survey and invoice.
         </p>
         <div className="space-y-4">
           {features.map((f) => (

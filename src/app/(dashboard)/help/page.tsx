@@ -13,7 +13,7 @@ const sections = [
   { id: 'projects', title: 'Step 3: Projects', icon: '4' },
   { id: 'surveys', title: 'Step 4: Surveys', icon: '5' },
   { id: 'boq', title: 'Step 5: BOQ', icon: '6' },
-  { id: 'quotations', title: 'Step 6: Quotations', icon: '7' },
+  { id: 'quotations', title: 'Step 6: Invoices', icon: '7' },
   { id: 'risk-materials', title: 'Step 7: Risk & Materials', icon: '8' },
   { id: 'media', title: 'Step 8: Media & Docs', icon: '9' },
   { id: 'workflow', title: 'Step 9: Workflow', icon: '10' },
@@ -157,7 +157,7 @@ export default function HelpPage() {
                   <div className="rounded-lg bg-muted p-4">
                     <p className="text-sm font-semibold text-foreground mb-2">The Business Flow (Memorize This):</p>
                     <div className="flex flex-wrap items-center gap-1 text-sm">
-                      {['LEAD', 'CLIENT', 'PROJECT', 'SURVEY', 'BOQ', 'QUOTATION', 'WORK', 'REPORT'].map((s, i) => (
+                      {['LEAD', 'CLIENT', 'PROJECT', 'SURVEY', 'BOQ', 'INVOICE', 'WORK', 'REPORT'].map((s, i) => (
                         <span key={s} className="flex items-center gap-1">
                           <Badge variant="info">{s}</Badge>
                           {i < 7 && <ChevronRight className="h-3 w-3 text-muted-foreground" />}
@@ -174,7 +174,7 @@ export default function HelpPage() {
                       <li><strong className="text-foreground">You create a Project</strong> → That&apos;s a <strong className="text-foreground">Project</strong></li>
                       <li><strong className="text-foreground">Engineer visits the site</strong> → That&apos;s a <strong className="text-foreground">Survey</strong></li>
                       <li><strong className="text-foreground">You calculate costs</strong> → That&apos;s a <strong className="text-foreground">BOQ</strong></li>
-                      <li><strong className="text-foreground">You send them a price</strong> → That&apos;s a <strong className="text-foreground">Quotation</strong></li>
+                      <li><strong className="text-foreground">You send them a price</strong> → That&apos;s an <strong className="text-foreground">Invoice</strong></li>
                       <li><strong className="text-foreground">Work happens</strong> → Track risks, materials, documents</li>
                       <li><strong className="text-foreground">Reports & sign-offs</strong> → Project complete</li>
                     </ol>
@@ -184,11 +184,11 @@ export default function HelpPage() {
                     <h3 className="text-lg font-semibold text-foreground mb-2">Who Uses What?</h3>
                     <div className="grid gap-2 sm:grid-cols-2">
                       {[
-                        { role: 'Sales/BD Team', modules: 'Leads, Clients, Quotations' },
+                        { role: 'Sales/BD Team', modules: 'Leads, Clients, Invoices' },
                         { role: 'Project Manager', modules: 'Projects, Surveys, Workflows, Reports' },
                         { role: 'Site Engineer', modules: 'Surveys (field), Measurements, Photos, GPS' },
                         { role: 'Surveyor', modules: 'Survey execution, Checklists, Media capture' },
-                        { role: 'Accountant', modules: 'BOQ, Quotations, Cost Estimation' },
+                        { role: 'Accountant', modules: 'BOQ, Invoices, Cost Estimation' },
                         { role: 'Admin', modules: 'Users, Roles, Settings, Masters' },
                       ].map((r) => (
                         <div key={r.role} className="flex items-center justify-between rounded-lg border border-border p-2">
@@ -232,7 +232,7 @@ export default function HelpPage() {
                   <StepCard step={1} title="Contact Information">
                     <FieldTable rows={[
                       ['Full Name', 'Contact person name', 'Rajesh Mehta', 'Who you will talk to'],
-                      ['Email', 'Their email', 'rajesh@sunrisebuilders.com', 'For sending quotations'],
+                      ['Email', 'Their email', 'rajesh@sunrisebuilders.com', 'For sending invoices'],
                       ['Phone', 'Mobile (min 10 digits)', '9876543210', 'Calls and WhatsApp'],
                       ['Company', 'Company name', 'Sunrise Builders Pvt. Ltd.', 'Identifies organization'],
                       ['Website', 'Company website', 'https://sunrisebuilders.com', 'Research the company'],
@@ -524,14 +524,14 @@ export default function HelpPage() {
               <Card>
                 <CardContent className="p-6 space-y-6">
                   <div>
-                    <h2 className="text-xl font-bold text-foreground mb-1">Step 6: Send Quotation</h2>
-                    <p className="text-sm text-muted-foreground">A <strong className="text-foreground">Quotation</strong> is a formal price document sent to the client.</p>
+                    <h2 className="text-xl font-bold text-foreground mb-1">Step 6: Send Invoice</h2>
+                    <p className="text-sm text-muted-foreground">An <strong className="text-foreground">Invoice</strong> is a formal price document sent to the client.</p>
                   </div>
 
                   <StepCard step={1} title="Project & Details">
                     <FieldTable rows={[
                       ['Select Project', 'Which project?', 'Sunrise Enclave', 'Links to project'],
-                      ['Title', 'Descriptive title', 'Site Survey Quotation', 'Identifies this quote'],
+                      ['Title', 'Descriptive title', 'Site Survey Invoice', 'Identifies this quote'],
                       ['Description', 'What work?', 'Structural survey with GPS mapping', 'Scope clarity'],
                     ]} />
                   </StepCard>
@@ -559,7 +559,7 @@ export default function HelpPage() {
 
                   <StepCard step={4} title="Review & Send">
                     <div className="text-sm text-muted-foreground">
-                      <p>Preview the quotation with company header. Check all amounts. Then <strong className="text-foreground">Send Quotation</strong> (emails to client) or <strong className="text-foreground">Save as Draft</strong>.</p>
+                      <p>Preview the invoice with company header. Check all amounts. Then <strong className="text-foreground">Send Invoice</strong> (emails to client) or <strong className="text-foreground">Save as Draft</strong>.</p>
                     </div>
                   </StepCard>
                 </CardContent>
@@ -708,7 +708,7 @@ export default function HelpPage() {
                         { role: 'Engineer', access: 'Assigned projects and surveys only' },
                         { role: 'Surveyor', access: 'Survey execution, checklists, media' },
                         { role: 'Client', access: 'View-only their projects' },
-                        { role: 'Accountant', access: 'Finance, BOQ, quotations' },
+                        { role: 'Accountant', access: 'Finance, BOQ, invoices' },
                       ].map((r) => (
                         <div key={r.role} className="flex items-center justify-between rounded-lg border border-border p-2">
                           <span className="text-sm font-medium text-foreground">{r.role}</span>
@@ -759,7 +759,7 @@ export default function HelpPage() {
                       { step: '3. PROJECT', desc: 'Create project, assign team, set budget & timeline', color: 'bg-emerald-100 border-emerald-300 text-emerald-800 dark:bg-emerald-900/40 dark:border-emerald-800 dark:text-emerald-400' },
                       { step: '4. SURVEY', desc: 'Engineer visits site — 7-step inspection wizard', color: 'bg-amber-100 border-amber-300 text-amber-800 dark:bg-amber-900/40 dark:border-amber-800 dark:text-amber-400' },
                       { step: '5. BOQ', desc: 'Calculate costs item-by-item with quantities & rates', color: 'bg-blue-100 border-blue-300 text-blue-800 dark:bg-blue-900/40 dark:border-blue-800 dark:text-blue-400' },
-                      { step: '6. QUOTATION', desc: 'Create & send formal price document to client', color: 'bg-pink-100 border-pink-300 text-pink-800 dark:bg-pink-900/40 dark:border-pink-800 dark:text-pink-400' },
+                      { step: '6. INVOICE', desc: 'Create & send formal price document to client', color: 'bg-pink-100 border-pink-300 text-pink-800 dark:bg-pink-900/40 dark:border-pink-800 dark:text-pink-400' },
                       { step: '7. WORK', desc: 'Track risks, materials, media, documents', color: 'bg-orange-100 border-orange-300 text-orange-800 dark:bg-orange-900/40 dark:border-orange-800 dark:text-orange-400' },
                       { step: '8. REPORT & SIGN', desc: 'Generate PDF, digital signature, client sign-off', color: 'bg-red-100 border-red-300 text-red-800 dark:bg-red-900/40 dark:border-red-800 dark:text-red-400' },
                     ].map((s, i) => (
@@ -779,7 +779,7 @@ export default function HelpPage() {
                       <p>• <strong className="text-foreground">CRM</strong> → Leads, Clients</p>
                       <p>• <strong className="text-foreground">Projects</strong> → Budget, Timeline</p>
                       <p>• <strong className="text-foreground">Surveys</strong> → 7-step wizard</p>
-                      <p>• <strong className="text-foreground">Finance</strong> → BOQ, Quotations</p>
+                      <p>• <strong className="text-foreground">Finance</strong> → BOQ, Invoices</p>
                       <p>• <strong className="text-foreground">Media</strong> → Photos, Videos, Voice</p>
                       <p>• <strong className="text-foreground">Risk</strong> → Assessment & Mitigation</p>
                       <p>• <strong className="text-foreground">Workflow</strong> → Approval chains</p>

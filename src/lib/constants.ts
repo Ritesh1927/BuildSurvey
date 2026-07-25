@@ -81,7 +81,7 @@ export const SIDEBAR_NAV_ITEMS: readonly {
     items: [
       { label: 'Risk Assessment', href: '/risks', icon: 'ShieldAlert', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR'] },
       { label: 'BOQ', href: '/boq', icon: 'Calculator' },
-      { label: 'Quotations', href: '/quotations', icon: 'FileText', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT', 'CLIENT'] },
+      { label: 'Invoices', href: '/quotations', icon: 'FileText', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT', 'CLIENT'] },
     ],
   },
   {

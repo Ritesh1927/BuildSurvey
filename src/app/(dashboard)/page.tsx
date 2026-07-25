@@ -106,7 +106,7 @@ export default function DashboardPage() {
               <Link href="/projects/new"><FolderKanban className="mr-1 h-4 w-4" />New Project</Link>
             </Button>
             <Button asChild size="sm" variant="outline" className="border-white/25 bg-white/5 text-white hover:bg-white/15 hover:text-white">
-              <Link href="/quotations/new"><FileText className="mr-1 h-4 w-4" />Create Quotation</Link>
+              <Link href="/quotations/new"><FileText className="mr-1 h-4 w-4" />Create Invoice</Link>
             </Button>
           </div>
         </div>

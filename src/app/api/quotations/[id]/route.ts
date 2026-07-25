@@ -35,11 +35,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     })
 
     if (!quotation || quotation.isDeleted) {
-      return NextResponse.json({ success: false, error: 'Quotation not found' }, { status: 404 })
+      return NextResponse.json({ success: false, error: 'Invoice not found' }, { status: 404 })
     }
 
     if (role === 'CLIENT' && quotation.project.clientId !== session!.user!.clientId) {
-      return NextResponse.json({ success: false, error: 'Quotation not found' }, { status: 404 })
+      return NextResponse.json({ success: false, error: 'Invoice not found' }, { status: 404 })
     }
 
     return NextResponse.json({ success: true, data: quotation })
@@ -67,7 +67,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const existing = await db.quotation.findUnique({ where: { id } })
     if (!existing || existing.isDeleted) {
-      return NextResponse.json({ success: false, error: 'Quotation not found' }, { status: 404 })
+      return NextResponse.json({ success: false, error: 'Invoice not found' }, { status: 404 })
     }
 
     if (status) {
@@ -135,11 +135,11 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
     const existing = await db.quotation.findUnique({ where: { id } })
     if (!existing) {
-      return NextResponse.json({ success: false, error: 'Quotation not found' }, { status: 404 })
+      return NextResponse.json({ success: false, error: 'Invoice not found' }, { status: 404 })
     }
 
     if (existing.isDeleted) {
-      return NextResponse.json({ success: true, message: 'Quotation deleted successfully' })
+      return NextResponse.json({ success: true, message: 'Invoice deleted successfully' })
     }
 
     await db.quotation.update({
@@ -147,7 +147,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       data: { isDeleted: true },
     })
 
-    return NextResponse.json({ success: true, message: 'Quotation deleted successfully' })
+    return NextResponse.json({ success: true, message: 'Invoice deleted successfully' })
   } catch (error) {
     console.error('DELETE /api/quotations/[id] error:', error)
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })

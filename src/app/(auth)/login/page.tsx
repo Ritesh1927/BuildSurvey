@@ -13,7 +13,7 @@ import { APP_NAME } from '@/lib/constants'
 const features = [
   { icon: MapPin, title: 'Digital Surveys', desc: 'GPS-enabled site inspections with real-time tracking' },
   { icon: BarChart3, title: 'Project Tracking', desc: 'Live dashboards, budgets, and progress monitoring' },
-  { icon: FileText, title: 'BOQ & Quotations', desc: 'Automated cost estimation and bill of quantities' },
+  { icon: FileText, title: 'BOQ & Invoices', desc: 'Automated cost estimation and bill of quantities' },
   { icon: MessageSquare, title: 'Team Collaboration', desc: 'In-app messaging, tasks, and notifications' },
 ]
 
@@ -78,7 +78,7 @@ export default function LoginPage() {
             Build smarter.<br />Build better.
           </h2>
           <p className="text-blue-100 mb-12 max-w-md text-lg">
-            Manage construction surveys, projects, BOQ, quotations, and team collaboration — all in one platform.
+            Manage construction surveys, projects, BOQ, invoices, and team collaboration — all in one platform.
           </p>
 
           <div className="space-y-5">

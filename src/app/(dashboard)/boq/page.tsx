@@ -336,7 +336,7 @@ export default function BOQPage() {
 
   const openQuoteModal = (project: Project) => {
     setQuoteProject(project)
-    setQuoteTitle(`${project.name} — BOQ Quotation`)
+    setQuoteTitle(`${project.name} — BOQ Invoice`)
     setQuoteValidUntil("")
     setShowQuoteModal(true)
   }
@@ -349,7 +349,7 @@ export default function BOQPage() {
     }
     const projectItems = items.filter((i) => i.projectId === quoteProject.id)
     if (projectItems.length === 0) {
-      showError("This project has no BOQ items to base a quotation on")
+      showError("This project has no BOQ items to base an invoice on")
       return
     }
     try {
@@ -374,14 +374,14 @@ export default function BOQPage() {
       })
       const data = await res.json()
       if (!data.success) {
-        showError(data.error || "Failed to generate quotation")
+        showError(data.error || "Failed to generate invoice")
         return
       }
-      showSuccess("Quotation generated from BOQ")
+      showSuccess("Invoice generated from BOQ")
       setShowQuoteModal(false)
       router.push(`/quotations/${data.data.id}`)
     } catch {
-      showError("Failed to generate quotation")
+      showError("Failed to generate invoice")
     } finally {
       setGeneratingQuote(false)
     }
@@ -486,7 +486,7 @@ export default function BOQPage() {
                               <Plus className="mr-2 h-4 w-4" />Add Item(s)
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => openQuoteModal(project)}>
-                              <Receipt className="mr-2 h-4 w-4" />Generate Quotation
+                              <Receipt className="mr-2 h-4 w-4" />Generate Invoice
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -711,17 +711,17 @@ export default function BOQPage() {
       <Modal
         open={showQuoteModal}
         onOpenChange={setShowQuoteModal}
-        title="Generate Quotation from BOQ"
-        description={quoteProject ? `Creates a new quotation for ${quoteProject.name} using its current BOQ line items` : undefined}
+        title="Generate Invoice from BOQ"
+        description={quoteProject ? `Creates a new invoice for ${quoteProject.name} using its current BOQ line items` : undefined}
         maxWidth="lg"
         onCancel={() => setShowQuoteModal(false)}
         onConfirm={handleGenerateQuotation}
-        confirmLabel={generatingQuote ? "Generating..." : "Generate Quotation"}
+        confirmLabel={generatingQuote ? "Generating..." : "Generate Invoice"}
         loading={generatingQuote}
       >
         <div className="grid gap-4">
           <div className="space-y-2">
-            <Label>Quotation Title *</Label>
+            <Label>Invoice Title *</Label>
             <Input value={quoteTitle} onChange={(e) => setQuoteTitle(e.target.value)} />
           </div>
           <div className="space-y-2">
@@ -731,7 +731,7 @@ export default function BOQPage() {
           {quoteProject && (
             <p className="text-xs text-muted-foreground">
               {items.filter((i) => i.projectId === quoteProject.id).length} line item(s) from this project's BOQ will be
-              copied into the quotation, with {gstRatePercent}% GST applied automatically.
+              copied into the invoice, with {gstRatePercent}% GST applied automatically.
             </p>
           )}
         </div>

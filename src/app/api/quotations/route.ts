@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Failed to fetch quotations:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch quotations' },
+      { success: false, error: 'Failed to fetch invoices' },
       { status: 500 }
     )
   }
@@ -176,13 +176,13 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     if (error?.code === 'P2002') {
       return NextResponse.json(
-        { success: false, error: 'Quotation number collision, please retry' },
+        { success: false, error: 'Invoice number collision, please retry' },
         { status: 409 }
       )
     }
     console.error('Failed to create quotation:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to create quotation' },
+      { success: false, error: 'Failed to create invoice' },
       { status: 500 }
     )
   }

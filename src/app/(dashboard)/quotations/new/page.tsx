@@ -60,7 +60,7 @@ const defaultLineItems: LineItem[] = [
   { id: "LI-3", description: "RCC M30 in footings and columns", unit: "Cum", qty: 1200, rate: 5800, amount: 6960000 },
 ]
 
-const defaultTerms = `1. This quotation is valid for 90 days from the date of issue.
+const defaultTerms = `1. This invoice is valid for 90 days from the date of issue.
 2. Prices are inclusive of all taxes (GST @ 18%).
 3. Payment Terms: 30% advance, 40% at mid-stage, 30% on completion.
 4. Material delivery within 2-3 weeks from date of order.
@@ -172,16 +172,16 @@ export default function NewQuotationPage() {
           })
           const patchData = await patchRes.json()
           if (!patchData.success) {
-            showError(patchData.error || "Quotation saved, but discount could not be applied")
+            showError(patchData.error || "Invoice saved, but discount could not be applied")
           }
         }
-        showSuccess("Quotation saved as draft")
+        showSuccess("Invoice saved as draft")
         router.push("/quotations")
       } else {
-        showError(data.error || "Failed to save quotation")
+        showError(data.error || "Failed to save invoice")
       }
     } catch {
-      showError("Failed to save quotation")
+      showError("Failed to save invoice")
     } finally {
       setSaving(false)
     }
@@ -212,17 +212,17 @@ export default function NewQuotationPage() {
         })
         const patchData = await patchRes.json()
         if (patchData.success) {
-          showSuccess("Quotation sent successfully")
+          showSuccess("Invoice sent successfully")
         } else {
-          showSuccess("Quotation saved, but status could not be updated")
-          showError(patchData.error || "Failed to update quotation status")
+          showSuccess("Invoice saved, but status could not be updated")
+          showError(patchData.error || "Failed to update invoice status")
         }
         router.push("/quotations")
       } else {
-        showError(data.error || "Failed to send quotation")
+        showError(data.error || "Failed to send invoice")
       }
     } catch {
-      showError("Failed to send quotation")
+      showError("Failed to send invoice")
     } finally {
       setSaving(false)
     }
@@ -238,18 +238,18 @@ export default function NewQuotationPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Create Quotation"
-        description="Prepare a new quotation for client submission"
+        title="Create Invoice"
+        description="Prepare a new invoice for client submission"
         breadcrumbs={[
           { label: "Dashboard", href: "/" },
-          { label: "Quotations", href: "/quotations" },
-          { label: "New Quotation" },
+          { label: "Invoices", href: "/quotations" },
+          { label: "New Invoice" },
         ]}
         actions={
           <Button variant="outline" asChild>
             <Link href="/quotations">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Quotations
+              Back to Invoices
             </Link>
           </Button>
         }
@@ -306,7 +306,7 @@ export default function NewQuotationPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Quotation Title *</Label>
+                <Label>Invoice Title *</Label>
                 <Input
                   placeholder="e.g. Interior Fit-out Works - Phase 1"
                   value={title}
@@ -317,7 +317,7 @@ export default function NewQuotationPage() {
             <div className="space-y-2">
               <Label>Description</Label>
               <Textarea
-                placeholder="Brief description of the quotation scope..."
+                placeholder="Brief description of the invoice scope..."
                 rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -497,7 +497,7 @@ export default function NewQuotationPage() {
                   <p className="text-sm text-muted-foreground">Survey & Estimation Division</p>
                 </div>
                 <div className="text-right">
-                  <Badge variant="outline" className="text-lg px-3 py-1">QUOTATION</Badge>
+                  <Badge variant="outline" className="text-lg px-3 py-1">INVOICE</Badge>
                   <p className="text-sm text-muted-foreground mt-1">Date: {new Date().toLocaleDateString("en-IN")}</p>
                 </div>
               </div>
@@ -592,7 +592,7 @@ export default function NewQuotationPage() {
                   ) : (
                     <Send className="mr-2 h-4 w-4" />
                   )}
-                  Send Quotation
+                  Send Invoice
                 </Button>
               </div>
             </div>
