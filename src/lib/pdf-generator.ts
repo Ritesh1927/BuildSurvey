@@ -607,6 +607,160 @@ export async function generateSurveyReport(data: SurveyReportData): Promise<Uint
   return pdfDoc.save()
 }
 
+export interface InvoicePdfItem {
+  description: string
+  unit: string
+  quantity: number
+  unitRate: number
+  amount: number
+}
+
+export interface InvoicePdfData {
+  invoiceNumber: string
+  title: string
+  date: string
+  validUntil?: string | null
+  clientName: string
+  clientContact?: string
+  projectName: string
+  items: InvoicePdfItem[]
+  subtotal: number
+  discountAmount: number
+  taxAmount: number
+  grandTotal: number
+  terms?: string | null
+}
+
+// pdf-lib's standard fonts use WinAnsi encoding, which has no ₹ glyph —
+// drawText() throws if it hits one, so invoices spell the amount out instead.
+function formatInr(amount: number): string {
+  return `Rs. ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(amount)}`
+}
+
+function truncate(text: string, max: number): string {
+  return text.length > max ? `${text.slice(0, max - 1)}...` : text
+}
+
+export async function generateInvoicePdf(data: InvoicePdfData): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.create()
+  const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica)
+  const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+
+  const pages: PDFPage[] = []
+  const tableLeft = 50
+  const tableRight = 545
+  const colX = { sno: 55, desc: 85, unit: 265, qty: 305, rate: 345, amount: 450 }
+
+  let page!: PDFPage
+  let y = 0
+
+  const addPage = () => {
+    page = pdfDoc.addPage(PageSizes.A4)
+    pages.push(page)
+    drawHeader(pdfDoc, page, helvetica, helveticaBold)
+    y = page.getSize().height - 110
+  }
+
+  const drawTableHeaderRow = () => {
+    page.drawRectangle({ x: tableLeft, y: y - 5, width: tableRight - tableLeft, height: 22, color: COLORS.primary })
+    page.drawText('#', { x: colX.sno, y, size: 9, font: helveticaBold, color: COLORS.white })
+    page.drawText('Description', { x: colX.desc, y, size: 9, font: helveticaBold, color: COLORS.white })
+    page.drawText('Unit', { x: colX.unit, y, size: 9, font: helveticaBold, color: COLORS.white })
+    page.drawText('Qty', { x: colX.qty, y, size: 9, font: helveticaBold, color: COLORS.white })
+    page.drawText('Rate', { x: colX.rate, y, size: 9, font: helveticaBold, color: COLORS.white })
+    page.drawText('Amount', { x: colX.amount, y, size: 9, font: helveticaBold, color: COLORS.white })
+    y -= 28
+  }
+
+  addPage()
+
+  page.drawText('INVOICE', { x: 50, y, size: 20, font: helveticaBold, color: COLORS.primary })
+  page.drawText(data.invoiceNumber, { x: tableRight - 130, y, size: 12, font: helveticaBold, color: COLORS.dark })
+  page.drawText(`Date: ${data.date}`, { x: tableRight - 130, y: y - 16, size: 9, font: helvetica, color: COLORS.gray })
+  if (data.validUntil) {
+    page.drawText(`Valid Until: ${data.validUntil}`, { x: tableRight - 130, y: y - 30, size: 9, font: helvetica, color: COLORS.gray })
+  }
+  y -= 55
+
+  page.drawText('Bill To', { x: 50, y, size: 9, font: helvetica, color: COLORS.gray })
+  page.drawText(data.clientName, { x: 50, y: y - 15, size: 11, font: helveticaBold, color: COLORS.dark })
+  if (data.clientContact) {
+    page.drawText(data.clientContact, { x: 50, y: y - 30, size: 9, font: helvetica, color: COLORS.gray })
+  }
+
+  page.drawText('Project', { x: 300, y, size: 9, font: helvetica, color: COLORS.gray })
+  page.drawText(truncate(data.projectName, 40), { x: 300, y: y - 15, size: 11, font: helveticaBold, color: COLORS.dark })
+  y -= 50
+
+  page.drawText(`Subject: ${truncate(data.title, 70)}`, { x: 50, y, size: 10, font: helveticaBold, color: COLORS.dark })
+  y -= 30
+
+  drawTableHeaderRow()
+
+  data.items.forEach((item, index) => {
+    if (y < 110) {
+      addPage()
+      drawTableHeaderRow()
+    }
+    if (index % 2 === 0) {
+      page.drawRectangle({ x: tableLeft, y: y - 6, width: tableRight - tableLeft, height: 18, color: COLORS.bgColor })
+    }
+    page.drawText(String(index + 1), { x: colX.sno, y, size: 9, font: helvetica, color: COLORS.dark })
+    page.drawText(truncate(item.description, 32), { x: colX.desc, y, size: 9, font: helvetica, color: COLORS.dark })
+    page.drawText(item.unit, { x: colX.unit, y, size: 9, font: helvetica, color: COLORS.dark })
+    page.drawText(String(item.quantity), { x: colX.qty, y, size: 9, font: helvetica, color: COLORS.dark })
+    page.drawText(formatInr(item.unitRate), { x: colX.rate, y, size: 8, font: helvetica, color: COLORS.dark })
+    page.drawText(formatInr(item.amount), { x: colX.amount, y, size: 8, font: helveticaBold, color: COLORS.dark })
+    y -= 20
+  })
+
+  y -= 8
+  page.drawLine({ start: { x: tableLeft, y }, end: { x: tableRight, y }, thickness: 1, color: COLORS.lightGray })
+  y -= 22
+
+  if (y < 140) {
+    addPage()
+  }
+
+  const totalsLabelX = 380
+  const totalsValueX = 470
+  const drawTotalRow = (label: string, value: string, bold = false) => {
+    page.drawText(label, { x: totalsLabelX, y, size: 10, font: bold ? helveticaBold : helvetica, color: bold ? COLORS.dark : COLORS.gray })
+    page.drawText(value, { x: totalsValueX, y, size: 10, font: bold ? helveticaBold : helvetica, color: COLORS.dark })
+    y -= 18
+  }
+
+  drawTotalRow('Subtotal', formatInr(data.subtotal))
+  if (data.discountAmount > 0) {
+    drawTotalRow('Discount', `- ${formatInr(data.discountAmount)}`)
+  }
+  drawTotalRow('Tax', formatInr(data.taxAmount))
+  page.drawLine({ start: { x: totalsLabelX, y: y + 12 }, end: { x: tableRight, y: y + 12 }, thickness: 1, color: COLORS.primary })
+  drawTotalRow('Grand Total', formatInr(data.grandTotal), true)
+
+  if (data.terms) {
+    y -= 20
+    if (y < 100) addPage()
+    page.drawText('Terms & Conditions', { x: 50, y, size: 10, font: helveticaBold, color: COLORS.primary })
+    y -= 18
+    for (const rawLine of data.terms.split('\n')) {
+      const wrapped = rawLine.match(/.{1,95}/g) || ['']
+      for (const line of wrapped) {
+        if (y < 60) {
+          addPage()
+        }
+        page.drawText(line, { x: 50, y, size: 8, font: helvetica, color: COLORS.gray })
+        y -= 12
+      }
+    }
+  }
+
+  const totalPages = pages.length
+  pages.forEach((p, i) => drawFooter(pdfDoc, p, helvetica, i + 1, totalPages))
+
+  return pdfDoc.save()
+}
+
 export function downloadPdf(data: Uint8Array, filename: string) {
   const bytes = data.slice().buffer as ArrayBuffer
   const blob = new Blob([bytes], { type: 'application/pdf' })

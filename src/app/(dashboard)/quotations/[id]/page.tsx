@@ -14,6 +14,7 @@ import {
 } from "lucide-react"
 
 import { formatCurrency, formatDate } from "@/lib/utils"
+import { generateInvoicePdf, downloadPdf } from "@/lib/pdf-generator"
 import { showSuccess, showError } from "@/components/ui/toast"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -150,17 +151,34 @@ export default function QuotationDetailPage() {
     }
   }
 
-  const handleDownloadPDF = () => {
+  const [downloading, setDownloading] = useState(false)
+
+  const handleDownloadPDF = async () => {
     if (!q) return
-    showSuccess("Download started — the invoice will be saved to your downloads folder")
-    const content = `Invoice: ${q.quotationNumber}\nTitle: ${q.title}\nProject: ${q.project.name}\nClient: ${q.project.client.companyName}\n\nLine Items:\n${q.items.map((i, idx) => `${idx + 1}. ${i.description} | ${i.unit} | ${i.quantity} | ₹${i.unitRate} | ₹${i.amount}`).join("\n")}\n\nTotal: ₹${q.totalAmount}\nDiscount: ₹${q.discountAmount}\nTax: ₹${q.taxAmount}\nGrand Total: ₹${q.grandTotal}\n\nTerms:\n${q.terms || ''}`
-    const blob = new Blob([content], { type: "text/plain" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `${q.quotationNumber}.txt`
-    a.click()
-    URL.revokeObjectURL(url)
+    setDownloading(true)
+    try {
+      const bytes = await generateInvoicePdf({
+        invoiceNumber: q.quotationNumber,
+        title: q.title,
+        date: formatDate(q.createdAt),
+        validUntil: q.validUntil ? formatDate(q.validUntil) : null,
+        clientName: q.project.client.companyName,
+        clientContact: q.project.client.contactPerson,
+        projectName: q.project.name,
+        items: q.items,
+        subtotal: q.totalAmount,
+        discountAmount: q.discountAmount,
+        taxAmount: q.taxAmount,
+        grandTotal: q.grandTotal,
+        terms: q.terms,
+      })
+      downloadPdf(bytes, `${q.quotationNumber}.pdf`)
+      showSuccess("Download started — the invoice will be saved to your downloads folder")
+    } catch {
+      showError("Failed to generate the invoice PDF")
+    } finally {
+      setDownloading(false)
+    }
   }
 
   if (loading) {
@@ -211,8 +229,8 @@ export default function QuotationDetailPage() {
                     <Edit className="mr-2 h-4 w-4" />Edit
                   </Button>
                 )}
-                <Button variant="outline" onClick={handleDownloadPDF}>
-                  <Download className="mr-2 h-4 w-4" />Download
+                <Button variant="outline" onClick={handleDownloadPDF} disabled={downloading}>
+                  <Download className="mr-2 h-4 w-4" />{downloading ? 'Generating...' : 'Download'}
                 </Button>
               </>
             )}
