@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { requireAuth, requireRole } from '@/lib/api-auth'
 import { QuotationStatus } from '@/generated/prisma/enums'
+import { getGstRate } from '@/lib/gst'
 
 const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT', 'CLIENT'] as const
 const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT'] as const
@@ -144,7 +145,8 @@ export async function POST(request: NextRequest) {
     }))
 
     const totalAmount = computedItems.reduce((sum: number, item: any) => sum + item.amount, 0)
-    const taxAmount = totalAmount * 0.18
+    const gstRate = await getGstRate()
+    const taxAmount = totalAmount * (gstRate / 100)
     const grandTotal = totalAmount + taxAmount
 
     const quotation = await db.quotation.create({

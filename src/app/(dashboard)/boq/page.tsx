@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import {
   FileText,
   FileSpreadsheet,
@@ -13,6 +14,7 @@ import {
   Loader2,
   MoreVertical,
   FolderKanban,
+  Receipt,
 } from "lucide-react"
 
 import { formatCurrency } from "@/lib/utils"
@@ -74,6 +76,23 @@ interface BOQDraft {
 }
 
 const units = ["Cum", "Sqm", "Rmt", "Nos", "Set", "Mtr"]
+const categories = [
+  "Earthwork",
+  "Concrete Work",
+  "Masonry",
+  "Reinforcement & Steel",
+  "Formwork & Shuttering",
+  "Flooring & Tiling",
+  "Plastering",
+  "Waterproofing",
+  "Painting & Finishing",
+  "Doors & Windows",
+  "Electrical Work",
+  "Plumbing & Sanitary",
+  "HVAC",
+  "Roofing",
+  "Miscellaneous",
+]
 const emptyDraft: BOQDraft = { description: "", category: "", unit: "", quantity: "", unitRate: "" }
 const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT']
 const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT']
@@ -81,6 +100,7 @@ const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN']
 
 export default function BOQPage() {
   const { data: session } = useSession()
+  const router = useRouter()
   const role = session?.user?.role
   const canCreate = !!role && CREATE_ROLES.includes(role)
   const canWrite = !!role && WRITE_ROLES.includes(role)
@@ -97,12 +117,19 @@ export default function BOQPage() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [gstRatePercent, setGstRatePercent] = useState(18)
 
   const [formDescription, setFormDescription] = useState("")
   const [formCategory, setFormCategory] = useState("")
   const [formUnit, setFormUnit] = useState("")
   const [formQty, setFormQty] = useState("")
   const [formRate, setFormRate] = useState("")
+
+  const [showQuoteModal, setShowQuoteModal] = useState(false)
+  const [quoteProject, setQuoteProject] = useState<Project | null>(null)
+  const [quoteTitle, setQuoteTitle] = useState("")
+  const [quoteValidUntil, setQuoteValidUntil] = useState("")
+  const [generatingQuote, setGeneratingQuote] = useState(false)
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -127,8 +154,19 @@ export default function BOQPage() {
     }
   }, [])
 
+  const fetchGstRate = useCallback(async () => {
+    try {
+      const res = await fetch("/api/settings/gst-rate")
+      const data = await res.json()
+      if (data.success) setGstRatePercent(data.data.gstRate)
+    } catch {
+      // keep the 18% default
+    }
+  }, [])
+
   useEffect(() => { fetchProjects() }, [fetchProjects])
   useEffect(() => { fetchItems() }, [fetchItems])
+  useEffect(() => { fetchGstRate() }, [fetchGstRate])
 
   const toggleProject = (projectId: string) => {
     setExpandedProjects((prev) => ({ ...prev, [projectId]: !prev[projectId] }))
@@ -151,7 +189,7 @@ export default function BOQPage() {
   }, [projects, items])
 
   const grandTotal = items.reduce((sum, i) => sum + i.amount, 0)
-  const gstAmount = grandTotal * 0.18
+  const gstAmount = grandTotal * (gstRatePercent / 100)
   const netTotal = grandTotal + gstAmount
 
   const openAddModal = (projectId?: string) => {
@@ -296,6 +334,59 @@ export default function BOQPage() {
     }
   }
 
+  const openQuoteModal = (project: Project) => {
+    setQuoteProject(project)
+    setQuoteTitle(`${project.name} — BOQ Quotation`)
+    setQuoteValidUntil("")
+    setShowQuoteModal(true)
+  }
+
+  const handleGenerateQuotation = async () => {
+    if (!quoteProject) return
+    if (!quoteTitle.trim()) {
+      showError("A title is required")
+      return
+    }
+    const projectItems = items.filter((i) => i.projectId === quoteProject.id)
+    if (projectItems.length === 0) {
+      showError("This project has no BOQ items to base a quotation on")
+      return
+    }
+    try {
+      setGeneratingQuote(true)
+      const res = await fetch("/api/quotations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: quoteTitle.trim(),
+          projectId: quoteProject.id,
+          validUntil: quoteValidUntil || undefined,
+          // BOQ's per-item category doesn't carry over - Quotation line
+          // items don't have a category field, only description/unit/
+          // quantity/rate, same as the BOQ->Quotation shape everywhere else.
+          items: projectItems.map((i) => ({
+            description: i.description,
+            unit: i.unit,
+            quantity: i.quantity,
+            unitRate: i.unitRate,
+          })),
+        }),
+      })
+      const data = await res.json()
+      if (!data.success) {
+        showError(data.error || "Failed to generate quotation")
+        return
+      }
+      showSuccess("Quotation generated from BOQ")
+      setShowQuoteModal(false)
+      router.push(`/quotations/${data.data.id}`)
+    } catch {
+      showError("Failed to generate quotation")
+    } finally {
+      setGeneratingQuote(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -329,7 +420,7 @@ export default function BOQPage() {
           color="info"
         />
         <StatCard
-          label="GST (18%)"
+          label={`GST (${gstRatePercent}%)`}
           value={formatCurrency(gstAmount)}
           icon={<FileText className="h-6 w-6" />}
           color="warning"
@@ -393,6 +484,9 @@ export default function BOQPage() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => openAddModal(project.id)}>
                               <Plus className="mr-2 h-4 w-4" />Add Item(s)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openQuoteModal(project)}>
+                              <Receipt className="mr-2 h-4 w-4" />Generate Quotation
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -473,7 +567,7 @@ export default function BOQPage() {
                 <span className="font-semibold">{formatCurrency(grandTotal)}</span>
               </div>
               <div className="flex justify-between px-4">
-                <span className="font-medium">GST @ 18%</span>
+                <span className="font-medium">GST @ {gstRatePercent}%</span>
                 <span className="font-semibold">{formatCurrency(gstAmount)}</span>
               </div>
               <div className="flex justify-between px-4 py-3 bg-primary/5 rounded-lg border-t-2 border-primary">
@@ -520,7 +614,12 @@ export default function BOQPage() {
                 </div>
                 <div className="col-span-6 sm:col-span-2 space-y-1">
                   <Label className="text-xs">Category *</Label>
-                  <Input placeholder="e.g. Earthwork" value={d.category} onChange={(e) => updateDraftRow(i, "category", e.target.value)} />
+                  <Select value={d.category} onValueChange={(v) => updateDraftRow(i, "category", v)}>
+                    <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
+                    <SelectContent>
+                      {categories.map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="col-span-6 sm:col-span-2 space-y-1">
                   <Label className="text-xs">Unit *</Label>
@@ -579,7 +678,12 @@ export default function BOQPage() {
             </div>
             <div className="space-y-2">
               <Label>Category *</Label>
-              <Input placeholder="e.g. Earthwork, Concrete" value={formCategory} onChange={(e) => setFormCategory(e.target.value)} />
+              <Select value={formCategory} onValueChange={setFormCategory}>
+                <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                <SelectContent>
+                  {categories.map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4">
@@ -601,6 +705,35 @@ export default function BOQPage() {
               <Input type="number" placeholder="0" value={formRate} onChange={(e) => setFormRate(e.target.value)} />
             </div>
           </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={showQuoteModal}
+        onOpenChange={setShowQuoteModal}
+        title="Generate Quotation from BOQ"
+        description={quoteProject ? `Creates a new quotation for ${quoteProject.name} using its current BOQ line items` : undefined}
+        maxWidth="lg"
+        onCancel={() => setShowQuoteModal(false)}
+        onConfirm={handleGenerateQuotation}
+        confirmLabel={generatingQuote ? "Generating..." : "Generate Quotation"}
+        loading={generatingQuote}
+      >
+        <div className="grid gap-4">
+          <div className="space-y-2">
+            <Label>Quotation Title *</Label>
+            <Input value={quoteTitle} onChange={(e) => setQuoteTitle(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>Valid Until</Label>
+            <Input type="date" value={quoteValidUntil} onChange={(e) => setQuoteValidUntil(e.target.value)} />
+          </div>
+          {quoteProject && (
+            <p className="text-xs text-muted-foreground">
+              {items.filter((i) => i.projectId === quoteProject.id).length} line item(s) from this project's BOQ will be
+              copied into the quotation, with {gstRatePercent}% GST applied automatically.
+            </p>
+          )}
         </div>
       </Modal>
     </div>

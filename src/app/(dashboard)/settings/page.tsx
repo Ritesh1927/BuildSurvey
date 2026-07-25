@@ -74,6 +74,7 @@ export default function SettingsPage() {
     dateFormat: "dd/MM/yyyy",
     currency: "INR",
     fiscalYearStart: "April",
+    gstRate: "18",
     autoLogout: true,
     darkMode: false,
   })
@@ -417,6 +418,19 @@ export default function SettingsPage() {
                       <SelectItem value="July">July</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Default GST Rate (%)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={generalSettings.gstRate}
+                    onChange={(e) =>
+                      setGeneralSettings({ ...generalSettings, gstRate: e.target.value })
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">Applied to BOQ and Quotation totals across the app</p>
                 </div>
               </div>
               <Separator />
