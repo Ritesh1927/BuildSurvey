@@ -64,6 +64,11 @@ const STATUS_META: Record<string, { label: string; variant: "success" | "warning
   CANCELLED: { label: "Cancelled", variant: "destructive" },
 }
 
+// Draft -> Sent is the only transition the UI can produce; Accepted/Rejected/
+// Cancelled only remain in STATUS_META to render a sensible badge for any
+// invoice that already carries one of those statuses from before Sent became final.
+const FILTERABLE_STATUSES = ['DRAFT', 'SENT']
+
 const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT']
 const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN']
 
@@ -187,8 +192,8 @@ export default function QuotationsPage() {
               <SelectTrigger className="w-[150px]"><SelectValue placeholder="All Status" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                {Object.entries(STATUS_META).map(([value, meta]) => (
-                  <SelectItem key={value} value={value}>{meta.label}</SelectItem>
+                {FILTERABLE_STATUSES.map((value) => (
+                  <SelectItem key={value} value={value}>{STATUS_META[value].label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
