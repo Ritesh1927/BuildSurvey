@@ -5,13 +5,14 @@ import { useSession } from "next-auth/react"
 import {
   FileText,
   FileSpreadsheet,
-  Printer,
   Plus,
   Pencil,
   Trash2,
   ChevronDown,
   ChevronRight,
   Loader2,
+  MoreVertical,
+  FolderKanban,
 } from "lucide-react"
 
 import { formatCurrency } from "@/lib/utils"
@@ -36,26 +37,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { PageHeader } from "@/components/ui/page-header"
 import { StatCard } from "@/components/ui/stat-card"
 import { showSuccess, showError } from "@/components/ui/toast"
-
-function exportToCSV(items: BOQItem[], grandTotal: number, gstAmount: number, netTotal: number) {
-  const headers = ["S.No", "Description", "Category", "Unit", "Quantity", "Rate (₹)", "Amount (₹)"]
-  const rows = items.map(i => [i.serialNumber, i.description, i.category, i.unit, i.quantity, i.unitRate, i.amount])
-  const totals = ["", "", "", "", "", "Total", grandTotal]
-  const gst = ["", "", "", "", "", "GST 18%", gstAmount]
-  const grand = ["", "", "", "", "", "Grand Total", netTotal]
-  const csv = [headers, ...rows, totals, gst, grand].map(r => r.map(c => `"${c}"`).join(",")).join("\n")
-  const blob = new Blob([csv], { type: "text/csv" })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement("a")
-  a.href = url
-  a.download = `boq-export-${new Date().toISOString().split("T")[0]}.csv`
-  a.click()
-  URL.revokeObjectURL(url)
-  showSuccess("BOQ exported as CSV")
-}
 
 interface Project {
   id: string
@@ -75,7 +65,16 @@ interface BOQItem {
   projectId: string
 }
 
+interface BOQDraft {
+  description: string
+  category: string
+  unit: string
+  quantity: string
+  unitRate: string
+}
+
 const units = ["Cum", "Sqm", "Rmt", "Nos", "Set", "Mtr"]
+const emptyDraft: BOQDraft = { description: "", category: "", unit: "", quantity: "", unitRate: "" }
 const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT']
 const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT']
 const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN']
@@ -87,9 +86,11 @@ export default function BOQPage() {
   const canWrite = !!role && WRITE_ROLES.includes(role)
   const canDelete = !!role && DELETE_ROLES.includes(role)
 
-  const [selectedProject, setSelectedProject] = useState("all")
-  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
+  const [expandedProjects, setExpandedProjects] = useState<Record<string, boolean>>({})
   const [showAddModal, setShowAddModal] = useState(false)
+  const [addModalProjectId, setAddModalProjectId] = useState("")
+  const [addModalProjectLocked, setAddModalProjectLocked] = useState(false)
+  const [boqDrafts, setBoqDrafts] = useState<BOQDraft[]>([{ ...emptyDraft }])
   const [editingItem, setEditingItem] = useState<BOQItem | null>(null)
   const [items, setItems] = useState<BOQItem[]>([])
   const [projects, setProjects] = useState<Project[]>([])
@@ -102,11 +103,10 @@ export default function BOQPage() {
   const [formUnit, setFormUnit] = useState("")
   const [formQty, setFormQty] = useState("")
   const [formRate, setFormRate] = useState("")
-  const [formProjectId, setFormProjectId] = useState("")
 
   const fetchProjects = useCallback(async () => {
     try {
-      const res = await fetch("/api/projects?limit=100")
+      const res = await fetch("/api/projects?limit=200")
       const data = await res.json()
       if (data.success) setProjects(data.data)
     } catch {
@@ -117,9 +117,7 @@ export default function BOQPage() {
   const fetchItems = useCallback(async () => {
     try {
       setLoading(true)
-      const params = new URLSearchParams({ limit: "500" })
-      if (selectedProject !== "all") params.set("projectId", selectedProject)
-      const res = await fetch(`/api/boq?${params}`)
+      const res = await fetch("/api/boq?limit=1000")
       const data = await res.json()
       if (data.success) setItems(data.data)
     } catch {
@@ -127,98 +125,104 @@ export default function BOQPage() {
     } finally {
       setLoading(false)
     }
-  }, [selectedProject])
+  }, [])
 
   useEffect(() => { fetchProjects() }, [fetchProjects])
   useEffect(() => { fetchItems() }, [fetchItems])
 
-  useEffect(() => {
-    if (showAddModal && items.length > 0) {
-      const cats = [...new Set(items.map((i) => i.category))]
-      const initial: Record<string, boolean> = {}
-      cats.forEach((c) => { initial[c] = true })
-      setExpandedCategories((prev) => {
-        const merged = { ...prev }
-        cats.forEach((c) => { if (!(c in merged)) merged[c] = true })
-        return merged
-      })
-    }
-  }, [showAddModal, items])
-
-  const toggleCategory = (cat: string) => {
-    setExpandedCategories((prev) => ({ ...prev, [cat]: !prev[cat] }))
+  const toggleProject = (projectId: string) => {
+    setExpandedProjects((prev) => ({ ...prev, [projectId]: !prev[projectId] }))
   }
 
-  const groupedItems = useMemo(() => {
-    const groups: Record<string, BOQItem[]> = {}
-    items.forEach((item) => {
-      if (!groups[item.category]) groups[item.category] = []
-      groups[item.category].push(item)
-    })
-    return groups
-  }, [items])
+  // Only projects that already have at least one BOQ item show up as a
+  // section here - a brand new project with nothing yet is set up via the
+  // top-level "Add BOQ Items" button (pick it from the dropdown there),
+  // and only then does it get its own representation with a 3-dot menu
+  // for adding more items later.
+  const projectGroups = useMemo(() => {
+    return projects
+      .map((project) => {
+        const projectItems = items.filter((i) => i.projectId === project.id)
+        const total = projectItems.reduce((sum, i) => sum + i.amount, 0)
+        return { project, items: projectItems, total }
+      })
+      .filter((g) => g.items.length > 0)
+      .sort((a, b) => a.project.name.localeCompare(b.project.name))
+  }, [projects, items])
 
-  const categories = Object.keys(groupedItems)
-
-  const categoryTotals = useMemo(() => {
-    const totals: Record<string, number> = {}
-    Object.entries(groupedItems).forEach(([cat, catItems]) => {
-      totals[cat] = catItems.reduce((sum, item) => sum + item.amount, 0)
-    })
-    return totals
-  }, [groupedItems])
-
-  const grandTotal = Object.values(categoryTotals).reduce((s, v) => s + v, 0)
+  const grandTotal = items.reduce((sum, i) => sum + i.amount, 0)
   const gstAmount = grandTotal * 0.18
   const netTotal = grandTotal + gstAmount
 
-  const resetForm = () => {
-    setFormDescription("")
-    setFormCategory("")
-    setFormUnit("")
-    setFormQty("")
-    setFormRate("")
-    setFormProjectId("")
+  const openAddModal = (projectId?: string) => {
+    setBoqDrafts([{ ...emptyDraft }])
+    if (projectId) {
+      setAddModalProjectId(projectId)
+      setAddModalProjectLocked(true)
+    } else {
+      setAddModalProjectId("")
+      setAddModalProjectLocked(false)
+    }
+    setShowAddModal(true)
   }
 
-  const handleAddItem = async () => {
-    if (!formDescription || !formCategory || !formUnit || !formQty || !formRate || !formProjectId) {
-      showError("All fields are required")
+  const addDraftRow = () => setBoqDrafts((prev) => [...prev, { ...emptyDraft }])
+  const removeDraftRow = (index: number) => setBoqDrafts((prev) => prev.filter((_, i) => i !== index))
+  const updateDraftRow = (index: number, field: keyof BOQDraft, value: string) => {
+    setBoqDrafts((prev) => prev.map((d, i) => (i === index ? { ...d, [field]: value } : d)))
+  }
+
+  const handleAddItems = async () => {
+    if (!addModalProjectId) {
+      showError("Please select a project")
       return
     }
-    const qty = parseFloat(formQty)
-    const rate = parseFloat(formRate)
-    if (isNaN(qty) || qty <= 0 || isNaN(rate) || rate <= 0) {
-      showError("Quantity and rate must be positive numbers")
-      return
+    for (const d of boqDrafts) {
+      if (!d.description || !d.category || !d.unit || !d.quantity || !d.unitRate) {
+        showError("All fields are required for every row")
+        return
+      }
+      const qty = parseFloat(d.quantity)
+      const rate = parseFloat(d.unitRate)
+      if (isNaN(qty) || qty <= 0 || isNaN(rate) || rate <= 0) {
+        showError("Quantity and rate must be positive numbers")
+        return
+      }
     }
-    const nextSno = items.length > 0 ? Math.max(...items.map((i) => i.serialNumber)) + 1 : 1
+
+    // Serial numbers are scoped per project's own BOQ, not shared globally.
+    const existingForProject = items.filter((i) => i.projectId === addModalProjectId)
+    let nextSno = existingForProject.length > 0 ? Math.max(...existingForProject.map((i) => i.serialNumber)) + 1 : 1
+
     try {
       setSubmitting(true)
-      const res = await fetch("/api/boq", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          projectId: formProjectId,
-          serialNumber: nextSno,
-          description: formDescription,
-          category: formCategory,
-          unit: formUnit,
-          quantity: qty,
-          unitRate: rate,
-        }),
-      })
-      const data = await res.json()
-      if (data.success) {
-        showSuccess("BOQ item added successfully")
-        setShowAddModal(false)
-        resetForm()
-        fetchItems()
-      } else {
-        showError(data.error || "Failed to add BOQ item")
+      for (const d of boqDrafts) {
+        const res = await fetch("/api/boq", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            projectId: addModalProjectId,
+            serialNumber: nextSno,
+            description: d.description,
+            category: d.category,
+            unit: d.unit,
+            quantity: parseFloat(d.quantity),
+            unitRate: parseFloat(d.unitRate),
+          }),
+        })
+        const data = await res.json()
+        if (!data.success) {
+          showError(data.error || "Failed to add a BOQ item")
+          return
+        }
+        nextSno += 1
       }
+      showSuccess(`${boqDrafts.length} BOQ item${boqDrafts.length > 1 ? "s" : ""} added successfully`)
+      setShowAddModal(false)
+      setExpandedProjects((prev) => ({ ...prev, [addModalProjectId]: true }))
+      fetchItems()
     } catch {
-      showError("Failed to add BOQ item")
+      showError("Failed to add BOQ items")
     } finally {
       setSubmitting(false)
     }
@@ -231,7 +235,6 @@ export default function BOQPage() {
     setFormUnit(item.unit)
     setFormQty(String(item.quantity))
     setFormRate(String(item.unitRate))
-    setFormProjectId(item.projectId)
   }
 
   const handleEditItem = async () => {
@@ -263,11 +266,11 @@ export default function BOQPage() {
       if (data.success) {
         showSuccess("BOQ item updated")
         setEditingItem(null)
-        resetForm()
-        fetchItems()
       } else {
         showError(data.error || "Failed to update BOQ item")
+        return
       }
+      fetchItems()
     } catch {
       showError("Failed to update BOQ item")
     } finally {
@@ -303,26 +306,12 @@ export default function BOQPage() {
           { label: "BOQ" },
         ]}
         actions={
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => exportToCSV(items, grandTotal, gstAmount, netTotal)}>
-              <FileSpreadsheet className="mr-2 h-4 w-4" />
-              Export Excel
+          canCreate ? (
+            <Button onClick={() => openAddModal()}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add BOQ Items
             </Button>
-            <Button variant="outline" onClick={() => window.print()}>
-              <FileText className="mr-2 h-4 w-4" />
-              Export PDF
-            </Button>
-            <Button variant="outline" onClick={() => window.print()}>
-              <Printer className="mr-2 h-4 w-4" />
-              Print BOQ
-            </Button>
-            {canCreate && (
-              <Button onClick={() => { resetForm(); setShowAddModal(true) }}>
-                <Plus className="mr-2 h-4 w-4" />
-                New BOQ Item
-              </Button>
-            )}
-          </div>
+          ) : undefined
         }
       />
 
@@ -355,58 +344,61 @@ export default function BOQPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="text-base">BOQ Items</CardTitle>
-            <Select value={selectedProject} onValueChange={setSelectedProject}>
-              <SelectTrigger className="w-[280px]">
-                <SelectValue placeholder="Select Project" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Projects</SelectItem>
-                {projects.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <CardTitle className="text-base">BOQ by Project</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
-          ) : categories.length === 0 ? (
+          ) : projectGroups.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FileText className="h-12 w-12 text-muted-foreground/50" />
               <h3 className="mt-4 text-lg font-semibold">No BOQ items found</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                {selectedProject === "all" ? "Add your first BOQ item" : "No items for this project"}
+                {canCreate ? 'Click "Add BOQ Items" to set up the first project.' : "No BOQ items have been added yet."}
               </p>
             </div>
           ) : (
-            categories.map((category) => {
-              const catItems = groupedItems[category]
-              const catTotal = categoryTotals[category]
-              const isExpanded = expandedCategories[category] !== false
+            projectGroups.map(({ project, items: projectItems, total }) => {
+              const isExpanded = expandedProjects[project.id] !== false
               return (
-                <div key={category} className="mb-4">
-                  <button
-                    onClick={() => toggleCategory(category)}
-                    className="w-full flex items-center justify-between px-4 py-3 bg-muted/50 rounded-t-lg hover:bg-muted/70 transition-colors"
-                  >
-                    <div className="flex items-center gap-2">
+                <div key={project.id} className="mb-4">
+                  <div className="w-full flex items-center justify-between gap-2 px-4 py-3 bg-muted/50 rounded-t-lg">
+                    <button
+                      onClick={() => toggleProject(project.id)}
+                      className="flex flex-1 items-center gap-2 text-left min-w-0"
+                    >
                       {isExpanded ? (
-                        <ChevronDown className="h-4 w-4" />
+                        <ChevronDown className="h-4 w-4 shrink-0" />
                       ) : (
-                        <ChevronRight className="h-4 w-4" />
+                        <ChevronRight className="h-4 w-4 shrink-0" />
                       )}
-                      <span className="font-semibold text-sm">{category}</span>
-                      <Badge variant="outline" className="ml-2 text-xs">
-                        {catItems.length} items
+                      <FolderKanban className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <span className="font-semibold text-sm truncate">{project.name}</span>
+                      <span className="text-xs font-mono text-muted-foreground shrink-0">{project.code}</span>
+                      <Badge variant="outline" className="ml-1 text-xs shrink-0">
+                        {projectItems.length} items
                       </Badge>
+                    </button>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="font-semibold text-sm">{formatCurrency(total)}</span>
+                      {canCreate && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => openAddModal(project.id)}>
+                              <Plus className="mr-2 h-4 w-4" />Add Item(s)
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </div>
-                    <span className="font-semibold text-sm">{formatCurrency(catTotal)}</span>
-                  </button>
+                  </div>
                   {isExpanded && (
                     <Table>
                       <TableHeader>
@@ -422,7 +414,7 @@ export default function BOQPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {catItems.map((item) => (
+                        {projectItems.map((item) => (
                           <TableRow key={item.id}>
                             <TableCell className="font-mono text-xs">{item.serialNumber}</TableCell>
                             <TableCell className="font-medium">{item.description}</TableCell>
@@ -461,9 +453,9 @@ export default function BOQPage() {
                         ))}
                         <TableRow className="bg-muted/30">
                           <TableCell colSpan={6} className="font-semibold text-right">
-                            Subtotal ({category})
+                            Subtotal ({project.name})
                           </TableCell>
-                          <TableCell className="text-right font-bold">{formatCurrency(catTotal)}</TableCell>
+                          <TableCell className="text-right font-bold">{formatCurrency(total)}</TableCell>
                           <TableCell />
                         </TableRow>
                       </TableBody>
@@ -496,18 +488,18 @@ export default function BOQPage() {
       <Modal
         open={showAddModal}
         onOpenChange={setShowAddModal}
-        title="Add BOQ Item"
-        description="Add a new line item to the Bill of Quantities"
-        maxWidth="lg"
+        title="Add BOQ Items"
+        description="Add one or more line items to a project's Bill of Quantities"
+        maxWidth="2xl"
         onCancel={() => setShowAddModal(false)}
-        onConfirm={handleAddItem}
-        confirmLabel={submitting ? "Adding..." : "Add Item"}
+        onConfirm={handleAddItems}
+        confirmLabel={submitting ? "Adding..." : `Add ${boqDrafts.length} Item${boqDrafts.length > 1 ? "s" : ""}`}
         loading={submitting}
       >
-        <div className="grid gap-4">
+        <div className="space-y-4">
           <div className="space-y-2">
             <Label>Project *</Label>
-            <Select value={formProjectId} onValueChange={setFormProjectId}>
+            <Select value={addModalProjectId} onValueChange={setAddModalProjectId} disabled={addModalProjectLocked}>
               <SelectTrigger>
                 <SelectValue placeholder="Select project" />
               </SelectTrigger>
@@ -518,67 +510,63 @@ export default function BOQPage() {
               </SelectContent>
             </Select>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Description *</Label>
-              <Input
-                placeholder="Item description"
-                value={formDescription}
-                onChange={(e) => setFormDescription(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Category *</Label>
-              <Input
-                placeholder="e.g. Earthwork, Concrete"
-                value={formCategory}
-                onChange={(e) => setFormCategory(e.target.value)}
-              />
-            </div>
+
+          <div className="space-y-3">
+            {boqDrafts.map((d, i) => (
+              <div key={i} className="grid grid-cols-12 gap-2 items-end rounded-lg border p-3">
+                <div className="col-span-12 sm:col-span-4 space-y-1">
+                  <Label className="text-xs">Description *</Label>
+                  <Input placeholder="Item description" value={d.description} onChange={(e) => updateDraftRow(i, "description", e.target.value)} />
+                </div>
+                <div className="col-span-6 sm:col-span-2 space-y-1">
+                  <Label className="text-xs">Category *</Label>
+                  <Input placeholder="e.g. Earthwork" value={d.category} onChange={(e) => updateDraftRow(i, "category", e.target.value)} />
+                </div>
+                <div className="col-span-6 sm:col-span-2 space-y-1">
+                  <Label className="text-xs">Unit *</Label>
+                  <Select value={d.unit} onValueChange={(v) => updateDraftRow(i, "unit", v)}>
+                    <SelectTrigger><SelectValue placeholder="Unit" /></SelectTrigger>
+                    <SelectContent>
+                      {units.map((u) => (<SelectItem key={u} value={u}>{u}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="col-span-5 sm:col-span-1 space-y-1">
+                  <Label className="text-xs">Qty *</Label>
+                  <Input type="number" placeholder="0" value={d.quantity} onChange={(e) => updateDraftRow(i, "quantity", e.target.value)} />
+                </div>
+                <div className="col-span-5 sm:col-span-2 space-y-1">
+                  <Label className="text-xs">Rate (₹) *</Label>
+                  <Input type="number" placeholder="0" value={d.unitRate} onChange={(e) => updateDraftRow(i, "unitRate", e.target.value)} />
+                </div>
+                <div className="col-span-2 sm:col-span-1 flex justify-end">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 shrink-0 text-destructive"
+                    onClick={() => removeDraftRow(i)}
+                    disabled={boqDrafts.length === 1}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Unit *</Label>
-              <Select value={formUnit} onValueChange={setFormUnit}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select unit" />
-                </SelectTrigger>
-                <SelectContent>
-                  {units.map((u) => (
-                    <SelectItem key={u} value={u}>{u}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Quantity *</Label>
-              <Input
-                type="number"
-                placeholder="0"
-                value={formQty}
-                onChange={(e) => setFormQty(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Rate (₹) *</Label>
-              <Input
-                type="number"
-                placeholder="0"
-                value={formRate}
-                onChange={(e) => setFormRate(e.target.value)}
-              />
-            </div>
-          </div>
+
+          <Button variant="outline" size="sm" onClick={addDraftRow}>
+            <Plus className="mr-1 h-3.5 w-3.5" />Add Another Item
+          </Button>
         </div>
       </Modal>
 
       <Modal
         open={!!editingItem}
-        onOpenChange={(open) => { if (!open) { setEditingItem(null); resetForm() } }}
+        onOpenChange={(open) => { if (!open) setEditingItem(null) }}
         title="Edit BOQ Item"
         description="Update this line item"
         maxWidth="lg"
-        onCancel={() => { setEditingItem(null); resetForm() }}
+        onCancel={() => setEditingItem(null)}
         onConfirm={handleEditItem}
         confirmLabel={submitting ? "Saving..." : "Save Changes"}
         loading={submitting}
