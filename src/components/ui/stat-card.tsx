@@ -43,15 +43,15 @@ function StatCard({
     <Card className={cn("relative overflow-hidden", className)} {...props}>
       <span className={cn("absolute inset-x-0 top-0 h-1", barMap[color])} />
       <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">{label}</p>
-            <p className="text-3xl font-bold tracking-tight">{value}</p>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 space-y-1">
+            <p className="truncate text-sm font-medium text-muted-foreground">{label}</p>
+            <p className="break-words text-2xl font-bold tracking-tight sm:text-3xl">{value}</p>
           </div>
           {icon && (
             <div
               className={cn(
-                "flex h-12 w-12 items-center justify-center rounded-xl",
+                "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl",
                 colorMap[color]
               )}
             >
