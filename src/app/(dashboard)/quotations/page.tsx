@@ -58,7 +58,7 @@ interface QuotationRow {
 
 const STATUS_META: Record<string, { label: string; variant: "success" | "warning" | "info" | "destructive" | "secondary" }> = {
   DRAFT: { label: "Draft", variant: "secondary" },
-  SENT: { label: "Sent", variant: "info" },
+  SENT: { label: "Sent", variant: "success" },
   ACCEPTED: { label: "Accepted", variant: "success" },
   REJECTED: { label: "Rejected", variant: "destructive" },
   CANCELLED: { label: "Cancelled", variant: "destructive" },
@@ -148,7 +148,6 @@ export default function QuotationsPage() {
   const totalValue = quotations.reduce((s, q) => s + q.grandTotal, 0)
   const draftCount = quotations.filter((q) => q.quotationStatus === "DRAFT").length
   const sentCount = quotations.filter((q) => q.quotationStatus === "SENT").length
-  const acceptedCount = quotations.filter((q) => q.quotationStatus === "ACCEPTED").length
 
   return (
     <div className="space-y-6">
@@ -174,11 +173,10 @@ export default function QuotationsPage() {
         }
       />
 
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <StatCard label="Total Invoices" value={quotations.length} icon={<FileText className="h-6 w-6" />} color="default" />
         <StatCard label="Draft" value={draftCount} icon={<Pencil className="h-6 w-6" />} color="warning" />
-        <StatCard label="Sent" value={sentCount} icon={<Send className="h-6 w-6" />} color="info" />
-        <StatCard label="Accepted" value={acceptedCount} icon={<Eye className="h-6 w-6" />} color="success" />
+        <StatCard label="Sent" value={sentCount} icon={<Send className="h-6 w-6" />} color="success" />
         <StatCard label="Total Value" value={formatCurrency(totalValue)} icon={<FileText className="h-6 w-6" />} color="default" />
       </div>
 

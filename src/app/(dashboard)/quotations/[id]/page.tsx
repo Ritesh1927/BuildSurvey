@@ -6,13 +6,11 @@ import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { useSession } from "next-auth/react"
 import {
   ArrowLeft,
-  CheckCircle,
   Download,
   Edit,
   Save,
   Send,
   X,
-  XCircle,
 } from "lucide-react"
 
 import { formatCurrency, formatDate } from "@/lib/utils"
@@ -59,7 +57,7 @@ interface QuotationDetail {
 
 const STATUS_META: Record<string, { label: string; variant: "success" | "warning" | "info" | "destructive" | "secondary" }> = {
   DRAFT: { label: "Draft", variant: "secondary" },
-  SENT: { label: "Sent", variant: "info" },
+  SENT: { label: "Sent", variant: "success" },
   ACCEPTED: { label: "Accepted", variant: "success" },
   REJECTED: { label: "Rejected", variant: "destructive" },
   CANCELLED: { label: "Cancelled", variant: "destructive" },
@@ -372,16 +370,6 @@ export default function QuotationDetailPage() {
                   <Button className="w-full" onClick={() => patchQuotation({ quotationStatus: 'SENT' }, 'Invoice marked as sent')}>
                     <Send className="mr-2 h-4 w-4" />Mark as Sent
                   </Button>
-                )}
-                {q.quotationStatus === 'SENT' && (
-                  <>
-                    <Button className="w-full" onClick={() => patchQuotation({ quotationStatus: 'ACCEPTED' }, 'Invoice accepted')}>
-                      <CheckCircle className="mr-2 h-4 w-4" />Mark Accepted
-                    </Button>
-                    <Button className="w-full" variant="destructive" onClick={() => patchQuotation({ quotationStatus: 'REJECTED' }, 'Invoice rejected')}>
-                      <XCircle className="mr-2 h-4 w-4" />Mark Rejected
-                    </Button>
-                  </>
                 )}
                 {canDelete && (
                   <Button
