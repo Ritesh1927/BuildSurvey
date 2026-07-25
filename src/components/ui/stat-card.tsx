@@ -29,6 +29,14 @@ const barMap = {
   info: "bg-blue-500",
 }
 
+function valueTextSize(value: string | number) {
+  const length = String(value).length
+  if (length <= 8) return "text-2xl sm:text-3xl"
+  if (length <= 11) return "text-xl sm:text-2xl"
+  if (length <= 14) return "text-lg sm:text-xl"
+  return "text-base sm:text-lg"
+}
+
 function StatCard({
   icon,
   label,
@@ -46,7 +54,7 @@ function StatCard({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 space-y-1">
             <p className="truncate text-sm font-medium text-muted-foreground">{label}</p>
-            <p className="break-words text-2xl font-bold tracking-tight sm:text-3xl">{value}</p>
+            <p className={cn("truncate font-bold tracking-tight", valueTextSize(value))}>{value}</p>
           </div>
           {icon && (
             <div
