@@ -30,6 +30,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       include: {
         client: { select: { id: true, companyName: true, contactPerson: true, email: true, phone: true } },
         manager: { select: { id: true, firstName: true, lastName: true, email: true } },
+        leadUser: { select: { id: true, firstName: true, lastName: true, email: true } },
         surveys: { where: { isDeleted: false }, select: { id: true, title: true, status: true, scheduledDate: true, engineerId: true } },
         boqItems: { where: { isDeleted: false }, select: { id: true, serialNumber: true, description: true, category: true, quantity: true, unitRate: true, amount: true } },
       },

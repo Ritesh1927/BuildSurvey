@@ -21,6 +21,7 @@ import {
 } from "lucide-react"
 
 import { cn, formatCurrency, formatDate } from "@/lib/utils"
+import { INDIAN_STATES } from "@/lib/constants"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -68,15 +69,21 @@ interface ProjectDetail {
   address: string | null
   city: string | null
   state: string | null
+  latitude: number | null
+  longitude: number | null
   area: number | null
   floors: number | null
   clientId: string
   managerId: string | null
+  leadUserId: string | null
   client: { id: string; companyName: string; contactPerson: string; email: string; phone: string }
   manager: { id: string; firstName: string; lastName: string; email: string } | null
+  leadUser: { id: string; firstName: string; lastName: string; email: string } | null
   surveys: { id: string; title: string; status: string; scheduledDate: string | null }[]
   boqItems: { id: string; serialNumber: number; description: string; category: string; quantity: number; unitRate: number; amount: number }[]
 }
+
+interface UserOption { id: string; firstName: string; lastName: string; role: string }
 
 const STATUS_META: Record<string, { label: string; variant: "success" | "info" | "warning" | "destructive" | "secondary" }> = {
   PLANNING: { label: "Planning", variant: "info" },
@@ -112,12 +119,18 @@ export default function ProjectDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(searchParams.get('edit') === 'true')
   const [saving, setSaving] = useState(false)
+  const [users, setUsers] = useState<UserOption[]>([])
   const [form, setForm] = useState({
-    name: '', description: '', status: 'PLANNING', budget: '', startDate: '', endDate: '',
+    name: '', description: '', type: 'RESIDENTIAL', status: 'PLANNING',
+    address: '', city: '', state: '', latitude: '', longitude: '', area: '', floors: '',
+    budget: '', startDate: '', endDate: '', managerId: '', leadUserId: '',
   })
 
   const canWrite = !!role && WRITE_ROLES.includes(role)
   const canDelete = !!role && DELETE_ROLES.includes(role)
+  // Matches the backend's ENGINEER_RESTRICTED_FIELDS — staffing/budget calls
+  // aren't an Engineer's to make even on a project they lead.
+  const canEditRestricted = !!role && role !== 'ENGINEER'
 
   const fetchProject = useCallback(async () => {
     setLoading(true)
@@ -133,10 +146,20 @@ export default function ProjectDetailPage() {
       setForm({
         name: data.data.name || '',
         description: data.data.description || '',
+        type: data.data.type,
         status: data.data.status,
+        address: data.data.address || '',
+        city: data.data.city || '',
+        state: data.data.state || '',
+        latitude: data.data.latitude != null ? String(data.data.latitude) : '',
+        longitude: data.data.longitude != null ? String(data.data.longitude) : '',
+        area: data.data.area != null ? String(data.data.area) : '',
+        floors: data.data.floors != null ? String(data.data.floors) : '',
         budget: data.data.budget != null ? String(data.data.budget) : '',
         startDate: data.data.startDate ? data.data.startDate.slice(0, 10) : '',
         endDate: data.data.endDate ? data.data.endDate.slice(0, 10) : '',
+        managerId: data.data.managerId || '',
+        leadUserId: data.data.leadUserId || '',
       })
     } catch {
       setError('Network error while loading project')
@@ -149,6 +172,16 @@ export default function ProjectDetailPage() {
     fetchProject()
   }, [fetchProject])
 
+  useEffect(() => {
+    fetch('/api/users')
+      .then((res) => res.json())
+      .then((data) => {
+        const list = Array.isArray(data) ? data : data.users || []
+        setUsers(list)
+      })
+      .catch(() => {})
+  }, [])
+
   const handleSave = async () => {
     setSaving(true)
     try {
@@ -158,10 +191,19 @@ export default function ProjectDetailPage() {
         body: JSON.stringify({
           name: form.name,
           description: form.description || null,
+          type: form.type,
           status: form.status,
+          address: form.address || null,
+          city: form.city || null,
+          state: form.state || null,
+          latitude: form.latitude !== '' ? form.latitude : null,
+          longitude: form.longitude !== '' ? form.longitude : null,
+          area: form.area !== '' ? form.area : null,
+          floors: form.floors !== '' ? form.floors : null,
           budget: form.budget !== '' ? form.budget : null,
           startDate: form.startDate || null,
           endDate: form.endDate || null,
+          ...(canEditRestricted ? { managerId: form.managerId || null, leadUserId: form.leadUserId || null } : {}),
         }),
       })
       const data = await res.json()
@@ -280,29 +322,113 @@ export default function ProjectDetailPage() {
       )}
 
       {isEditing ? (
-        <Card>
-          <CardHeader><CardTitle>Edit Project</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2 sm:col-span-2"><Label>Name</Label><Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} /></div>
-              <div className="space-y-2 sm:col-span-2"><Label>Description</Label><Textarea rows={3} value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} /></div>
-              <div className="space-y-2">
-                <Label>Status</Label>
-                <Select value={form.status} onValueChange={(v) => setForm((f) => ({ ...f, status: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(STATUS_META).map(([value, meta]) => (
-                      <SelectItem key={value} value={value}>{meta.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+        <div className="space-y-6">
+          <Card>
+            <CardHeader><CardTitle>Basic Info</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2 sm:col-span-2"><Label>Name</Label><Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} /></div>
+                <div className="space-y-2 sm:col-span-2"><Label>Description</Label><Textarea rows={3} value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} /></div>
+                <div className="space-y-2">
+                  <Label>Type</Label>
+                  <Select value={form.type} onValueChange={(v) => setForm((f) => ({ ...f, type: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(TYPE_META).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select value={form.status} onValueChange={(v) => setForm((f) => ({ ...f, status: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(STATUS_META).map(([value, meta]) => (
+                        <SelectItem key={value} value={value}>{meta.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div className="space-y-2"><Label>Budget (INR)</Label><Input type="number" value={form.budget} onChange={(e) => setForm((f) => ({ ...f, budget: e.target.value }))} /></div>
-              <div className="space-y-2"><Label>Start Date</Label><Input type="date" value={form.startDate} onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))} /></div>
-              <div className="space-y-2"><Label>End Date</Label><Input type="date" value={form.endDate} onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))} /></div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Location & Site Details</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2 sm:col-span-2"><Label>Site Address</Label><Input value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>City</Label><Input value={form.city} onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))} /></div>
+                <div className="space-y-2">
+                  <Label>State</Label>
+                  <Select value={form.state} onValueChange={(v) => setForm((f) => ({ ...f, state: v }))}>
+                    <SelectTrigger><SelectValue placeholder="Select state" /></SelectTrigger>
+                    <SelectContent>
+                      {INDIAN_STATES.map((state) => (
+                        <SelectItem key={state} value={state}>{state}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2"><Label>Latitude</Label><Input type="number" step="any" value={form.latitude} onChange={(e) => setForm((f) => ({ ...f, latitude: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>Longitude</Label><Input type="number" step="any" value={form.longitude} onChange={(e) => setForm((f) => ({ ...f, longitude: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>Total Area (sq.ft)</Label><Input type="number" value={form.area} onChange={(e) => setForm((f) => ({ ...f, area: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>Number of Floors</Label><Input type="number" value={form.floors} onChange={(e) => setForm((f) => ({ ...f, floors: e.target.value }))} /></div>
+              </div>
+              <p className="text-xs text-muted-foreground">Latitude/longitude are the geofence center used to judge whether a surveyor's check-in/check-out is on-site.</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Financial & Timeline</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                {canEditRestricted && (
+                  <div className="space-y-2"><Label>Budget (INR)</Label><Input type="number" value={form.budget} onChange={(e) => setForm((f) => ({ ...f, budget: e.target.value }))} /></div>
+                )}
+                <div className="space-y-2"><Label>Start Date</Label><Input type="date" value={form.startDate} onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>End Date</Label><Input type="date" value={form.endDate} onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))} /></div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {canEditRestricted && (
+            <Card>
+              <CardHeader><CardTitle>Assignment</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Project Manager</Label>
+                    <Select value={form.managerId || '__none'} onValueChange={(v) => setForm((f) => ({ ...f, managerId: v === '__none' ? '' : v }))}>
+                      <SelectTrigger><SelectValue placeholder="Select project manager" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none">Unassigned</SelectItem>
+                        {users.filter((u) => u.role === 'MANAGER').map((u) => (
+                          <SelectItem key={u.id} value={u.id}>{u.firstName} {u.lastName}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Lead Engineer</Label>
+                    <Select value={form.leadUserId || '__none'} onValueChange={(v) => setForm((f) => ({ ...f, leadUserId: v === '__none' ? '' : v }))}>
+                      <SelectTrigger><SelectValue placeholder="Select lead engineer" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none">Unassigned</SelectItem>
+                        {users.filter((u) => u.role === 'ENGINEER').map((u) => (
+                          <SelectItem key={u.id} value={u.id}>{u.firstName} {u.lastName}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">The Engineer who can see and manage this project.</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       ) : (
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList className="flex-wrap h-auto gap-1">
@@ -330,30 +456,56 @@ export default function ProjectDetailPage() {
                     {(project.address || project.city) && (
                       <InfoItem label="Location" value={[project.address, project.city, project.state].filter(Boolean).join(', ')} />
                     )}
+                    {project.latitude != null && project.longitude != null && (
+                      <InfoItem label="GPS Coordinates" value={`${project.latitude}, ${project.longitude}`} />
+                    )}
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader><CardTitle className="text-base">Project Manager</CardTitle></CardHeader>
-                <CardContent>
-                  {project.manager ? (
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-12 w-12">
-                        <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                          {project.manager.firstName[0]}{project.manager.lastName[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{project.manager.firstName} {project.manager.lastName}</p>
-                        <p className="text-sm text-muted-foreground">{project.manager.email}</p>
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader><CardTitle className="text-base">Project Manager</CardTitle></CardHeader>
+                  <CardContent>
+                    {project.manager ? (
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-12 w-12">
+                          <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                            {project.manager.firstName[0]}{project.manager.lastName[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{project.manager.firstName} {project.manager.lastName}</p>
+                          <p className="text-sm text-muted-foreground">{project.manager.email}</p>
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No manager assigned</p>
-                  )}
-                </CardContent>
-              </Card>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No manager assigned</p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader><CardTitle className="text-base">Lead Engineer</CardTitle></CardHeader>
+                  <CardContent>
+                    {project.leadUser ? (
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-12 w-12">
+                          <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                            {project.leadUser.firstName[0]}{project.leadUser.lastName[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{project.leadUser.firstName} {project.leadUser.lastName}</p>
+                          <p className="text-sm text-muted-foreground">{project.leadUser.email}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No lead engineer assigned</p>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </div>
 
             {project.budget != null && (
