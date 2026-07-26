@@ -48,11 +48,9 @@ enum ProjectType {
 }
 
 enum SurveyStatus {
-  DRAFT
   ASSIGNED
   IN_PROGRESS
   SUBMITTED
-  UNDER_REVIEW
   APPROVED
   REJECTED
 }
@@ -329,7 +327,7 @@ model Survey {
   title            String
   description      String?
   type             SurveyType   @default(INITIAL)
-  status           SurveyStatus @default(DRAFT)
+  status           SurveyStatus @default(ASSIGNED)
   scheduledDate    DateTime?
   completedDate    DateTime?
   gpsLatitude      Float?

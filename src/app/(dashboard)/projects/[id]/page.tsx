@@ -92,8 +92,8 @@ const TYPE_META: Record<string, string> = {
 }
 
 const SURVEY_STATUS_VARIANT: Record<string, "success" | "info" | "warning" | "destructive" | "secondary"> = {
-  APPROVED: "success", IN_PROGRESS: "info", SUBMITTED: "info", UNDER_REVIEW: "warning",
-  REJECTED: "destructive", ASSIGNED: "secondary", DRAFT: "secondary",
+  APPROVED: "success", IN_PROGRESS: "info", SUBMITTED: "info",
+  REJECTED: "destructive", ASSIGNED: "secondary",
 }
 
 const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER']

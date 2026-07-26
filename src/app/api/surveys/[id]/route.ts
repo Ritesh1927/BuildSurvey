@@ -7,7 +7,7 @@ import { SurveyStatus, SurveyType } from '@/generated/prisma/enums'
 const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'CLIENT'] as const
 const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR'] as const
 const ASSIGN_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
-const APPROVE_ROLES = ['SUPER_ADMIN']
+const APPROVE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
 const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const
 const SCOPED_ROLES = ['ENGINEER', 'SURVEYOR']
 
@@ -107,7 +107,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       }
       if ((status === 'APPROVED' || status === 'REJECTED') && !APPROVE_ROLES.includes(role)) {
         return NextResponse.json(
-          { success: false, error: 'Only a Super Admin can approve or reject a survey' },
+          { success: false, error: 'Only a Super Admin, Admin, or Manager can approve or reject a survey' },
           { status: 403 }
         )
       }

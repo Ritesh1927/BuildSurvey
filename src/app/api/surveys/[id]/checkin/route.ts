@@ -85,7 +85,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         data: {
           checkedInAt: now,
           updatedBy: userId,
-          ...(survey.status === 'DRAFT' || survey.status === 'ASSIGNED' ? { status: 'IN_PROGRESS' } : {}),
+          ...(survey.status === 'ASSIGNED' ? { status: 'IN_PROGRESS' } : {}),
         },
       }),
     ], { timeout: 20000 })

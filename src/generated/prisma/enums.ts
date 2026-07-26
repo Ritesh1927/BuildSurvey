@@ -60,11 +60,9 @@ export type ProjectType = (typeof ProjectType)[keyof typeof ProjectType]
 
 
 export const SurveyStatus = {
-  DRAFT: 'DRAFT',
   ASSIGNED: 'ASSIGNED',
   IN_PROGRESS: 'IN_PROGRESS',
   SUBMITTED: 'SUBMITTED',
-  UNDER_REVIEW: 'UNDER_REVIEW',
   APPROVED: 'APPROVED',
   REJECTED: 'REJECTED'
 } as const

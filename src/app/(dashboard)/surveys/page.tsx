@@ -43,11 +43,9 @@ interface SurveyRow {
 }
 
 const STATUS_META: Record<string, { label: string; variant: "success" | "info" | "warning" | "destructive" | "secondary" }> = {
-  DRAFT: { label: "Draft", variant: "secondary" },
   ASSIGNED: { label: "Assigned", variant: "secondary" },
   IN_PROGRESS: { label: "In Progress", variant: "info" },
   SUBMITTED: { label: "Submitted", variant: "warning" },
-  UNDER_REVIEW: { label: "Under Review", variant: "warning" },
   APPROVED: { label: "Approved", variant: "success" },
   REJECTED: { label: "Rejected", variant: "destructive" },
 }
@@ -159,7 +157,7 @@ export default function SurveysPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={<ClipboardCheck className="h-6 w-6" />} label="Total Surveys" value={surveys.length} color="default" />
         <StatCard icon={<Clock className="h-6 w-6" />} label="In Progress" value={surveys.filter(s => s.status === "IN_PROGRESS").length} color="info" />
-        <StatCard icon={<FileText className="h-6 w-6" />} label="Pending Review" value={surveys.filter(s => s.status === "SUBMITTED" || s.status === "UNDER_REVIEW").length} color="warning" />
+        <StatCard icon={<FileText className="h-6 w-6" />} label="Pending Review" value={surveys.filter(s => s.status === "SUBMITTED").length} color="warning" />
         <StatCard icon={<CheckSquare className="h-6 w-6" />} label="Approved" value={surveys.filter(s => s.status === "APPROVED").length} color="success" />
       </div>
 

@@ -122,11 +122,9 @@ interface RiskItem {
 }
 
 const STATUS_META: Record<string, { label: string; variant: "success" | "info" | "warning" | "destructive" | "secondary" }> = {
-  DRAFT: { label: "Draft", variant: "secondary" },
   ASSIGNED: { label: "Assigned", variant: "secondary" },
   IN_PROGRESS: { label: "In Progress", variant: "info" },
   SUBMITTED: { label: "Submitted", variant: "warning" },
-  UNDER_REVIEW: { label: "Under Review", variant: "warning" },
   APPROVED: { label: "Approved", variant: "success" },
   REJECTED: { label: "Rejected", variant: "destructive" },
 }
@@ -143,7 +141,7 @@ const RISK_LEVEL_META: Record<string, { variant: "success" | "warning" | "destru
 }
 
 const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR']
-const APPROVE_ROLES = ['SUPER_ADMIN']
+const APPROVE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
 const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN']
 
 export default function SurveyDetailPage() {
@@ -160,7 +158,7 @@ export default function SurveyDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(searchParams.get('edit') === 'true')
   const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState({ title: '', description: '', status: 'DRAFT', scheduledDate: '' })
+  const [form, setForm] = useState({ title: '', description: '', status: 'ASSIGNED', scheduledDate: '' })
 
   const canWrite = !!role && WRITE_ROLES.includes(role)
   const canDelete = !!role && DELETE_ROLES.includes(role)
@@ -548,7 +546,7 @@ export default function SurveyDetailPage() {
                   <SelectContent>
                     {Object.entries(STATUS_META).map(([value, meta]) => (
                       <SelectItem key={value} value={value} disabled={(value === 'APPROVED' || value === 'REJECTED') && !canApprove}>
-                        {meta.label}{(value === 'APPROVED' || value === 'REJECTED') && !canApprove ? ' (Super Admin only)' : ''}
+                        {meta.label}{(value === 'APPROVED' || value === 'REJECTED') && !canApprove ? ' (Admin/Manager only)' : ''}
                       </SelectItem>
                     ))}
                   </SelectContent>
