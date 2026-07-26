@@ -2,7 +2,7 @@ const EARTH_RADIUS_METERS = 6371000
 
 // How close a check-in/check-out photo's GPS coordinates must be to the
 // project's site coordinates to count as "On Site" rather than "Off Site".
-export const SITE_RADIUS_METERS = 100
+export const SITE_RADIUS_METERS = 200
 
 export function haversineDistanceMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const dLat = ((lat2 - lat1) * Math.PI) / 180
