@@ -40,15 +40,15 @@ interface ProjectOption { id: string; name: string }
 interface EngineerOption { id: string; firstName: string; lastName: string; role: string }
 
 const defaultChecklistItems = [
-  { id: 1, category: "Quality Check", item: "Before starting the work, check the material quality is up to the mark or not.", checked: false, notes: "" },
-  { id: 2, category: "Quality Check", item: "Material should be free from any type of scratches, and any type of other defects.", checked: false, notes: "" },
-  { id: 3, category: "Quality Check", item: "Checked the size & thickness of tube as per work order / specifications.", checked: false, notes: "" },
-  { id: 4, category: "Quality Check", item: "Checked the HPL sheet colour as required.", checked: false, notes: "" },
-  { id: 5, category: "Quality Check", item: "At the time of work, the fixing should be accurate & maintain the correct shape, size accordingly.", checked: false, notes: "" },
-  { id: 6, category: "Quality Check", item: "While fixing, sheet should be proper.", checked: false, notes: "" },
-  { id: 7, category: "Quality Check", item: "Maintain groove line also.", checked: false, notes: "" },
-  { id: 8, category: "Quality Check", item: "Rivet fixed properly.", checked: false, notes: "" },
-  { id: 9, category: "Quality Check", item: "After completion, clean the surface / area also.", checked: false, notes: "" },
+  { id: 1, category: "Quality Check", item: "Before starting the work, check the material quality is up to the mark or not.", checked: true, notes: "" },
+  { id: 2, category: "Quality Check", item: "Material should be free from any type of scratches, and any type of other defects.", checked: true, notes: "" },
+  { id: 3, category: "Quality Check", item: "Checked the size & thickness of tube as per work order / specifications.", checked: true, notes: "" },
+  { id: 4, category: "Quality Check", item: "Checked the HPL sheet colour as required.", checked: true, notes: "" },
+  { id: 5, category: "Quality Check", item: "At the time of work, the fixing should be accurate & maintain the correct shape, size accordingly.", checked: true, notes: "" },
+  { id: 6, category: "Quality Check", item: "While fixing, sheet should be proper.", checked: true, notes: "" },
+  { id: 7, category: "Quality Check", item: "Maintain groove line also.", checked: true, notes: "" },
+  { id: 8, category: "Quality Check", item: "Rivet fixed properly.", checked: true, notes: "" },
+  { id: 9, category: "Quality Check", item: "After completion, clean the surface / area also.", checked: true, notes: "" },
 ]
 
 export default function NewSurveyPage() {
@@ -104,7 +104,7 @@ export default function NewSurveyPage() {
 
   const addChecklistItem = () => {
     if (newItemText.trim()) {
-      setChecklistItems(prev => [...prev, { id: Date.now(), category: newItemCategory, item: newItemText.trim(), checked: false, notes: "" }])
+      setChecklistItems(prev => [...prev, { id: Date.now(), category: newItemCategory, item: newItemText.trim(), checked: true, notes: "" }])
       setNewItemText("")
     }
   }
@@ -148,7 +148,7 @@ export default function NewSurveyPage() {
           weatherCondition: formData.weatherCondition || undefined,
           siteCondition: formData.siteCondition || undefined,
           accessDetails: formData.accessDetails || undefined,
-          checklistItems: checklistItems.map((i) => ({
+          checklistItems: checklistItems.filter((i) => i.checked).map((i) => ({
             category: i.category,
             item: i.item,
             notes: i.notes || undefined,
@@ -365,7 +365,7 @@ export default function NewSurveyPage() {
                               <GripVertical className="h-4 w-4 text-muted-foreground cursor-move mt-0.5 shrink-0" />
                               <Checkbox checked={item.checked} onCheckedChange={() => toggleChecklistItem(item.id)} className="mt-0.5" />
                               <div className="flex-1 min-w-0">
-                                <span className={`text-sm ${item.checked ? "line-through text-muted-foreground" : ""}`}>{item.item}</span>
+                                <span className={`text-sm ${!item.checked ? "line-through text-muted-foreground" : ""}`}>{item.item}</span>
                                 <Input
                                   placeholder="Add notes..."
                                   className="mt-1 h-8 text-xs"
@@ -446,9 +446,9 @@ export default function NewSurveyPage() {
                       <div className="text-sm">
                         <div className="flex items-center gap-2 mb-2">
                           <Progress value={checklistProgress} className="h-2 flex-1" />
-                          <span className="text-muted-foreground">{checklistProgress}% complete</span>
+                          <span className="text-muted-foreground">{checklistProgress}% included</span>
                         </div>
-                        <p className="text-muted-foreground">{checklistItems.length} items across {Object.keys(groupedChecklist).length} categories</p>
+                        <p className="text-muted-foreground">{checklistItems.filter(i => i.checked).length} of {checklistItems.length} items will be added, across {Object.keys(groupedChecklist).length} categories</p>
                       </div>
                     </div>
                   </div>
