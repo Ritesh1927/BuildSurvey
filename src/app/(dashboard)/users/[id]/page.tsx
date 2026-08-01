@@ -82,7 +82,7 @@ export default function UserDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(searchParams.get('edit') === 'true')
   const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState({ firstName: '', lastName: '', phone: '', role: 'ENGINEER', isActive: true })
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', role: 'ENGINEER', isActive: true })
 
   const [resetOpen, setResetOpen] = useState(false)
 
@@ -103,6 +103,7 @@ export default function UserDetailPage() {
       setForm({
         firstName: data.user.firstName || '',
         lastName: data.user.lastName || '',
+        email: data.user.email || '',
         phone: data.user.phone || '',
         role: data.user.role,
         isActive: data.user.isActive,
@@ -127,6 +128,7 @@ export default function UserDetailPage() {
         body: JSON.stringify({
           firstName: form.firstName,
           lastName: form.lastName,
+          email: form.email,
           phone: form.phone || null,
           ...(isSelf ? {} : { role: form.role }),
           isActive: form.isActive,
@@ -218,6 +220,7 @@ export default function UserDetailPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2"><Label>First Name</Label><Input value={form.firstName} onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))} /></div>
               <div className="space-y-2"><Label>Last Name</Label><Input value={form.lastName} onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))} /></div>
+              <div className="space-y-2"><Label>Email</Label><Input type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} /></div>
               <div className="space-y-2"><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} /></div>
               <div className="space-y-2">
                 <Label>Role</Label>
@@ -246,7 +249,7 @@ export default function UserDetailPage() {
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => { setIsEditing(false); router.replace(`/users/${userId}`); setForm({ firstName: user.firstName, lastName: user.lastName, phone: user.phone || '', role: user.role, isActive: user.isActive }) }} disabled={saving}>
+              <Button variant="outline" onClick={() => { setIsEditing(false); router.replace(`/users/${userId}`); setForm({ firstName: user.firstName, lastName: user.lastName, email: user.email, phone: user.phone || '', role: user.role, isActive: user.isActive }) }} disabled={saving}>
                 <X className="mr-2 h-4 w-4" />Cancel
               </Button>
               <Button onClick={handleSave} disabled={saving}>
