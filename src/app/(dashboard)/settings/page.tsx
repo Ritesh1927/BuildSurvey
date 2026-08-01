@@ -19,6 +19,7 @@ import {
   Globe,
   Clock,
   DollarSign,
+  MapPin,
   Lock,
   Smartphone,
   Key,
@@ -75,6 +76,8 @@ export default function SettingsPage() {
     currency: "INR",
     fiscalYearStart: "April",
     gstRate: "18",
+    officeLatitude: "",
+    officeLongitude: "",
     autoLogout: true,
     darkMode: false,
   })
@@ -431,6 +434,34 @@ export default function SettingsPage() {
                     }
                   />
                   <p className="text-xs text-muted-foreground">Applied to BOQ and Invoice totals across the app</p>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Office Latitude
+                  </label>
+                  <Input
+                    type="number"
+                    step="any"
+                    placeholder="e.g. 19.0760"
+                    value={generalSettings.officeLatitude}
+                    onChange={(e) =>
+                      setGeneralSettings({ ...generalSettings, officeLatitude: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Office Longitude</label>
+                  <Input
+                    type="number"
+                    step="any"
+                    placeholder="e.g. 72.8777"
+                    value={generalSettings.officeLongitude}
+                    onChange={(e) =>
+                      setGeneralSettings({ ...generalSettings, officeLongitude: e.target.value })
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">Used to verify employee attendance is marked from within office premises</p>
                 </div>
               </div>
               <Separator />

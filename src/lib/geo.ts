@@ -4,6 +4,10 @@ const EARTH_RADIUS_METERS = 6371000
 // project's site coordinates to count as "On Site" rather than "Off Site".
 export const SITE_RADIUS_METERS = 300
 
+// Office attendance uses a tighter radius than a construction site — an
+// office is a single building, not a sprawling multi-acre site.
+export const OFFICE_RADIUS_METERS = 100
+
 export function haversineDistanceMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const dLat = ((lat2 - lat1) * Math.PI) / 180
   const dLng = ((lng2 - lng1) * Math.PI) / 180
@@ -18,11 +22,12 @@ export function siteStatus(
   photoLat: number | null | undefined,
   photoLng: number | null | undefined,
   siteLat: number | null | undefined,
-  siteLng: number | null | undefined
+  siteLng: number | null | undefined,
+  radiusMeters: number = SITE_RADIUS_METERS
 ): { onSite: boolean | null; distanceMeters: number | null } {
   if (photoLat == null || photoLng == null || siteLat == null || siteLng == null) {
     return { onSite: null, distanceMeters: null }
   }
   const distance = haversineDistanceMeters(photoLat, photoLng, siteLat, siteLng)
-  return { onSite: distance <= SITE_RADIUS_METERS, distanceMeters: Math.round(distance) }
+  return { onSite: distance <= radiusMeters, distanceMeters: Math.round(distance) }
 }

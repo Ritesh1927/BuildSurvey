@@ -187,6 +187,7 @@ model User {
   changeOrdersRequested     ChangeOrder[]      @relation("COResuestedBy")
   changeOrdersApproved      ChangeOrder[]      @relation("COApprovedBy")
   leadsAssigned             Lead[]             @relation("LeadAssignee")
+  attendanceRecords         Attendance[]
 
   // Links a CLIENT-role login to the Client company they represent. Null
   // for every other role. A direct FK rather than a join table — one
@@ -1000,6 +1001,32 @@ model GpsTracking {
   @@index([userId])
   @@index([projectId])
   @@index([timestamp])
+}
+
+model Attendance {
+  id             String   @id @default(uuid())
+  // The calendar day this record is for (stored at UTC midnight) — paired
+  // with userId in a unique constraint so an employee can only mark
+  // attendance once per day.
+  date           DateTime
+  markedAt       DateTime @default(now())
+  latitude       Float
+  longitude      Float
+  distanceMeters Int
+  photoUrl       String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  isDeleted      Boolean  @default(false)
+  version        Int      @default(1)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([date])
 }
 
 model Meeting {

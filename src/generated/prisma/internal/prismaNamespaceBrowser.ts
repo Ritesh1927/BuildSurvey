@@ -84,6 +84,7 @@ export const ModelName = {
   Setting: 'Setting',
   ApiKey: 'ApiKey',
   GpsTracking: 'GpsTracking',
+  Attendance: 'Attendance',
   Meeting: 'Meeting',
   ChangeOrder: 'ChangeOrder',
   AuditTrail: 'AuditTrail',
@@ -796,6 +797,26 @@ export const GpsTrackingScalarFieldEnum = {
 } as const
 
 export type GpsTrackingScalarFieldEnum = (typeof GpsTrackingScalarFieldEnum)[keyof typeof GpsTrackingScalarFieldEnum]
+
+
+export const AttendanceScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  markedAt: 'markedAt',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  distanceMeters: 'distanceMeters',
+  photoUrl: 'photoUrl',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  createdBy: 'createdBy',
+  updatedBy: 'updatedBy',
+  isDeleted: 'isDeleted',
+  version: 'version',
+  userId: 'userId'
+} as const
+
+export type AttendanceScalarFieldEnum = (typeof AttendanceScalarFieldEnum)[keyof typeof AttendanceScalarFieldEnum]
 
 
 export const MeetingScalarFieldEnum = {

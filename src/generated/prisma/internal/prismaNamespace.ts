@@ -417,6 +417,7 @@ export const ModelName = {
   Setting: 'Setting',
   ApiKey: 'ApiKey',
   GpsTracking: 'GpsTracking',
+  Attendance: 'Attendance',
   Meeting: 'Meeting',
   ChangeOrder: 'ChangeOrder',
   AuditTrail: 'AuditTrail',
@@ -439,7 +440,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "client" | "lead" | "project" | "survey" | "surveyChecklistItem" | "photo" | "video" | "voiceNote" | "sketch" | "measurement" | "riskAssessment" | "materialRequirement" | "bOQItem" | "costEstimation" | "quotation" | "quotationItem" | "workflow" | "workflowStep" | "approval" | "digitalSignature" | "notification" | "emailLog" | "whatsAppLog" | "report" | "document" | "auditLog" | "activity" | "masterCategory" | "masterItem" | "setting" | "apiKey" | "gpsTracking" | "meeting" | "changeOrder" | "auditTrail" | "notificationTemplate" | "reportTemplate" | "offlineSync" | "accessRequest"
+    modelProps: "user" | "client" | "lead" | "project" | "survey" | "surveyChecklistItem" | "photo" | "video" | "voiceNote" | "sketch" | "measurement" | "riskAssessment" | "materialRequirement" | "bOQItem" | "costEstimation" | "quotation" | "quotationItem" | "workflow" | "workflowStep" | "approval" | "digitalSignature" | "notification" | "emailLog" | "whatsAppLog" | "report" | "document" | "auditLog" | "activity" | "masterCategory" | "masterItem" | "setting" | "apiKey" | "gpsTracking" | "attendance" | "meeting" | "changeOrder" | "auditTrail" | "notificationTemplate" | "reportTemplate" | "offlineSync" | "accessRequest"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2885,6 +2886,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Attendance: {
+      payload: Prisma.$AttendancePayload<ExtArgs>
+      fields: Prisma.AttendanceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AttendanceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendancePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AttendanceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendancePayload>
+        }
+        findFirst: {
+          args: Prisma.AttendanceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendancePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AttendanceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendancePayload>
+        }
+        findMany: {
+          args: Prisma.AttendanceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendancePayload>[]
+        }
+        create: {
+          args: Prisma.AttendanceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendancePayload>
+        }
+        createMany: {
+          args: Prisma.AttendanceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AttendanceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendancePayload>[]
+        }
+        delete: {
+          args: Prisma.AttendanceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendancePayload>
+        }
+        update: {
+          args: Prisma.AttendanceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendancePayload>
+        }
+        deleteMany: {
+          args: Prisma.AttendanceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AttendanceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AttendanceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendancePayload>[]
+        }
+        upsert: {
+          args: Prisma.AttendanceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendancePayload>
+        }
+        aggregate: {
+          args: Prisma.AttendanceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAttendance>
+        }
+        groupBy: {
+          args: Prisma.AttendanceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AttendanceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AttendanceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AttendanceCountAggregateOutputType> | number
+        }
+      }
+    }
     Meeting: {
       payload: Prisma.$MeetingPayload<ExtArgs>
       fields: Prisma.MeetingFieldRefs
@@ -4131,6 +4206,26 @@ export const GpsTrackingScalarFieldEnum = {
 export type GpsTrackingScalarFieldEnum = (typeof GpsTrackingScalarFieldEnum)[keyof typeof GpsTrackingScalarFieldEnum]
 
 
+export const AttendanceScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  markedAt: 'markedAt',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  distanceMeters: 'distanceMeters',
+  photoUrl: 'photoUrl',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  createdBy: 'createdBy',
+  updatedBy: 'updatedBy',
+  isDeleted: 'isDeleted',
+  version: 'version',
+  userId: 'userId'
+} as const
+
+export type AttendanceScalarFieldEnum = (typeof AttendanceScalarFieldEnum)[keyof typeof AttendanceScalarFieldEnum]
+
+
 export const MeetingScalarFieldEnum = {
   id: 'id',
   title: 'title',
@@ -4743,6 +4838,7 @@ export type GlobalOmitConfig = {
   setting?: Prisma.SettingOmit
   apiKey?: Prisma.ApiKeyOmit
   gpsTracking?: Prisma.GpsTrackingOmit
+  attendance?: Prisma.AttendanceOmit
   meeting?: Prisma.MeetingOmit
   changeOrder?: Prisma.ChangeOrderOmit
   auditTrail?: Prisma.AuditTrailOmit

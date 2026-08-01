@@ -329,6 +329,7 @@ export type UserWhereInput = {
   changeOrdersRequested?: Prisma.ChangeOrderListRelationFilter
   changeOrdersApproved?: Prisma.ChangeOrderListRelationFilter
   leadsAssigned?: Prisma.LeadListRelationFilter
+  attendanceRecords?: Prisma.AttendanceListRelationFilter
   client?: Prisma.XOR<Prisma.ClientNullableScalarRelationFilter, Prisma.ClientWhereInput> | null
 }
 
@@ -367,6 +368,7 @@ export type UserOrderByWithRelationInput = {
   changeOrdersRequested?: Prisma.ChangeOrderOrderByRelationAggregateInput
   changeOrdersApproved?: Prisma.ChangeOrderOrderByRelationAggregateInput
   leadsAssigned?: Prisma.LeadOrderByRelationAggregateInput
+  attendanceRecords?: Prisma.AttendanceOrderByRelationAggregateInput
   client?: Prisma.ClientOrderByWithRelationInput
 }
 
@@ -408,6 +410,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   changeOrdersRequested?: Prisma.ChangeOrderListRelationFilter
   changeOrdersApproved?: Prisma.ChangeOrderListRelationFilter
   leadsAssigned?: Prisma.LeadListRelationFilter
+  attendanceRecords?: Prisma.AttendanceListRelationFilter
   client?: Prisma.XOR<Prisma.ClientNullableScalarRelationFilter, Prisma.ClientWhereInput> | null
 }, "id" | "email">
 
@@ -493,6 +496,7 @@ export type UserCreateInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceCreateNestedManyWithoutUserInput
   client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
@@ -531,6 +535,7 @@ export type UserUncheckedCreateInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -567,6 +572,7 @@ export type UserUpdateInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUpdateManyWithoutUserNestedInput
   client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
@@ -605,6 +611,7 @@ export type UserUncheckedUpdateInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -1050,6 +1057,20 @@ export type UserUpdateOneRequiredWithoutGpsTrackingNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutGpsTrackingInput, Prisma.UserUpdateWithoutGpsTrackingInput>, Prisma.UserUncheckedUpdateWithoutGpsTrackingInput>
 }
 
+export type UserCreateNestedOneWithoutAttendanceRecordsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAttendanceRecordsInput, Prisma.UserUncheckedCreateWithoutAttendanceRecordsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAttendanceRecordsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutAttendanceRecordsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAttendanceRecordsInput, Prisma.UserUncheckedCreateWithoutAttendanceRecordsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAttendanceRecordsInput
+  upsert?: Prisma.UserUpsertWithoutAttendanceRecordsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAttendanceRecordsInput, Prisma.UserUpdateWithoutAttendanceRecordsInput>, Prisma.UserUncheckedUpdateWithoutAttendanceRecordsInput>
+}
+
 export type UserCreateNestedOneWithoutChangeOrdersRequestedInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutChangeOrdersRequestedInput, Prisma.UserUncheckedCreateWithoutChangeOrdersRequestedInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutChangeOrdersRequestedInput
@@ -1114,6 +1135,7 @@ export type UserCreateWithoutClientInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutClientInput = {
@@ -1150,6 +1172,7 @@ export type UserUncheckedCreateWithoutClientInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutClientInput = {
@@ -1234,6 +1257,7 @@ export type UserCreateWithoutLeadsAssignedInput = {
   riskAssessmentsIdentified?: Prisma.RiskAssessmentCreateNestedManyWithoutIdentifiedByInput
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
+  attendanceRecords?: Prisma.AttendanceCreateNestedManyWithoutUserInput
   client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
@@ -1271,6 +1295,7 @@ export type UserUncheckedCreateWithoutLeadsAssignedInput = {
   riskAssessmentsIdentified?: Prisma.RiskAssessmentUncheckedCreateNestedManyWithoutIdentifiedByInput
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutApprovedByInput
+  attendanceRecords?: Prisma.AttendanceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutLeadsAssignedInput = {
@@ -1322,6 +1347,7 @@ export type UserUpdateWithoutLeadsAssignedInput = {
   riskAssessmentsIdentified?: Prisma.RiskAssessmentUpdateManyWithoutIdentifiedByNestedInput
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
+  attendanceRecords?: Prisma.AttendanceUpdateManyWithoutUserNestedInput
   client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
@@ -1359,6 +1385,7 @@ export type UserUncheckedUpdateWithoutLeadsAssignedInput = {
   riskAssessmentsIdentified?: Prisma.RiskAssessmentUncheckedUpdateManyWithoutIdentifiedByNestedInput
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedUpdateManyWithoutApprovedByNestedInput
+  attendanceRecords?: Prisma.AttendanceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutManagedProjectsInput = {
@@ -1394,6 +1421,7 @@ export type UserCreateWithoutManagedProjectsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceCreateNestedManyWithoutUserInput
   client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
@@ -1431,6 +1459,7 @@ export type UserUncheckedCreateWithoutManagedProjectsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutManagedProjectsInput = {
@@ -1471,6 +1500,7 @@ export type UserCreateWithoutLedProjectsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceCreateNestedManyWithoutUserInput
   client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
@@ -1508,6 +1538,7 @@ export type UserUncheckedCreateWithoutLedProjectsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutLedProjectsInput = {
@@ -1559,6 +1590,7 @@ export type UserUpdateWithoutManagedProjectsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUpdateManyWithoutUserNestedInput
   client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
@@ -1596,6 +1628,7 @@ export type UserUncheckedUpdateWithoutManagedProjectsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutLedProjectsInput = {
@@ -1642,6 +1675,7 @@ export type UserUpdateWithoutLedProjectsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUpdateManyWithoutUserNestedInput
   client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
@@ -1679,6 +1713,7 @@ export type UserUncheckedUpdateWithoutLedProjectsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAssignedSurveysInput = {
@@ -1714,6 +1749,7 @@ export type UserCreateWithoutAssignedSurveysInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceCreateNestedManyWithoutUserInput
   client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
@@ -1751,6 +1787,7 @@ export type UserUncheckedCreateWithoutAssignedSurveysInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAssignedSurveysInput = {
@@ -1802,6 +1839,7 @@ export type UserUpdateWithoutAssignedSurveysInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUpdateManyWithoutUserNestedInput
   client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
@@ -1839,6 +1877,7 @@ export type UserUncheckedUpdateWithoutAssignedSurveysInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutRiskAssessmentsIdentifiedInput = {
@@ -1874,6 +1913,7 @@ export type UserCreateWithoutRiskAssessmentsIdentifiedInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceCreateNestedManyWithoutUserInput
   client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
@@ -1911,6 +1951,7 @@ export type UserUncheckedCreateWithoutRiskAssessmentsIdentifiedInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutRiskAssessmentsIdentifiedInput = {
@@ -1962,6 +2003,7 @@ export type UserUpdateWithoutRiskAssessmentsIdentifiedInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUpdateManyWithoutUserNestedInput
   client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
@@ -1999,6 +2041,7 @@ export type UserUncheckedUpdateWithoutRiskAssessmentsIdentifiedInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutWorkflowStepsInput = {
@@ -2034,6 +2077,7 @@ export type UserCreateWithoutWorkflowStepsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceCreateNestedManyWithoutUserInput
   client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
@@ -2071,6 +2115,7 @@ export type UserUncheckedCreateWithoutWorkflowStepsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutWorkflowStepsInput = {
@@ -2122,6 +2167,7 @@ export type UserUpdateWithoutWorkflowStepsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUpdateManyWithoutUserNestedInput
   client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
@@ -2159,6 +2205,7 @@ export type UserUncheckedUpdateWithoutWorkflowStepsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutApprovalsRequestedInput = {
@@ -2194,6 +2241,7 @@ export type UserCreateWithoutApprovalsRequestedInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceCreateNestedManyWithoutUserInput
   client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
@@ -2231,6 +2279,7 @@ export type UserUncheckedCreateWithoutApprovalsRequestedInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutApprovalsRequestedInput = {
@@ -2271,6 +2320,7 @@ export type UserCreateWithoutApprovalsGivenInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceCreateNestedManyWithoutUserInput
   client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
@@ -2308,6 +2358,7 @@ export type UserUncheckedCreateWithoutApprovalsGivenInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutApprovalsGivenInput = {
@@ -2359,6 +2410,7 @@ export type UserUpdateWithoutApprovalsRequestedInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUpdateManyWithoutUserNestedInput
   client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
@@ -2396,6 +2448,7 @@ export type UserUncheckedUpdateWithoutApprovalsRequestedInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutApprovalsGivenInput = {
@@ -2442,6 +2495,7 @@ export type UserUpdateWithoutApprovalsGivenInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUpdateManyWithoutUserNestedInput
   client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
@@ -2479,6 +2533,7 @@ export type UserUncheckedUpdateWithoutApprovalsGivenInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSignaturesInput = {
@@ -2514,6 +2569,7 @@ export type UserCreateWithoutSignaturesInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceCreateNestedManyWithoutUserInput
   client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
@@ -2551,6 +2607,7 @@ export type UserUncheckedCreateWithoutSignaturesInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSignaturesInput = {
@@ -2602,6 +2659,7 @@ export type UserUpdateWithoutSignaturesInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUpdateManyWithoutUserNestedInput
   client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
@@ -2639,6 +2697,7 @@ export type UserUncheckedUpdateWithoutSignaturesInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutNotificationsInput = {
@@ -2674,6 +2733,7 @@ export type UserCreateWithoutNotificationsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceCreateNestedManyWithoutUserInput
   client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
@@ -2711,6 +2771,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -2762,6 +2823,7 @@ export type UserUpdateWithoutNotificationsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUpdateManyWithoutUserNestedInput
   client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
@@ -2799,6 +2861,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutReportsInput = {
@@ -2834,6 +2897,7 @@ export type UserCreateWithoutReportsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceCreateNestedManyWithoutUserInput
   client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
@@ -2871,6 +2935,7 @@ export type UserUncheckedCreateWithoutReportsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReportsInput = {
@@ -2922,6 +2987,7 @@ export type UserUpdateWithoutReportsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUpdateManyWithoutUserNestedInput
   client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
@@ -2959,6 +3025,7 @@ export type UserUncheckedUpdateWithoutReportsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutDocumentsUploadedInput = {
@@ -2994,6 +3061,7 @@ export type UserCreateWithoutDocumentsUploadedInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceCreateNestedManyWithoutUserInput
   client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
@@ -3031,6 +3099,7 @@ export type UserUncheckedCreateWithoutDocumentsUploadedInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutDocumentsUploadedInput = {
@@ -3082,6 +3151,7 @@ export type UserUpdateWithoutDocumentsUploadedInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUpdateManyWithoutUserNestedInput
   client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
@@ -3119,6 +3189,7 @@ export type UserUncheckedUpdateWithoutDocumentsUploadedInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAuditLogsInput = {
@@ -3154,6 +3225,7 @@ export type UserCreateWithoutAuditLogsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceCreateNestedManyWithoutUserInput
   client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
@@ -3191,6 +3263,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -3242,6 +3315,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUpdateManyWithoutUserNestedInput
   client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
@@ -3279,6 +3353,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutActivitiesInput = {
@@ -3314,6 +3389,7 @@ export type UserCreateWithoutActivitiesInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceCreateNestedManyWithoutUserInput
   client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
@@ -3351,6 +3427,7 @@ export type UserUncheckedCreateWithoutActivitiesInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutActivitiesInput = {
@@ -3402,6 +3479,7 @@ export type UserUpdateWithoutActivitiesInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUpdateManyWithoutUserNestedInput
   client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
@@ -3439,6 +3517,7 @@ export type UserUncheckedUpdateWithoutActivitiesInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutGpsTrackingInput = {
@@ -3474,6 +3553,7 @@ export type UserCreateWithoutGpsTrackingInput = {
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceCreateNestedManyWithoutUserInput
   client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
@@ -3511,6 +3591,7 @@ export type UserUncheckedCreateWithoutGpsTrackingInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutRequestedByInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutGpsTrackingInput = {
@@ -3562,6 +3643,7 @@ export type UserUpdateWithoutGpsTrackingInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUpdateManyWithoutUserNestedInput
   client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
@@ -3595,6 +3677,171 @@ export type UserUncheckedUpdateWithoutGpsTrackingInput = {
   activities?: Prisma.ActivityUncheckedUpdateManyWithoutUserNestedInput
   reports?: Prisma.ReportUncheckedUpdateManyWithoutGeneratedByNestedInput
   documentsUploaded?: Prisma.DocumentUncheckedUpdateManyWithoutUploadedByNestedInput
+  riskAssessmentsIdentified?: Prisma.RiskAssessmentUncheckedUpdateManyWithoutIdentifiedByNestedInput
+  changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
+  changeOrdersApproved?: Prisma.ChangeOrderUncheckedUpdateManyWithoutApprovedByNestedInput
+  leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutAttendanceRecordsInput = {
+  id?: string
+  email: string
+  password: string
+  firstName: string
+  lastName: string
+  phone?: string | null
+  avatar?: string | null
+  role?: $Enums.UserRole
+  isActive?: boolean
+  lastLoginAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  createdBy?: string | null
+  updatedBy?: string | null
+  isDeleted?: boolean
+  version?: number
+  ledProjects?: Prisma.ProjectCreateNestedManyWithoutLeadUserInput
+  managedProjects?: Prisma.ProjectCreateNestedManyWithoutManagerInput
+  assignedSurveys?: Prisma.SurveyCreateNestedManyWithoutEngineerInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  signatures?: Prisma.DigitalSignatureCreateNestedManyWithoutUserInput
+  workflowSteps?: Prisma.WorkflowStepCreateNestedManyWithoutAssignedToInput
+  approvalsRequested?: Prisma.ApprovalCreateNestedManyWithoutRequestedByInput
+  approvalsGiven?: Prisma.ApprovalCreateNestedManyWithoutApprovedByInput
+  activities?: Prisma.ActivityCreateNestedManyWithoutUserInput
+  reports?: Prisma.ReportCreateNestedManyWithoutGeneratedByInput
+  documentsUploaded?: Prisma.DocumentCreateNestedManyWithoutUploadedByInput
+  gpsTracking?: Prisma.GpsTrackingCreateNestedManyWithoutUserInput
+  riskAssessmentsIdentified?: Prisma.RiskAssessmentCreateNestedManyWithoutIdentifiedByInput
+  changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
+  changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
+  leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  client?: Prisma.ClientCreateNestedOneWithoutUsersInput
+}
+
+export type UserUncheckedCreateWithoutAttendanceRecordsInput = {
+  id?: string
+  email: string
+  password: string
+  firstName: string
+  lastName: string
+  phone?: string | null
+  avatar?: string | null
+  role?: $Enums.UserRole
+  isActive?: boolean
+  lastLoginAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  createdBy?: string | null
+  updatedBy?: string | null
+  isDeleted?: boolean
+  version?: number
+  clientId?: string | null
+  ledProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutLeadUserInput
+  managedProjects?: Prisma.ProjectUncheckedCreateNestedManyWithoutManagerInput
+  assignedSurveys?: Prisma.SurveyUncheckedCreateNestedManyWithoutEngineerInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  signatures?: Prisma.DigitalSignatureUncheckedCreateNestedManyWithoutUserInput
+  workflowSteps?: Prisma.WorkflowStepUncheckedCreateNestedManyWithoutAssignedToInput
+  approvalsRequested?: Prisma.ApprovalUncheckedCreateNestedManyWithoutRequestedByInput
+  approvalsGiven?: Prisma.ApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+  activities?: Prisma.ActivityUncheckedCreateNestedManyWithoutUserInput
+  reports?: Prisma.ReportUncheckedCreateNestedManyWithoutGeneratedByInput
+  documentsUploaded?: Prisma.DocumentUncheckedCreateNestedManyWithoutUploadedByInput
+  gpsTracking?: Prisma.GpsTrackingUncheckedCreateNestedManyWithoutUserInput
+  riskAssessmentsIdentified?: Prisma.RiskAssessmentUncheckedCreateNestedManyWithoutIdentifiedByInput
+  changeOrdersRequested?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutRequestedByInput
+  changeOrdersApproved?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutApprovedByInput
+  leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssignedToInput
+}
+
+export type UserCreateOrConnectWithoutAttendanceRecordsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutAttendanceRecordsInput, Prisma.UserUncheckedCreateWithoutAttendanceRecordsInput>
+}
+
+export type UserUpsertWithoutAttendanceRecordsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutAttendanceRecordsInput, Prisma.UserUncheckedUpdateWithoutAttendanceRecordsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutAttendanceRecordsInput, Prisma.UserUncheckedCreateWithoutAttendanceRecordsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutAttendanceRecordsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutAttendanceRecordsInput, Prisma.UserUncheckedUpdateWithoutAttendanceRecordsInput>
+}
+
+export type UserUpdateWithoutAttendanceRecordsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  ledProjects?: Prisma.ProjectUpdateManyWithoutLeadUserNestedInput
+  managedProjects?: Prisma.ProjectUpdateManyWithoutManagerNestedInput
+  assignedSurveys?: Prisma.SurveyUpdateManyWithoutEngineerNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  signatures?: Prisma.DigitalSignatureUpdateManyWithoutUserNestedInput
+  workflowSteps?: Prisma.WorkflowStepUpdateManyWithoutAssignedToNestedInput
+  approvalsRequested?: Prisma.ApprovalUpdateManyWithoutRequestedByNestedInput
+  approvalsGiven?: Prisma.ApprovalUpdateManyWithoutApprovedByNestedInput
+  activities?: Prisma.ActivityUpdateManyWithoutUserNestedInput
+  reports?: Prisma.ReportUpdateManyWithoutGeneratedByNestedInput
+  documentsUploaded?: Prisma.DocumentUpdateManyWithoutUploadedByNestedInput
+  gpsTracking?: Prisma.GpsTrackingUpdateManyWithoutUserNestedInput
+  riskAssessmentsIdentified?: Prisma.RiskAssessmentUpdateManyWithoutIdentifiedByNestedInput
+  changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
+  changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
+  leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
+}
+
+export type UserUncheckedUpdateWithoutAttendanceRecordsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ledProjects?: Prisma.ProjectUncheckedUpdateManyWithoutLeadUserNestedInput
+  managedProjects?: Prisma.ProjectUncheckedUpdateManyWithoutManagerNestedInput
+  assignedSurveys?: Prisma.SurveyUncheckedUpdateManyWithoutEngineerNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  signatures?: Prisma.DigitalSignatureUncheckedUpdateManyWithoutUserNestedInput
+  workflowSteps?: Prisma.WorkflowStepUncheckedUpdateManyWithoutAssignedToNestedInput
+  approvalsRequested?: Prisma.ApprovalUncheckedUpdateManyWithoutRequestedByNestedInput
+  approvalsGiven?: Prisma.ApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+  activities?: Prisma.ActivityUncheckedUpdateManyWithoutUserNestedInput
+  reports?: Prisma.ReportUncheckedUpdateManyWithoutGeneratedByNestedInput
+  documentsUploaded?: Prisma.DocumentUncheckedUpdateManyWithoutUploadedByNestedInput
+  gpsTracking?: Prisma.GpsTrackingUncheckedUpdateManyWithoutUserNestedInput
   riskAssessmentsIdentified?: Prisma.RiskAssessmentUncheckedUpdateManyWithoutIdentifiedByNestedInput
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedUpdateManyWithoutApprovedByNestedInput
@@ -3634,6 +3881,7 @@ export type UserCreateWithoutChangeOrdersRequestedInput = {
   riskAssessmentsIdentified?: Prisma.RiskAssessmentCreateNestedManyWithoutIdentifiedByInput
   changeOrdersApproved?: Prisma.ChangeOrderCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceCreateNestedManyWithoutUserInput
   client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
@@ -3671,6 +3919,7 @@ export type UserUncheckedCreateWithoutChangeOrdersRequestedInput = {
   riskAssessmentsIdentified?: Prisma.RiskAssessmentUncheckedCreateNestedManyWithoutIdentifiedByInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutApprovedByInput
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutChangeOrdersRequestedInput = {
@@ -3711,6 +3960,7 @@ export type UserCreateWithoutChangeOrdersApprovedInput = {
   riskAssessmentsIdentified?: Prisma.RiskAssessmentCreateNestedManyWithoutIdentifiedByInput
   changeOrdersRequested?: Prisma.ChangeOrderCreateNestedManyWithoutRequestedByInput
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceCreateNestedManyWithoutUserInput
   client?: Prisma.ClientCreateNestedOneWithoutUsersInput
 }
 
@@ -3748,6 +3998,7 @@ export type UserUncheckedCreateWithoutChangeOrdersApprovedInput = {
   riskAssessmentsIdentified?: Prisma.RiskAssessmentUncheckedCreateNestedManyWithoutIdentifiedByInput
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutRequestedByInput
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssignedToInput
+  attendanceRecords?: Prisma.AttendanceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutChangeOrdersApprovedInput = {
@@ -3799,6 +4050,7 @@ export type UserUpdateWithoutChangeOrdersRequestedInput = {
   riskAssessmentsIdentified?: Prisma.RiskAssessmentUpdateManyWithoutIdentifiedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUpdateManyWithoutUserNestedInput
   client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
@@ -3836,6 +4088,7 @@ export type UserUncheckedUpdateWithoutChangeOrdersRequestedInput = {
   riskAssessmentsIdentified?: Prisma.RiskAssessmentUncheckedUpdateManyWithoutIdentifiedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutChangeOrdersApprovedInput = {
@@ -3882,6 +4135,7 @@ export type UserUpdateWithoutChangeOrdersApprovedInput = {
   riskAssessmentsIdentified?: Prisma.RiskAssessmentUpdateManyWithoutIdentifiedByNestedInput
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUpdateManyWithoutUserNestedInput
   client?: Prisma.ClientUpdateOneWithoutUsersNestedInput
 }
 
@@ -3919,6 +4173,7 @@ export type UserUncheckedUpdateWithoutChangeOrdersApprovedInput = {
   riskAssessmentsIdentified?: Prisma.RiskAssessmentUncheckedUpdateManyWithoutIdentifiedByNestedInput
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyClientInput = {
@@ -3974,6 +4229,7 @@ export type UserUpdateWithoutClientInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutClientInput = {
@@ -4010,6 +4266,7 @@ export type UserUncheckedUpdateWithoutClientInput = {
   changeOrdersRequested?: Prisma.ChangeOrderUncheckedUpdateManyWithoutRequestedByNestedInput
   changeOrdersApproved?: Prisma.ChangeOrderUncheckedUpdateManyWithoutApprovedByNestedInput
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssignedToNestedInput
+  attendanceRecords?: Prisma.AttendanceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutClientInput = {
@@ -4054,6 +4311,7 @@ export type UserCountOutputType = {
   changeOrdersRequested: number
   changeOrdersApproved: number
   leadsAssigned: number
+  attendanceRecords: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -4074,6 +4332,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   changeOrdersRequested?: boolean | UserCountOutputTypeCountChangeOrdersRequestedArgs
   changeOrdersApproved?: boolean | UserCountOutputTypeCountChangeOrdersApprovedArgs
   leadsAssigned?: boolean | UserCountOutputTypeCountLeadsAssignedArgs
+  attendanceRecords?: boolean | UserCountOutputTypeCountAttendanceRecordsArgs
 }
 
 /**
@@ -4205,6 +4464,13 @@ export type UserCountOutputTypeCountLeadsAssignedArgs<ExtArgs extends runtime.Ty
   where?: Prisma.LeadWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountAttendanceRecordsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AttendanceWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -4241,6 +4507,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   changeOrdersRequested?: boolean | Prisma.User$changeOrdersRequestedArgs<ExtArgs>
   changeOrdersApproved?: boolean | Prisma.User$changeOrdersApprovedArgs<ExtArgs>
   leadsAssigned?: boolean | Prisma.User$leadsAssignedArgs<ExtArgs>
+  attendanceRecords?: boolean | Prisma.User$attendanceRecordsArgs<ExtArgs>
   client?: boolean | Prisma.User$clientArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
@@ -4326,6 +4593,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   changeOrdersRequested?: boolean | Prisma.User$changeOrdersRequestedArgs<ExtArgs>
   changeOrdersApproved?: boolean | Prisma.User$changeOrdersApprovedArgs<ExtArgs>
   leadsAssigned?: boolean | Prisma.User$leadsAssignedArgs<ExtArgs>
+  attendanceRecords?: boolean | Prisma.User$attendanceRecordsArgs<ExtArgs>
   client?: boolean | Prisma.User$clientArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -4356,6 +4624,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     changeOrdersRequested: Prisma.$ChangeOrderPayload<ExtArgs>[]
     changeOrdersApproved: Prisma.$ChangeOrderPayload<ExtArgs>[]
     leadsAssigned: Prisma.$LeadPayload<ExtArgs>[]
+    attendanceRecords: Prisma.$AttendancePayload<ExtArgs>[]
     client: Prisma.$ClientPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -4787,6 +5056,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   changeOrdersRequested<T extends Prisma.User$changeOrdersRequestedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$changeOrdersRequestedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChangeOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   changeOrdersApproved<T extends Prisma.User$changeOrdersApprovedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$changeOrdersApprovedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChangeOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   leadsAssigned<T extends Prisma.User$leadsAssignedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$leadsAssignedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  attendanceRecords<T extends Prisma.User$attendanceRecordsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$attendanceRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AttendancePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   client<T extends Prisma.User$clientArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$clientArgs<ExtArgs>>): Prisma.Prisma__ClientClient<runtime.Types.Result.GetResult<Prisma.$ClientPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -5640,6 +5910,30 @@ export type User$leadsAssignedArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.LeadScalarFieldEnum | Prisma.LeadScalarFieldEnum[]
+}
+
+/**
+ * User.attendanceRecords
+ */
+export type User$attendanceRecordsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Attendance
+   */
+  select?: Prisma.AttendanceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Attendance
+   */
+  omit?: Prisma.AttendanceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AttendanceInclude<ExtArgs> | null
+  where?: Prisma.AttendanceWhereInput
+  orderBy?: Prisma.AttendanceOrderByWithRelationInput | Prisma.AttendanceOrderByWithRelationInput[]
+  cursor?: Prisma.AttendanceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AttendanceScalarFieldEnum | Prisma.AttendanceScalarFieldEnum[]
 }
 
 /**

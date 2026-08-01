@@ -183,6 +183,11 @@ export type ApiKey = Prisma.ApiKeyModel
  */
 export type GpsTracking = Prisma.GpsTrackingModel
 /**
+ * Model Attendance
+ * 
+ */
+export type Attendance = Prisma.AttendanceModel
+/**
  * Model Meeting
  * 
  */

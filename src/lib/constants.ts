@@ -85,9 +85,15 @@ export const SIDEBAR_NAV_ITEMS: readonly {
     ],
   },
   {
+    group: 'Workforce',
+    items: [
+      { label: 'Attendance', href: '/attendance', icon: 'UserCheck', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'ACCOUNTANT'] },
+      { label: 'Employees', href: '/users', icon: 'Users', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
+    ],
+  },
+  {
     group: 'Administration',
     items: [
-      { label: 'Users', href: '/users', icon: 'Users', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
       { label: 'Settings', href: '/settings', icon: 'Settings', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
     ],
   },
