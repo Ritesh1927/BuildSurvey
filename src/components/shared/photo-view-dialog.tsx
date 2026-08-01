@@ -26,7 +26,7 @@ export function PhotoViewDialog({ photoUrl, title, subtitle, open, onOpenChange 
         </DialogHeader>
         {photoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={photoUrl} alt={title} className="w-full rounded-lg border object-cover" />
+          <img src={photoUrl} alt={title} className="max-h-[65vh] w-full rounded-lg border object-contain" />
         ) : (
           <p className="py-8 text-center text-sm text-muted-foreground">No photo available</p>
         )}

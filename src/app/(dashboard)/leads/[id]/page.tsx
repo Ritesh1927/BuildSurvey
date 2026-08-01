@@ -635,7 +635,7 @@ export default function LeadDetailPage() {
       </div>
 
       <Dialog open={convertDialogOpen} onOpenChange={setConvertDialogOpen}>
-        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Convert to Client</DialogTitle>
             <DialogDescription>
