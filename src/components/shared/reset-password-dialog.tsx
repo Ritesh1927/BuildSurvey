@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { KeyRound } from "lucide-react"
+import { KeyRound, Eye, EyeOff } from "lucide-react"
 
 import { showSuccess, showError } from "@/components/ui/toast"
 import { Button } from "@/components/ui/button"
@@ -28,12 +28,16 @@ export function ResetPasswordDialog({ userId, userName, open, onOpenChange, onSu
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [resetting, setResetting] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const close = (isOpen: boolean) => {
     onOpenChange(isOpen)
     if (!isOpen) {
       setNewPassword('')
       setConfirmPassword('')
+      setShowNewPassword(false)
+      setShowConfirmPassword(false)
     }
   }
 
@@ -78,11 +82,31 @@ export function ResetPasswordDialog({ userId, userName, open, onOpenChange, onSu
         <div className="space-y-4 py-2">
           <div className="space-y-2">
             <Label htmlFor="reset-new-password">New Password</Label>
-            <Input id="reset-new-password" type="password" placeholder="Min. 8 characters" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+            <div className="relative">
+              <Input id="reset-new-password" type={showNewPassword ? "text" : "password"} placeholder="Min. 8 characters" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="pr-10" />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                tabIndex={-1}
+              >
+                {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="reset-confirm-password">Confirm New Password</Label>
-            <Input id="reset-confirm-password" type="password" placeholder="Re-enter password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+            <div className="relative">
+              <Input id="reset-confirm-password" type={showConfirmPassword ? "text" : "password"} placeholder="Re-enter password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="pr-10" />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                tabIndex={-1}
+              >
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
           </div>
         </div>
         <DialogFooter>
