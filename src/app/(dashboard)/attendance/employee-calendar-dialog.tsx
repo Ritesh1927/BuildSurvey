@@ -53,8 +53,8 @@ const CELL_CLASS: Record<CalendarDay["status"], string> = {
   present: "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400",
   absent: "bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-400",
   holiday: "bg-slate-500/10 border-slate-500/30 text-slate-600 dark:text-slate-400",
-  future: "border-transparent text-muted-foreground/30",
-  "before-join": "border-transparent text-muted-foreground/20",
+  future: "border-transparent text-muted-foreground",
+  "before-join": "border-transparent text-muted-foreground/50",
 }
 
 export function EmployeeCalendarDialog({ userId, employeeName, open, onOpenChange }: EmployeeCalendarDialogProps) {
@@ -94,7 +94,7 @@ export function EmployeeCalendarDialog({ userId, employeeName, open, onOpenChang
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{employeeName}</DialogTitle>
           <DialogDescription>Monthly attendance calendar</DialogDescription>
