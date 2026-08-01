@@ -33,6 +33,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { EmployeeCalendarDialog } from "./employee-calendar-dialog"
+import { PhotoViewDialog } from "@/components/shared/photo-view-dialog"
 
 interface AttendanceRecord {
   id: string
@@ -75,6 +76,7 @@ export default function AttendancePage() {
   const [teamEmployees, setTeamEmployees] = useState<TeamEmployee[]>([])
   const [teamLoading, setTeamLoading] = useState(false)
   const [calendarEmployee, setCalendarEmployee] = useState<{ id: string; name: string } | null>(null)
+  const [viewPhoto, setViewPhoto] = useState<{ url: string; title: string; subtitle: string } | null>(null)
 
   const todayRecord = history.find((r) => r.date.slice(0, 10) === todayKey()) || null
 
@@ -259,6 +261,7 @@ export default function AttendancePage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-14">Photo</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Marked At</TableHead>
                       <TableHead className="text-right">Distance</TableHead>
@@ -267,6 +270,16 @@ export default function AttendancePage() {
                   <TableBody>
                     {history.map((r) => (
                       <TableRow key={r.id}>
+                        <TableCell>
+                          <button
+                            type="button"
+                            onClick={() => setViewPhoto({ url: r.photoUrl, title: formatDate(r.date), subtitle: formatDateTime(r.markedAt) })}
+                            className="block h-9 w-9 overflow-hidden rounded-full border hover:opacity-80"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={r.photoUrl} alt="" className="h-full w-full object-cover" />
+                          </button>
+                        </TableCell>
                         <TableCell className="font-medium">{formatDate(r.date)}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">{formatDateTime(r.markedAt)}</TableCell>
                         <TableCell className="text-right text-sm">{formatDistance(r.distanceMeters)}</TableCell>
@@ -322,6 +335,7 @@ export default function AttendancePage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="w-14">Photo</TableHead>
                         <TableHead>Employee</TableHead>
                         <TableHead>Role</TableHead>
                         <TableHead>Status</TableHead>
@@ -337,6 +351,27 @@ export default function AttendancePage() {
                           className="cursor-pointer"
                           onClick={() => setCalendarEmployee({ id: e.id, name: `${e.firstName} ${e.lastName}` })}
                         >
+                          <TableCell>
+                            {e.today ? (
+                              <button
+                                type="button"
+                                onClick={(ev) => {
+                                  ev.stopPropagation()
+                                  setViewPhoto({
+                                    url: e.today!.photoUrl,
+                                    title: `${e.firstName} ${e.lastName}`,
+                                    subtitle: `${formatDateTime(e.today!.markedAt)} · ${formatDistance(e.today!.distanceMeters)} from office`,
+                                  })
+                                }}
+                                className="block h-9 w-9 overflow-hidden rounded-full border hover:opacity-80"
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={e.today.photoUrl} alt="" className="h-full w-full object-cover" />
+                              </button>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <Avatar className="h-7 w-7">
@@ -374,6 +409,14 @@ export default function AttendancePage() {
         employeeName={calendarEmployee?.name ?? ""}
         open={!!calendarEmployee}
         onOpenChange={(open) => { if (!open) setCalendarEmployee(null) }}
+      />
+
+      <PhotoViewDialog
+        photoUrl={viewPhoto?.url ?? null}
+        title={viewPhoto?.title ?? ""}
+        subtitle={viewPhoto?.subtitle}
+        open={!!viewPhoto}
+        onOpenChange={(open) => { if (!open) setViewPhoto(null) }}
       />
     </div>
   )

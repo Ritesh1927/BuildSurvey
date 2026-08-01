@@ -152,6 +152,7 @@ export async function GET(request: NextRequest) {
           status,
           markedAt: record?.markedAt ?? null,
           distanceMeters: record?.distanceMeters ?? null,
+          photoUrl: record?.photoUrl ?? null,
           holidayName: adHocName || null,
         })
       }

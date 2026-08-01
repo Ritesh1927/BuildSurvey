@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { ChevronLeft, ChevronRight, CheckCircle2, XCircle, Loader2 } from "lucide-react"
 
-import { cn } from "@/lib/utils"
+import { cn, formatDate, formatDateTime, formatDistance } from "@/lib/utils"
 import {
   Dialog,
   DialogContent,
@@ -12,12 +12,14 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { PhotoViewDialog } from "@/components/shared/photo-view-dialog"
 
 interface CalendarDay {
   date: string
   status: "present" | "absent" | "holiday" | "future" | "before-join"
   markedAt: string | null
   distanceMeters: number | null
+  photoUrl: string | null
   holidayName: string | null
 }
 
@@ -62,6 +64,7 @@ export function EmployeeCalendarDialog({ userId, employeeName, open, onOpenChang
   const [month, setMonth] = useState(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`)
   const [data, setData] = useState<CalendarData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [viewDay, setViewDay] = useState<CalendarDay | null>(null)
 
   const fetchCalendar = useCallback(async () => {
     if (!userId) return
@@ -131,15 +134,22 @@ export function EmployeeCalendarDialog({ userId, employeeName, open, onOpenChang
                 <div key={`blank-${i}`} />
               ))}
               {data.days.map((day) => (
-                <div
+                <button
                   key={day.date}
+                  type="button"
+                  disabled={day.status !== "present"}
+                  onClick={() => setViewDay(day)}
                   title={day.holidayName || undefined}
-                  className={cn("aspect-square rounded-md border flex flex-col items-center justify-center gap-0.5 text-xs", CELL_CLASS[day.status])}
+                  className={cn(
+                    "aspect-square rounded-md border flex flex-col items-center justify-center gap-0.5 text-xs",
+                    day.status === "present" && "cursor-pointer hover:opacity-75",
+                    CELL_CLASS[day.status]
+                  )}
                 >
                   <span className="font-medium">{Number(day.date.slice(8, 10))}</span>
                   {day.status === "present" && <CheckCircle2 className="h-3 w-3" />}
                   {day.status === "absent" && <XCircle className="h-3 w-3" />}
-                </div>
+                </button>
               ))}
             </div>
 
@@ -153,6 +163,14 @@ export function EmployeeCalendarDialog({ userId, employeeName, open, onOpenChang
           <p className="py-8 text-center text-sm text-muted-foreground">Could not load this employee&apos;s calendar</p>
         )}
       </DialogContent>
+
+      <PhotoViewDialog
+        photoUrl={viewDay?.photoUrl ?? null}
+        title={viewDay ? formatDate(viewDay.date) : ""}
+        subtitle={viewDay?.markedAt ? `${formatDateTime(viewDay.markedAt)}${viewDay.distanceMeters != null ? ` · ${formatDistance(viewDay.distanceMeters)} from office` : ""}` : undefined}
+        open={!!viewDay}
+        onOpenChange={(open) => { if (!open) setViewDay(null) }}
+      />
     </Dialog>
   )
 }
