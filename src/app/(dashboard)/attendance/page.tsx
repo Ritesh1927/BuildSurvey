@@ -232,11 +232,11 @@ export default function AttendancePage() {
                     </div>
                   )}
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row">
                     {photo && (
                       <Button variant="outline" onClick={() => { setPhoto(null); setMarkError(null) }} disabled={marking}>Retake</Button>
                     )}
-                    <Button className="flex-1" onClick={handleMark} disabled={!photo || marking}>
+                    <Button className="sm:flex-1" onClick={handleMark} disabled={!photo || marking}>
                       {marking ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserCheck className="mr-2 h-4 w-4" />}
                       {marking ? 'Marking...' : 'Mark Attendance'}
                     </Button>

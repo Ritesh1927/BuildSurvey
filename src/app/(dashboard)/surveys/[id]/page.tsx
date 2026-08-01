@@ -633,14 +633,14 @@ export default function SurveyDetailPage() {
                           <input type="file" accept="image/*" capture="user" className="hidden" onChange={handleCheckInPhoto} />
                         </label>
                       )}
-                      <div className="flex gap-2">
+                      <div className="flex flex-col gap-2 sm:flex-row">
                         {checkInPhoto && (
                           <Button variant="outline" onClick={() => setCheckInPhoto(null)} disabled={checkingIn}>Retake</Button>
                         )}
                         {resubmittingCheckIn && (
                           <Button variant="ghost" onClick={() => { setResubmittingCheckIn(false); setCheckInPhoto(null) }} disabled={checkingIn}>Cancel</Button>
                         )}
-                        <Button className="flex-1" onClick={handleCheckIn} disabled={!checkInPhoto || checkingIn}>
+                        <Button className="sm:flex-1" onClick={handleCheckIn} disabled={!checkInPhoto || checkingIn}>
                           {checkingIn ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogIn className="mr-2 h-4 w-4" />}
                           {checkingIn ? 'Checking in...' : resubmittingCheckIn ? 'Resubmit Check In' : 'Check In'}
                         </Button>
