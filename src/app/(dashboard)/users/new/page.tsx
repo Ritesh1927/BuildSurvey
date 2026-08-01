@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Camera, Save, CheckCircle2 } from "lucide-react"
+import { ArrowLeft, Save, CheckCircle2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -26,17 +26,6 @@ import { Switch } from "@/components/ui/switch"
 import { PageHeader } from "@/components/ui/page-header"
 import { PhoneInput } from "@/components/ui/phone-input"
 
-const departments = [
-  "Administration",
-  "Engineering",
-  "Project Management",
-  "Survey",
-  "Finance",
-  "External",
-  "Human Resources",
-  "IT & Infrastructure",
-]
-
 const roles = [
   { value: "SUPER_ADMIN", label: "Super Admin" },
   { value: "ADMIN", label: "Admin" },
@@ -47,27 +36,39 @@ const roles = [
   { value: "ACCOUNTANT", label: "Accountant" },
 ]
 
+interface ClientOption { id: string; companyName: string }
+
 export default function NewUserPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState("")
   const [showSuccess, setShowSuccess] = useState(false)
+  const [clientList, setClientList] = useState<ClientOption[]>([])
+  const [clientsLoading, setClientsLoading] = useState(true)
 
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
     email: "",
     phone: "+91",
-    employeeId: "",
-    department: "",
-    designation: "",
-    dateOfJoining: "",
     role: "",
+    clientId: "",
     isActive: true,
     initialPassword: "",
+    confirmPassword: "",
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    fetch('/api/clients?limit=200')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data)) setClientList(data.data)
+      })
+      .catch(() => {})
+      .finally(() => setClientsLoading(false))
+  }, [])
 
   const validate = () => {
     const newErrors: Record<string, string> = {}
@@ -85,10 +86,13 @@ export default function NewUserPage() {
       if (digits.length < 6) newErrors.phone = "Phone number is too short"
     }
     if (!form.role) newErrors.role = "Role is required"
+    if (form.role === "CLIENT" && !form.clientId) newErrors.clientId = "Select which client company this login belongs to"
     if (!form.initialPassword.trim())
       newErrors.initialPassword = "Password is required"
     else if (form.initialPassword.length < 8)
       newErrors.initialPassword = "Password must be at least 8 characters"
+    if (form.confirmPassword !== form.initialPassword)
+      newErrors.confirmPassword = "Passwords do not match"
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -113,23 +117,20 @@ export default function NewUserPage() {
           role: form.role,
           initialPassword: form.initialPassword,
           isActive: form.isActive,
-          employeeId: form.employeeId.trim() || undefined,
-          department: form.department || undefined,
-          designation: form.designation.trim() || undefined,
-          dateOfJoining: form.dateOfJoining || undefined,
+          ...(form.role === "CLIENT" ? { clientId: form.clientId } : {}),
         }),
       })
 
       const data = await res.json()
 
       if (!res.ok) {
-        setSubmitError(data.error || "Failed to create user")
+        setSubmitError(data.error || "Failed to create employee")
         return
       }
 
       setShowSuccess(true)
       setTimeout(() => router.push("/users"), 2000)
-    } catch (err) {
+    } catch {
       setSubmitError("Network error. Please try again.")
     } finally {
       setIsSubmitting(false)
@@ -150,18 +151,18 @@ export default function NewUserPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Create New User"
-        description="Add a new user to the platform with appropriate role and permissions"
+        title="Add Employee"
+        description="Create a new employee account with the appropriate role and access"
         breadcrumbs={[
           { label: "Dashboard", href: "/" },
-          { label: "Users", href: "/users" },
-          { label: "New User" },
+          { label: "Employees", href: "/users" },
+          { label: "New Employee" },
         ]}
         actions={
           <Button variant="outline" asChild>
             <Link href="/users">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Users
+              Back to Employees
             </Link>
           </Button>
         }
@@ -170,7 +171,7 @@ export default function NewUserPage() {
       {showSuccess && (
         <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">
           <CheckCircle2 className="h-5 w-5" />
-          <span className="font-medium">User created successfully! Redirecting...</span>
+          <span className="font-medium">Employee created successfully! Redirecting...</span>
         </div>
       )}
 
@@ -182,7 +183,7 @@ export default function NewUserPage() {
               <CardHeader>
                 <CardTitle>Personal Information</CardTitle>
                 <CardDescription>
-                  Basic personal details of the user
+                  Basic personal details of the employee
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -250,67 +251,6 @@ export default function NewUserPage() {
               </CardContent>
             </Card>
 
-            {/* Professional Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Professional Information</CardTitle>
-                <CardDescription>
-                  Work details and department assignment
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="employeeId">Employee ID</Label>
-                    <Input
-                      id="employeeId"
-                      placeholder="EMP-XXX"
-                      value={form.employeeId}
-                      onChange={(e) => updateField("employeeId", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Department</Label>
-                    <Select
-                      value={form.department}
-                      onValueChange={(value) => updateField("department", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select department" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {departments.map((dept) => (
-                          <SelectItem key={dept} value={dept}>
-                            {dept}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="designation">Designation</Label>
-                    <Input
-                      id="designation"
-                      placeholder="e.g. Senior Civil Engineer"
-                      value={form.designation}
-                      onChange={(e) => updateField("designation", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="dateOfJoining">Date of Joining</Label>
-                    <Input
-                      id="dateOfJoining"
-                      type="date"
-                      value={form.dateOfJoining}
-                      onChange={(e) => updateField("dateOfJoining", e.target.value)}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Access */}
             <Card>
               <CardHeader>
@@ -320,30 +260,56 @@ export default function NewUserPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>
+                    Role <span className="text-destructive">*</span>
+                  </Label>
+                  <Select
+                    value={form.role}
+                    onValueChange={(value) => updateField("role", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roles.map((role) => (
+                        <SelectItem key={role.value} value={role.value}>
+                          {role.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.role && (
+                    <p className="text-sm text-destructive">{errors.role}</p>
+                  )}
+                </div>
+
+                {form.role === "CLIENT" && (
                   <div className="space-y-2">
                     <Label>
-                      Role <span className="text-destructive">*</span>
+                      Client Company <span className="text-destructive">*</span>
                     </Label>
                     <Select
-                      value={form.role}
-                      onValueChange={(value) => updateField("role", value)}
+                      value={form.clientId}
+                      onValueChange={(value) => updateField("clientId", value)}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select role" />
+                        <SelectValue placeholder={clientsLoading ? "Loading clients..." : "Select which client this login is for"} />
                       </SelectTrigger>
                       <SelectContent>
-                        {roles.map((role) => (
-                          <SelectItem key={role.value} value={role.value}>
-                            {role.label}
-                          </SelectItem>
+                        {clientList.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>{c.companyName}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    {errors.role && (
-                      <p className="text-sm text-destructive">{errors.role}</p>
+                    {errors.clientId && (
+                      <p className="text-sm text-destructive">{errors.clientId}</p>
                     )}
+                    <p className="text-xs text-muted-foreground">A Client-role login is tied to one client company and only sees that company&apos;s data.</p>
                   </div>
+                )}
+
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="initialPassword">
                       Initial Password <span className="text-destructive">*</span>
@@ -360,14 +326,30 @@ export default function NewUserPage() {
                       <p className="text-sm text-destructive">{errors.initialPassword}</p>
                     )}
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">
+                      Confirm Password <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="Re-enter password"
+                      value={form.confirmPassword}
+                      onChange={(e) => updateField("confirmPassword", e.target.value)}
+                      error={!!errors.confirmPassword}
+                    />
+                    {errors.confirmPassword && (
+                      <p className="text-sm text-destructive">{errors.confirmPassword}</p>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
                     <Label className="text-base">Account Status</Label>
                     <p className="text-sm text-muted-foreground">
                       {form.isActive
-                        ? "User will be able to log in immediately"
-                        : "User account will be created but disabled"}
+                        ? "Employee will be able to log in immediately"
+                        : "Account will be created but disabled"}
                     </p>
                   </div>
                   <Switch
@@ -381,23 +363,6 @@ export default function NewUserPage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Profile Photo</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col items-center space-y-4">
-                <div className="relative h-24 w-24 rounded-full bg-muted flex items-center justify-center">
-                  <Camera className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <Button variant="outline" size="sm" type="button">
-                  Upload Photo
-                </Button>
-                <p className="text-xs text-muted-foreground text-center">
-                  JPG, PNG or GIF. Max size 2MB.
-                </p>
-              </CardContent>
-            </Card>
-
             <Card>
               <CardContent className="pt-6 space-y-3">
                 {submitError && (
@@ -413,12 +378,12 @@ export default function NewUserPage() {
                   {isSubmitting ? (
                     <>
                       <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                      Creating User...
+                      Creating Employee...
                     </>
                   ) : (
                     <>
                       <Save className="mr-2 h-4 w-4" />
-                      Create User
+                      Create Employee
                     </>
                   )}
                 </Button>

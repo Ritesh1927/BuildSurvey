@@ -16,7 +16,6 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get('search') || ''
     const role = searchParams.get('role') || ''
     const status = searchParams.get('status') || ''
-    const department = searchParams.get('department') || ''
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '25')
 
@@ -33,7 +32,17 @@ export async function GET(req: NextRequest) {
     if (status === 'active') where.isActive = true
     if (status === 'inactive') where.isActive = false
 
-    const [users, total] = await Promise.all([
+    // Active/inactive counts for the summary stat cards - scoped to the
+    // same search/role filter as the list itself, but deliberately not the
+    // status filter, since these two cards are the active/inactive
+    // breakdown of that filtered set rather than a count re-filtered by
+    // status. Computed server-side (not from the current page of `users`)
+    // so the cards stay correct beyond the first page.
+    const countsWhere: any = { isDeleted: false }
+    if (where.OR) countsWhere.OR = where.OR
+    if (role) countsWhere.role = role
+
+    const [users, total, activeCount, inactiveCount] = await Promise.all([
       db.user.findMany({
         where,
         select: {
@@ -53,9 +62,11 @@ export async function GET(req: NextRequest) {
         orderBy: { createdAt: 'desc' },
       }),
       db.user.count({ where }),
+      db.user.count({ where: { ...countsWhere, isActive: true } }),
+      db.user.count({ where: { ...countsWhere, isActive: false } }),
     ])
 
-    return NextResponse.json({ users, total, page, limit })
+    return NextResponse.json({ users, total, activeCount, inactiveCount, page, limit })
   } catch (error) {
     console.error('GET /api/users error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -71,20 +82,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
-    const {
-      firstName,
-      lastName,
-      email,
-      phone,
-      employeeId,
-      department,
-      designation,
-      dateOfJoining,
-      role,
-      isActive,
-      initialPassword,
-      clientId,
-    } = body
+    const { firstName, lastName, email, phone, role, isActive, initialPassword, clientId } = body
 
     if (!firstName || !lastName || !email || !role || !initialPassword) {
       return NextResponse.json(

@@ -9,15 +9,14 @@ import {
   Pencil,
   Plus,
   Users,
-  Shield,
   UserCheck,
   UserX,
-  Wifi,
   Trash2,
   KeyRound,
   UserMinus,
 } from 'lucide-react'
 
+import { showSuccess, showError } from '@/components/ui/toast'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -49,6 +48,7 @@ import { SearchInput } from '@/components/ui/search-input'
 import { PageHeader } from '@/components/ui/page-header'
 import { StatCard } from '@/components/ui/stat-card'
 import { UserAvatar } from '@/components/shared/user-avatar'
+import { ResetPasswordDialog } from '@/components/shared/reset-password-dialog'
 
 interface DbUser {
   id: string
@@ -86,12 +86,16 @@ const roleColorMap: Record<string, 'default' | 'secondary' | 'destructive' | 'ou
 export default function UsersPage() {
   const [users, setUsers] = useState<DbUser[]>([])
   const [total, setTotal] = useState(0)
+  const [activeCount, setActiveCount] = useState(0)
+  const [inactiveCount, setInactiveCount] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
+  const [bulkWorking, setBulkWorking] = useState(false)
+  const [resetTarget, setResetTarget] = useState<DbUser | null>(null)
   const pageSize = 25
 
   const fetchUsers = useCallback(async () => {
@@ -108,6 +112,8 @@ export default function UsersPage() {
       const data = await res.json()
       setUsers(data.users || [])
       setTotal(data.total || 0)
+      setActiveCount(data.activeCount || 0)
+      setInactiveCount(data.inactiveCount || 0)
     } catch {
       setUsers([])
       setTotal(0)
@@ -126,8 +132,48 @@ export default function UsersPage() {
 
   const totalPages = Math.ceil(total / pageSize)
 
-  const activeUsers = users.filter((u) => u.isActive).length
-  const inactiveUsers = users.filter((u) => !u.isActive).length
+  const handleExportSelected = () => {
+    const rows = users.filter((u) => selectedUsers.includes(u.id))
+    const headers = ["First Name", "Last Name", "Email", "Phone", "Role", "Status", "Created"]
+    const csv = [
+      headers,
+      ...rows.map((u) => [u.firstName, u.lastName, u.email, u.phone || '', roleDisplayNames[u.role] || u.role, u.isActive ? 'Active' : 'Inactive', u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-IN') : '']),
+    ].map((r) => r.map((c) => `"${c}"`).join(",")).join("\n")
+    const blob = new Blob([csv], { type: "text/csv" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `employees-export-${new Date().toISOString().split("T")[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    showSuccess("Employee data exported as CSV")
+  }
+
+  const handleBulkDeactivate = async () => {
+    if (!confirm(`Deactivate ${selectedUsers.length} employee(s)? They will no longer be able to sign in.`)) return
+    setBulkWorking(true)
+    try {
+      const results = await Promise.all(
+        selectedUsers.map((id) =>
+          fetch(`/api/users/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isActive: false }),
+          }).then((res) => res.ok)
+        )
+      )
+      const failed = results.filter((ok) => !ok).length
+      if (failed > 0) {
+        showError(`${failed} of ${selectedUsers.length} could not be deactivated`)
+      } else {
+        showSuccess(`${selectedUsers.length} employee(s) deactivated`)
+      }
+      setSelectedUsers([])
+      fetchUsers()
+    } finally {
+      setBulkWorking(false)
+    }
+  }
 
   const handleSelectAll = (checked: boolean | 'indeterminate') => {
     if (checked === true) {
@@ -148,29 +194,29 @@ export default function UsersPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="User Management"
-        description="Manage platform users, roles, and access permissions"
-        breadcrumbs={[{ label: 'Dashboard', href: '/' }, { label: 'Users' }]}
+        title="Employees"
+        description="Manage employee accounts, roles, and access permissions"
+        breadcrumbs={[{ label: 'Dashboard', href: '/' }, { label: 'Employees' }]}
         actions={
           <Link href="/users/new">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Add User
+              Add Employee
             </Button>
           </Link>
         }
       />
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={<Users className="h-6 w-6" />} label="Total Users" value={total} color="info" />
-        <StatCard icon={<UserCheck className="h-6 w-6" />} label="Active Users" value={activeUsers} color="success" />
-        <StatCard icon={<UserX className="h-6 w-6" />} label="Inactive Users" value={inactiveUsers} color="danger" />
+        <StatCard icon={<Users className="h-6 w-6" />} label="Total Employees" value={total} color="info" />
+        <StatCard icon={<UserCheck className="h-6 w-6" />} label="Active" value={activeCount} color="success" />
+        <StatCard icon={<UserX className="h-6 w-6" />} label="Inactive" value={inactiveCount} color="danger" />
       </div>
 
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="text-lg">Users</CardTitle>
+            <CardTitle className="text-lg">Employees</CardTitle>
             <div className="flex flex-wrap items-center gap-3">
               <SearchInput
                 placeholder="Search users..."
@@ -203,11 +249,11 @@ export default function UsersPage() {
           {selectedUsers.length > 0 && (
             <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
               <span className="text-sm text-muted-foreground">{selectedUsers.length} selected</span>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleExportSelected}>
                 <Download className="mr-2 h-3.5 w-3.5" />Export
               </Button>
-              <Button variant="outline" size="sm">
-                <UserMinus className="mr-2 h-3.5 w-3.5" />Deactivate
+              <Button variant="outline" size="sm" onClick={handleBulkDeactivate} disabled={bulkWorking}>
+                <UserMinus className="mr-2 h-3.5 w-3.5" />{bulkWorking ? 'Deactivating...' : 'Deactivate'}
               </Button>
             </div>
           )}
@@ -260,8 +306,8 @@ export default function UsersPage() {
                           >
                             <UserAvatar
                               name={`${user.firstName} ${user.lastName}`}
+                              image={user.avatar}
                               size="md"
-                              showOnline={!!user.lastLoginAt}
                             />
                             <div>
                               <p className="font-medium">{user.firstName} {user.lastName}</p>
@@ -306,33 +352,19 @@ export default function UsersPage() {
                                   <Pencil className="mr-2 h-4 w-4" />Edit
                                 </Link>
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={async () => {
-                                const newPass = prompt('Enter new password (min 8 characters):')
-                                if (!newPass || newPass.length < 8) {
-                                  if (newPass !== null) alert('Password must be at least 8 characters')
-                                  return
-                                }
-                                const res = await fetch(`/api/users/${user.id}`, {
-                                  method: 'PATCH',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ password: newPass }),
-                                })
-                                const data = await res.json()
-                                if (res.ok) alert('Password reset successfully')
-                                else alert(data.error || 'Failed to reset password')
-                              }}>
+                              <DropdownMenuItem onClick={() => setResetTarget(user)}>
                                 <KeyRound className="mr-2 h-4 w-4" />Reset Password
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem className="text-destructive" onClick={async () => {
-                                if (!confirm(`Delete user ${user.firstName} ${user.lastName}? This cannot be undone.`)) return
+                                if (!confirm(`Delete employee ${user.firstName} ${user.lastName}? This cannot be undone.`)) return
                                 const res = await fetch(`/api/users/${user.id}`, { method: 'DELETE' })
                                 const data = await res.json()
                                 if (res.ok) {
-                                  alert('User deleted successfully')
+                                  showSuccess('Employee deleted')
                                   fetchUsers()
                                 } else {
-                                  alert(data.error || 'Failed to delete user')
+                                  showError(data.error || 'Failed to delete employee')
                                 }
                               }}>
                                 <Trash2 className="mr-2 h-4 w-4" />Delete
@@ -349,7 +381,7 @@ export default function UsersPage() {
               {users.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <Users className="h-12 w-12 text-muted-foreground/50" />
-                  <h3 className="mt-4 text-lg font-semibold">No users found</h3>
+                  <h3 className="mt-4 text-lg font-semibold">No employees found</h3>
                   <p className="mt-1 text-sm text-muted-foreground">Try adjusting your search or filters</p>
                 </div>
               )}
@@ -367,6 +399,15 @@ export default function UsersPage() {
           )}
         </CardContent>
       </Card>
+
+      {resetTarget && (
+        <ResetPasswordDialog
+          userId={resetTarget.id}
+          userName={`${resetTarget.firstName} ${resetTarget.lastName}`}
+          open={!!resetTarget}
+          onOpenChange={(open) => { if (!open) setResetTarget(null) }}
+        />
+      )}
     </div>
   )
 }

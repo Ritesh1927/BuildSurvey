@@ -18,6 +18,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       select: {
         id: true, firstName: true, lastName: true, email: true, phone: true,
         role: true, isActive: true, avatar: true, createdAt: true, lastLoginAt: true,
+        _count: { select: { ledProjects: true, managedProjects: true, assignedSurveys: true } },
       },
     })
 
@@ -25,7 +26,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ user })
+    const { _count, ...rest } = user
+    return NextResponse.json({ user: { ...rest, counts: _count } })
   } catch (error) {
     console.error('GET /api/users/[id] error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
