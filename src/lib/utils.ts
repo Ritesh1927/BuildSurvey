@@ -16,6 +16,12 @@ export function formatCurrency(amount: number, currency = 'INR'): string {
   return formatted
 }
 
+export function formatDistance(meters: number): string {
+  if (meters < 1000) return `${Math.round(meters)}m`
+  const km = meters / 1000
+  return `${km % 1 === 0 ? km.toFixed(0) : km.toFixed(1)}km`
+}
+
 export function formatDate(date: Date | string): string {
   const d = typeof date === 'string' ? parseISO(date) : date
   return format(d, 'dd MMM yyyy')

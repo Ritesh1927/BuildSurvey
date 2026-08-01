@@ -5,6 +5,7 @@ import { requireAuth, requireRole } from '@/lib/api-auth'
 import { uploadPhotoDataUrl } from '@/lib/photo-upload'
 import { getOfficeLocation } from '@/lib/office-location'
 import { siteStatus, OFFICE_RADIUS_METERS } from '@/lib/geo'
+import { formatDistance } from '@/lib/utils'
 
 // Every internal role marks their own attendance - a Client isn't office
 // staff and has no reason to be on this page at all.
@@ -146,7 +147,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: `You're ${distanceMeters}m away from the office — you need to be within ${OFFICE_RADIUS_METERS}m to mark attendance.`,
+          error: `You're ${formatDistance(distanceMeters ?? 0)} away from the office — you need to be within ${formatDistance(OFFICE_RADIUS_METERS)} to mark attendance.`,
           distanceMeters,
           officeLatitude: office.latitude,
           officeLongitude: office.longitude,

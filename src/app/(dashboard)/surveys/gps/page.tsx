@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { StatCard } from '@/components/ui/stat-card'
-import { formatDate } from '@/lib/utils'
+import { formatDate, formatDistance } from '@/lib/utils'
 
 interface SiteVisitPhoto {
   caption: string
@@ -65,7 +65,7 @@ function SiteBadge({ check }: { check: GeoCheck }) {
     </Badge>
   ) : (
     <Badge variant="destructive" className="text-[9px] gap-1">
-      <XCircle className="h-3 w-3" />Off Site ({check.distanceMeters}m away)
+      <XCircle className="h-3 w-3" />Off Site ({formatDistance(check.distanceMeters ?? 0)} away)
     </Badge>
   )
 }

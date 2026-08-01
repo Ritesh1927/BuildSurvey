@@ -13,7 +13,7 @@ import {
   HelpCircle,
 } from "lucide-react"
 
-import { formatDate, formatDateTime } from "@/lib/utils"
+import { formatDate, formatDateTime, formatDistance } from "@/lib/utils"
 import { compressImage, getCurrentPosition } from "@/lib/image-compress"
 import { showSuccess, showError } from "@/components/ui/toast"
 import { PageHeader } from "@/components/ui/page-header"
@@ -199,7 +199,7 @@ export default function AttendancePage() {
                     <img src={todayRecord.photoUrl} alt="Attendance" className="h-24 w-24 rounded-lg border object-cover" />
                     <div className="text-sm space-y-1">
                       <p><span className="text-muted-foreground">Marked at:</span> {formatDateTime(todayRecord.markedAt)}</p>
-                      <p><span className="text-muted-foreground">Distance from office:</span> {todayRecord.distanceMeters}m</p>
+                      <p><span className="text-muted-foreground">Distance from office:</span> {formatDistance(todayRecord.distanceMeters)}</p>
                     </div>
                   </div>
                 </div>
@@ -267,7 +267,7 @@ export default function AttendancePage() {
                       <TableRow key={r.id}>
                         <TableCell className="font-medium">{formatDate(r.date)}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">{formatDateTime(r.markedAt)}</TableCell>
-                        <TableCell className="text-right text-sm">{r.distanceMeters}m</TableCell>
+                        <TableCell className="text-right text-sm">{formatDistance(r.distanceMeters)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -350,7 +350,7 @@ export default function AttendancePage() {
                             )}
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">{e.today ? formatDateTime(e.today.markedAt) : '—'}</TableCell>
-                          <TableCell className="text-right text-sm">{e.today ? `${e.today.distanceMeters}m` : '—'}</TableCell>
+                          <TableCell className="text-right text-sm">{e.today ? formatDistance(e.today.distanceMeters) : '—'}</TableCell>
                           <TableCell className="text-right text-sm">{e.monthCount} day{e.monthCount === 1 ? '' : 's'}</TableCell>
                         </TableRow>
                       ))}

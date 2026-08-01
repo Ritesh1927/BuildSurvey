@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth'
 import { requireAuth, requireRole } from '@/lib/api-auth'
 import { uploadPhotoDataUrl } from '@/lib/photo-upload'
 import { siteStatus } from '@/lib/geo'
+import { formatDistance } from '@/lib/utils'
 
 const CHECKOUT_ROLES = ['ENGINEER', 'SURVEYOR'] as const
 
@@ -60,7 +61,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json(
         {
           success: false,
-          error: `You're off-site (${checkoutSiteCheck.distanceMeters}m from the project location) — checkout is only allowed from the site. Move to the site and try again.`,
+          error: `You're off-site (${formatDistance(checkoutSiteCheck.distanceMeters ?? 0)} from the project location) — checkout is only allowed from the site. Move to the site and try again.`,
         },
         { status: 400 }
       )

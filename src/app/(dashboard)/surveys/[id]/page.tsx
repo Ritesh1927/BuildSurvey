@@ -24,7 +24,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import { showSuccess, showError } from "@/components/ui/toast"
-import { formatDate } from "@/lib/utils"
+import { formatDate, formatDistance } from "@/lib/utils"
 import { siteStatus } from "@/lib/geo"
 import { compressImage, getCurrentPosition } from "@/lib/image-compress"
 
@@ -69,7 +69,7 @@ function SiteBadge({ onSite, distanceMeters }: { onSite: boolean | null; distanc
   return onSite ? (
     <Badge variant="success" className="text-[10px] gap-1"><CheckCircle2 className="h-3 w-3" />On Site</Badge>
   ) : (
-    <Badge variant="destructive" className="text-[10px] gap-1"><XCircle className="h-3 w-3" />Off Site ({distanceMeters}m from site)</Badge>
+    <Badge variant="destructive" className="text-[10px] gap-1"><XCircle className="h-3 w-3" />Off Site ({formatDistance(distanceMeters ?? 0)} from site)</Badge>
   )
 }
 
@@ -267,7 +267,7 @@ export default function SurveyDetailPage() {
         data.onSite === true
           ? 'Checked in successfully — On Site'
           : data.onSite === false
-            ? `Checked in — Off Site (${data.distanceMeters}m from the project location)`
+            ? `Checked in — Off Site (${formatDistance(data.distanceMeters)} from the project location)`
             : 'Checked in successfully'
       )
       setCheckInPhoto(null)
@@ -340,7 +340,7 @@ export default function SurveyDetailPage() {
         data.onSite === true
           ? 'Checked out successfully — On Site'
           : data.onSite === false
-            ? `Checked out — Off Site (${data.distanceMeters}m from the project location)`
+            ? `Checked out — Off Site (${formatDistance(data.distanceMeters)} from the project location)`
             : 'Checked out successfully'
       )
       setCheckOutPhoto(null)
