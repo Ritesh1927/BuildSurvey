@@ -1029,6 +1029,23 @@ model Attendance {
   @@index([date])
 }
 
+// Org-wide ad-hoc holidays (festivals, company off-days) - one row per
+// specific date. The recurring weekly rule (e.g. "Sundays are always off")
+// is a simple Setting key instead, since it's a single value, not a list.
+model Holiday {
+  id        String   @id @default(uuid())
+  date      DateTime
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  isDeleted Boolean  @default(false)
+
+  @@unique([date])
+  @@index([date])
+}
+
 model Meeting {
   id          String   @id @default(uuid())
   title       String

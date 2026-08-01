@@ -32,6 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { EmployeeCalendarDialog } from "./employee-calendar-dialog"
 
 interface AttendanceRecord {
   id: string
@@ -73,6 +74,7 @@ export default function AttendancePage() {
   const [teamDate, setTeamDate] = useState(todayKey())
   const [teamEmployees, setTeamEmployees] = useState<TeamEmployee[]>([])
   const [teamLoading, setTeamLoading] = useState(false)
+  const [calendarEmployee, setCalendarEmployee] = useState<{ id: string; name: string } | null>(null)
 
   const todayRecord = history.find((r) => r.date.slice(0, 10) === todayKey()) || null
 
@@ -330,7 +332,11 @@ export default function AttendancePage() {
                     </TableHeader>
                     <TableBody>
                       {teamEmployees.map((e) => (
-                        <TableRow key={e.id}>
+                        <TableRow
+                          key={e.id}
+                          className="cursor-pointer"
+                          onClick={() => setCalendarEmployee({ id: e.id, name: `${e.firstName} ${e.lastName}` })}
+                        >
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <Avatar className="h-7 w-7">
@@ -362,6 +368,13 @@ export default function AttendancePage() {
           </TabsContent>
         )}
       </Tabs>
+
+      <EmployeeCalendarDialog
+        userId={calendarEmployee?.id ?? null}
+        employeeName={calendarEmployee?.name ?? ""}
+        open={!!calendarEmployee}
+        onOpenChange={(open) => { if (!open) setCalendarEmployee(null) }}
+      />
     </div>
   )
 }

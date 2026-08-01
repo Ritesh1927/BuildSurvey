@@ -6,6 +6,7 @@ import { uploadPhotoDataUrl } from '@/lib/photo-upload'
 import { getOfficeLocation } from '@/lib/office-location'
 import { siteStatus, OFFICE_RADIUS_METERS } from '@/lib/geo'
 import { formatDistance } from '@/lib/utils'
+import { getWeeklyHolidayDays, isWeeklyHoliday, getHolidaysInRange } from '@/lib/holidays'
 
 // Every internal role marks their own attendance - a Client isn't office
 // staff and has no reason to be on this page at all.
@@ -76,6 +77,94 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: true,
         data: { date: targetDate.toISOString().slice(0, 10), employees: data },
+      })
+    }
+
+    if (scope === 'calendar') {
+      const targetUserId = searchParams.get('userId') || userId
+      if (targetUserId !== userId) {
+        const roleError = await requireRole([...TEAM_VIEW_ROLES])
+        if (roleError) return roleError
+      }
+
+      const now = new Date()
+      const monthParam = searchParams.get('month') || `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`
+      const [yearStr, monthStr] = monthParam.split('-')
+      const year = parseInt(yearStr, 10)
+      const monthIndex = parseInt(monthStr, 10) - 1
+      if (!Number.isInteger(year) || !Number.isInteger(monthIndex) || monthIndex < 0 || monthIndex > 11) {
+        return NextResponse.json({ success: false, error: 'Invalid month' }, { status: 400 })
+      }
+
+      const monthStart = new Date(Date.UTC(year, monthIndex, 1))
+      const monthEnd = new Date(Date.UTC(year, monthIndex + 1, 1))
+
+      const targetUser = await db.user.findUnique({
+        where: { id: targetUserId },
+        select: { id: true, firstName: true, lastName: true, createdAt: true, isDeleted: true },
+      })
+      if (!targetUser || targetUser.isDeleted) {
+        return NextResponse.json({ success: false, error: 'Employee not found' }, { status: 404 })
+      }
+
+      const [records, weeklyHolidayDays, adHocHolidays] = await Promise.all([
+        db.attendance.findMany({
+          where: { isDeleted: false, userId: targetUserId, date: { gte: monthStart, lt: monthEnd } },
+          select: { date: true, markedAt: true, distanceMeters: true, photoUrl: true },
+        }),
+        getWeeklyHolidayDays(),
+        getHolidaysInRange(monthStart, monthEnd),
+      ])
+
+      const recordsByDate = new Map<string, any>(records.map((r: any) => [r.date.toISOString().slice(0, 10), r]))
+      const holidayNameByDate = new Map<string, string>(adHocHolidays.map((h: any) => [h.date.toISOString().slice(0, 10), h.name]))
+
+      const today = todayDateOnly()
+      const joinDate = new Date(Date.UTC(
+        targetUser.createdAt.getUTCFullYear(), targetUser.createdAt.getUTCMonth(), targetUser.createdAt.getUTCDate()
+      ))
+
+      const days: any[] = []
+      let present = 0, absent = 0, holidayCount = 0
+      for (let d = new Date(monthStart); d < monthEnd; d = new Date(d.getTime() + 86400000)) {
+        const key = d.toISOString().slice(0, 10)
+        const record = recordsByDate.get(key)
+        const adHocName = holidayNameByDate.get(key)
+
+        let status: 'present' | 'absent' | 'holiday' | 'future' | 'before-join'
+        if (d > today) {
+          status = 'future'
+        } else if (d < joinDate) {
+          status = 'before-join'
+        } else if (record) {
+          status = 'present'
+          present++
+        } else if (adHocName || isWeeklyHoliday(d, weeklyHolidayDays)) {
+          status = 'holiday'
+          holidayCount++
+        } else {
+          status = 'absent'
+          absent++
+        }
+
+        days.push({
+          date: key,
+          status,
+          markedAt: record?.markedAt ?? null,
+          distanceMeters: record?.distanceMeters ?? null,
+          holidayName: adHocName || null,
+        })
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          userId: targetUser.id,
+          employeeName: `${targetUser.firstName} ${targetUser.lastName}`,
+          month: `${year}-${String(monthIndex + 1).padStart(2, '0')}`,
+          days,
+          summary: { present, absent, holidays: holidayCount, total: days.length },
+        },
       })
     }
 

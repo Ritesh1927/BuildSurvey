@@ -20,6 +20,9 @@ import {
   Clock,
   DollarSign,
   MapPin,
+  CalendarDays,
+  Trash2,
+  Plus,
   Lock,
   Smartphone,
   Key,
@@ -55,6 +58,7 @@ import { showSuccess, showError } from "@/components/ui/toast"
 const tabs = [
   { id: "general", label: "General", icon: <Settings className="h-4 w-4" /> },
   { id: "company", label: "Company", icon: <Building2 className="h-4 w-4" /> },
+  { id: "holidays", label: "Holidays", icon: <CalendarDays className="h-4 w-4" /> },
   { id: "appearance", label: "Appearance", icon: <Palette className="h-4 w-4" /> },
   { id: "security", label: "Security", icon: <Shield className="h-4 w-4" /> },
   { id: "integrations", label: "Integrations", icon: <Plug className="h-4 w-4" /> },
@@ -78,6 +82,7 @@ export default function SettingsPage() {
     gstRate: "18",
     officeLatitude: "",
     officeLongitude: "",
+    weeklyHolidayDays: "0",
     autoLogout: true,
     darkMode: false,
   })
@@ -167,6 +172,69 @@ export default function SettingsPage() {
   })
 
   const [saving, setSaving] = useState(false)
+
+  const [holidays, setHolidays] = useState<{ id: string; date: string; name: string }[]>([])
+  const [holidaysLoading, setHolidaysLoading] = useState(true)
+  const [newHolidayDate, setNewHolidayDate] = useState("")
+  const [newHolidayName, setNewHolidayName] = useState("")
+  const [addingHoliday, setAddingHoliday] = useState(false)
+
+  const fetchHolidays = useCallback(async () => {
+    setHolidaysLoading(true)
+    try {
+      const res = await fetch(`/api/settings/holidays?year=${new Date().getFullYear()}`)
+      const data = await res.json()
+      if (data.success) setHolidays(data.data)
+    } catch {
+      // keep whatever was already loaded
+    } finally {
+      setHolidaysLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchHolidays() }, [fetchHolidays])
+
+  const handleAddHoliday = async () => {
+    if (!newHolidayDate || !newHolidayName.trim()) {
+      showError("A date and name are required")
+      return
+    }
+    setAddingHoliday(true)
+    try {
+      const res = await fetch("/api/settings/holidays", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date: newHolidayDate, name: newHolidayName.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        showError(data.error || "Failed to add holiday")
+        return
+      }
+      showSuccess("Holiday added")
+      setNewHolidayDate("")
+      setNewHolidayName("")
+      fetchHolidays()
+    } catch {
+      showError("Network error while adding holiday")
+    } finally {
+      setAddingHoliday(false)
+    }
+  }
+
+  const handleDeleteHoliday = async (id: string) => {
+    try {
+      const res = await fetch(`/api/settings/holidays/${id}`, { method: "DELETE" })
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        showError(data.error || "Failed to remove holiday")
+        return
+      }
+      setHolidays((prev) => prev.filter((h) => h.id !== id))
+    } catch {
+      showError("Network error while removing holiday")
+    }
+  }
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -1475,6 +1543,77 @@ export default function SettingsPage() {
                 </Button>
                 <input id="restore-backup-input" type="file" accept=".zip,.tar.gz,.bak" className="hidden" onChange={(e) => { if (e.target.files && e.target.files.length > 0) { showSuccess("Backup file selected — restore will begin shortly"); e.target.value = "" } }} />
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="holidays" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Weekly Holiday</CardTitle>
+              <CardDescription>Which day(s) of the week are always off, for every employee</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 max-w-xs">
+                <label className="text-sm font-medium">Recurring Weekly Holiday</label>
+                <Select
+                  value={generalSettings.weeklyHolidayDays}
+                  onValueChange={(v) => setGeneralSettings({ ...generalSettings, weeklyHolidayDays: v })}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="0">Sunday only</SelectItem>
+                    <SelectItem value="6">Saturday only</SelectItem>
+                    <SelectItem value="0,6">Both Saturday &amp; Sunday</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">These days never count as absent on the attendance calendar. Remember to hit Save Changes below.</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Specific-Date Holidays</CardTitle>
+              <CardDescription>Festivals, company off-days, or any other date outside the weekly rule</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+                <div className="space-y-2 flex-1">
+                  <label className="text-sm font-medium">Date</label>
+                  <Input type="date" value={newHolidayDate} onChange={(e) => setNewHolidayDate(e.target.value)} />
+                </div>
+                <div className="space-y-2 flex-1">
+                  <label className="text-sm font-medium">Name</label>
+                  <Input placeholder="e.g. Diwali" value={newHolidayName} onChange={(e) => setNewHolidayName(e.target.value)} />
+                </div>
+                <Button onClick={handleAddHoliday} disabled={addingHoliday}>
+                  <Plus className="mr-2 h-4 w-4" />{addingHoliday ? "Adding..." : "Add"}
+                </Button>
+              </div>
+
+              {holidaysLoading ? (
+                <p className="text-sm text-muted-foreground py-4 text-center">Loading...</p>
+              ) : holidays.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4 text-center">No specific-date holidays added for {new Date().getFullYear()}</p>
+              ) : (
+                <div className="space-y-2">
+                  {holidays.map((h) => (
+                    <div key={h.id} className="flex items-center justify-between rounded-lg border p-3">
+                      <div>
+                        <p className="text-sm font-medium">{h.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(h.date).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })}
+                        </p>
+                      </div>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => handleDeleteHoliday(h.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
