@@ -1013,7 +1013,10 @@ model Attendance {
   latitude       Float
   longitude      Float
   distanceMeters Int
-  photoUrl       String
+  // Nulled out by the daily cleanup cron once the record passes 30 days
+  // old — the GPS/date/distance history is kept indefinitely, only the
+  // photo itself is time-limited.
+  photoUrl       String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   createdBy      String?

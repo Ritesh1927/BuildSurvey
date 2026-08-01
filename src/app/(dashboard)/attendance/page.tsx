@@ -11,6 +11,7 @@ import {
   Users,
   XCircle,
   HelpCircle,
+  ImageOff,
 } from "lucide-react"
 
 import { formatDate, formatDateTime, formatDistance } from "@/lib/utils"
@@ -40,7 +41,7 @@ interface AttendanceRecord {
   date: string
   markedAt: string
   distanceMeters: number
-  photoUrl: string
+  photoUrl: string | null
 }
 
 interface TeamEmployee {
@@ -48,7 +49,7 @@ interface TeamEmployee {
   firstName: string
   lastName: string
   role: string
-  today: { markedAt: string; distanceMeters: number; photoUrl: string } | null
+  today: { markedAt: string; distanceMeters: number; photoUrl: string | null } | null
   monthCount: number
 }
 
@@ -76,7 +77,7 @@ export default function AttendancePage() {
   const [teamEmployees, setTeamEmployees] = useState<TeamEmployee[]>([])
   const [teamLoading, setTeamLoading] = useState(false)
   const [calendarEmployee, setCalendarEmployee] = useState<{ id: string; name: string } | null>(null)
-  const [viewPhoto, setViewPhoto] = useState<{ url: string; title: string; subtitle: string } | null>(null)
+  const [viewPhoto, setViewPhoto] = useState<{ url: string | null; title: string; subtitle: string } | null>(null)
 
   const todayRecord = history.find((r) => r.date.slice(0, 10) === todayKey()) || null
 
@@ -199,8 +200,10 @@ export default function AttendancePage() {
                     <CheckCircle2 className="h-4 w-4" />Attendance marked for today
                   </div>
                   <div className="flex items-start gap-4">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={todayRecord.photoUrl} alt="Attendance" className="h-24 w-24 rounded-lg border object-cover" />
+                    {todayRecord.photoUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={todayRecord.photoUrl} alt="Attendance" className="h-24 w-24 rounded-lg border object-cover" />
+                    )}
                     <div className="text-sm space-y-1">
                       <p><span className="text-muted-foreground">Marked at:</span> {formatDateTime(todayRecord.markedAt)}</p>
                       <p><span className="text-muted-foreground">Distance from office:</span> {formatDistance(todayRecord.distanceMeters)}</p>
@@ -274,10 +277,14 @@ export default function AttendancePage() {
                           <button
                             type="button"
                             onClick={() => setViewPhoto({ url: r.photoUrl, title: formatDate(r.date), subtitle: formatDateTime(r.markedAt) })}
-                            className="block h-9 w-9 overflow-hidden rounded-full border hover:opacity-80"
+                            className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border hover:opacity-80"
                           >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={r.photoUrl} alt="" className="h-full w-full object-cover" />
+                            {r.photoUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={r.photoUrl} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                              <ImageOff className="h-4 w-4 text-muted-foreground" />
+                            )}
                           </button>
                         </TableCell>
                         <TableCell className="font-medium">{formatDate(r.date)}</TableCell>
@@ -363,10 +370,14 @@ export default function AttendancePage() {
                                     subtitle: `${formatDateTime(e.today!.markedAt)} · ${formatDistance(e.today!.distanceMeters)} from office`,
                                   })
                                 }}
-                                className="block h-9 w-9 overflow-hidden rounded-full border hover:opacity-80"
+                                className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border hover:opacity-80"
                               >
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={e.today.photoUrl} alt="" className="h-full w-full object-cover" />
+                                {e.today.photoUrl ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img src={e.today.photoUrl} alt="" className="h-full w-full object-cover" />
+                                ) : (
+                                  <ImageOff className="h-4 w-4 text-muted-foreground" />
+                                )}
                               </button>
                             ) : (
                               <span className="text-muted-foreground">—</span>

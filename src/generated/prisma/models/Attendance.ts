@@ -252,7 +252,7 @@ export type AttendanceGroupByOutputType = {
   latitude: number
   longitude: number
   distanceMeters: number
-  photoUrl: string
+  photoUrl: string | null
   createdAt: Date
   updatedAt: Date
   createdBy: string | null
@@ -292,7 +292,7 @@ export type AttendanceWhereInput = {
   latitude?: Prisma.FloatFilter<"Attendance"> | number
   longitude?: Prisma.FloatFilter<"Attendance"> | number
   distanceMeters?: Prisma.IntFilter<"Attendance"> | number
-  photoUrl?: Prisma.StringFilter<"Attendance"> | string
+  photoUrl?: Prisma.StringNullableFilter<"Attendance"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Attendance"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Attendance"> | Date | string
   createdBy?: Prisma.StringNullableFilter<"Attendance"> | string | null
@@ -310,7 +310,7 @@ export type AttendanceOrderByWithRelationInput = {
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
   distanceMeters?: Prisma.SortOrder
-  photoUrl?: Prisma.SortOrder
+  photoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -332,7 +332,7 @@ export type AttendanceWhereUniqueInput = Prisma.AtLeast<{
   latitude?: Prisma.FloatFilter<"Attendance"> | number
   longitude?: Prisma.FloatFilter<"Attendance"> | number
   distanceMeters?: Prisma.IntFilter<"Attendance"> | number
-  photoUrl?: Prisma.StringFilter<"Attendance"> | string
+  photoUrl?: Prisma.StringNullableFilter<"Attendance"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Attendance"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Attendance"> | Date | string
   createdBy?: Prisma.StringNullableFilter<"Attendance"> | string | null
@@ -350,7 +350,7 @@ export type AttendanceOrderByWithAggregationInput = {
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
   distanceMeters?: Prisma.SortOrder
-  photoUrl?: Prisma.SortOrder
+  photoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -375,7 +375,7 @@ export type AttendanceScalarWhereWithAggregatesInput = {
   latitude?: Prisma.FloatWithAggregatesFilter<"Attendance"> | number
   longitude?: Prisma.FloatWithAggregatesFilter<"Attendance"> | number
   distanceMeters?: Prisma.IntWithAggregatesFilter<"Attendance"> | number
-  photoUrl?: Prisma.StringWithAggregatesFilter<"Attendance"> | string
+  photoUrl?: Prisma.StringNullableWithAggregatesFilter<"Attendance"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Attendance"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Attendance"> | Date | string
   createdBy?: Prisma.StringNullableWithAggregatesFilter<"Attendance"> | string | null
@@ -392,7 +392,7 @@ export type AttendanceCreateInput = {
   latitude: number
   longitude: number
   distanceMeters: number
-  photoUrl: string
+  photoUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -409,7 +409,7 @@ export type AttendanceUncheckedCreateInput = {
   latitude: number
   longitude: number
   distanceMeters: number
-  photoUrl: string
+  photoUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -426,7 +426,7 @@ export type AttendanceUpdateInput = {
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   distanceMeters?: Prisma.IntFieldUpdateOperationsInput | number
-  photoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -443,7 +443,7 @@ export type AttendanceUncheckedUpdateInput = {
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   distanceMeters?: Prisma.IntFieldUpdateOperationsInput | number
-  photoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -460,7 +460,7 @@ export type AttendanceCreateManyInput = {
   latitude: number
   longitude: number
   distanceMeters: number
-  photoUrl: string
+  photoUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -477,7 +477,7 @@ export type AttendanceUpdateManyMutationInput = {
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   distanceMeters?: Prisma.IntFieldUpdateOperationsInput | number
-  photoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -493,7 +493,7 @@ export type AttendanceUncheckedUpdateManyInput = {
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   distanceMeters?: Prisma.IntFieldUpdateOperationsInput | number
-  photoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -632,7 +632,7 @@ export type AttendanceCreateWithoutUserInput = {
   latitude: number
   longitude: number
   distanceMeters: number
-  photoUrl: string
+  photoUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -648,7 +648,7 @@ export type AttendanceUncheckedCreateWithoutUserInput = {
   latitude: number
   longitude: number
   distanceMeters: number
-  photoUrl: string
+  photoUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -693,7 +693,7 @@ export type AttendanceScalarWhereInput = {
   latitude?: Prisma.FloatFilter<"Attendance"> | number
   longitude?: Prisma.FloatFilter<"Attendance"> | number
   distanceMeters?: Prisma.IntFilter<"Attendance"> | number
-  photoUrl?: Prisma.StringFilter<"Attendance"> | string
+  photoUrl?: Prisma.StringNullableFilter<"Attendance"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Attendance"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Attendance"> | Date | string
   createdBy?: Prisma.StringNullableFilter<"Attendance"> | string | null
@@ -710,7 +710,7 @@ export type AttendanceCreateManyUserInput = {
   latitude: number
   longitude: number
   distanceMeters: number
-  photoUrl: string
+  photoUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -726,7 +726,7 @@ export type AttendanceUpdateWithoutUserInput = {
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   distanceMeters?: Prisma.IntFieldUpdateOperationsInput | number
-  photoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -742,7 +742,7 @@ export type AttendanceUncheckedUpdateWithoutUserInput = {
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   distanceMeters?: Prisma.IntFieldUpdateOperationsInput | number
-  photoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -758,7 +758,7 @@ export type AttendanceUncheckedUpdateManyWithoutUserInput = {
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   distanceMeters?: Prisma.IntFieldUpdateOperationsInput | number
-  photoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -863,7 +863,7 @@ export type $AttendancePayload<ExtArgs extends runtime.Types.Extensions.Internal
     latitude: number
     longitude: number
     distanceMeters: number
-    photoUrl: string
+    photoUrl: string | null
     createdAt: Date
     updatedAt: Date
     createdBy: string | null

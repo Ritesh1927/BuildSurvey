@@ -37,3 +37,17 @@ export async function uploadPhotoDataUrl(dataUrl: string, pathPrefix: string): P
 
   return blob.url
 }
+
+/**
+ * Deletes a photo previously stored via uploadPhotoDataUrl. A no-op for
+ * data URLs (the BLOB_READ_WRITE_TOKEN-less fallback) — there's nothing
+ * external to clean up in that case, only the DB reference needs clearing,
+ * which is the caller's job.
+ */
+export async function deletePhotoUrl(url: string): Promise<void> {
+  if (!url.startsWith('https://') || !process.env.BLOB_READ_WRITE_TOKEN) {
+    return
+  }
+  const { del } = await import('@vercel/blob')
+  await del(url)
+}
