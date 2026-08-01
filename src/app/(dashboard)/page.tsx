@@ -36,6 +36,13 @@ const STATUS_META: Record<string, { label: string; variant: "success" | "info" |
   CANCELLED: { label: "Cancelled", variant: "destructive" },
 }
 
+// Mirrors each API's own CREATE_ROLES exactly - a quick-action button for
+// something the caller isn't allowed to do isn't a shortcut, it's a dead
+// end that fails at the API with a 403.
+const SURVEY_CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR']
+const PROJECT_CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
+const INVOICE_CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT']
+
 // Fetches just the `total` count from an already-secured list endpoint —
 // each one naturally respects the caller's real role/ownership scoping,
 // so an Engineer's dashboard shows counts for what they can actually see,
@@ -83,7 +90,11 @@ export default function DashboardPage() {
   )
 
   const firstName = session?.user?.name?.split(' ')[0] || 'there'
-  const roleLabel = session?.user?.role?.replace(/_/g, ' ')
+  const role = session?.user?.role
+  const roleLabel = role?.replace(/_/g, ' ')
+  const canCreateSurvey = !!role && SURVEY_CREATE_ROLES.includes(role)
+  const canCreateProject = !!role && PROJECT_CREATE_ROLES.includes(role)
+  const canCreateInvoice = !!role && INVOICE_CREATE_ROLES.includes(role)
 
   return (
     <div className="space-y-6">
@@ -99,15 +110,21 @@ export default function DashboardPage() {
             {roleLabel && <p className="mt-1 text-sm text-blue-200/80">{roleLabel}</p>}
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button asChild size="sm" className="bg-white text-slate-900 shadow-sm hover:bg-white/90">
-              <Link href="/surveys/new"><ClipboardList className="mr-1 h-4 w-4" />New Survey</Link>
-            </Button>
-            <Button asChild size="sm" variant="outline" className="border-white/25 bg-white/5 text-white hover:bg-white/15 hover:text-white">
-              <Link href="/projects/new"><FolderKanban className="mr-1 h-4 w-4" />New Project</Link>
-            </Button>
-            <Button asChild size="sm" variant="outline" className="border-white/25 bg-white/5 text-white hover:bg-white/15 hover:text-white">
-              <Link href="/quotations/new"><FileText className="mr-1 h-4 w-4" />Create Invoice</Link>
-            </Button>
+            {canCreateSurvey && (
+              <Button asChild size="sm" className="bg-white text-slate-900 shadow-sm hover:bg-white/90">
+                <Link href="/surveys/new"><ClipboardList className="mr-1 h-4 w-4" />New Survey</Link>
+              </Button>
+            )}
+            {canCreateProject && (
+              <Button asChild size="sm" variant="outline" className="border-white/25 bg-white/5 text-white hover:bg-white/15 hover:text-white">
+                <Link href="/projects/new"><FolderKanban className="mr-1 h-4 w-4" />New Project</Link>
+              </Button>
+            )}
+            {canCreateInvoice && (
+              <Button asChild size="sm" variant="outline" className="border-white/25 bg-white/5 text-white hover:bg-white/15 hover:text-white">
+                <Link href="/quotations/new"><FileText className="mr-1 h-4 w-4" />Create Invoice</Link>
+              </Button>
+            )}
           </div>
         </div>
       </div>
