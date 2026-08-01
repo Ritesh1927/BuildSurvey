@@ -4,7 +4,10 @@ import { auth } from '@/lib/auth'
 import { requireAuth, requireRole } from '@/lib/api-auth'
 
 const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
-const WRITE_ROLES = ['SUPER_ADMIN'] as const
+// Widened from Super Admin-only: there's no Super Admin account in active
+// use on this deployment, which made every setting (including office
+// location for attendance) effectively unwritable by anyone.
+const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth()
