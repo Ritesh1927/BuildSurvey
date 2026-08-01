@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Save, CheckCircle2 } from "lucide-react"
+import { ArrowLeft, Save, CheckCircle2, Eye, EyeOff } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -45,6 +45,8 @@ export default function NewUserPage() {
   const [showSuccess, setShowSuccess] = useState(false)
   const [clientList, setClientList] = useState<ClientOption[]>([])
   const [clientsLoading, setClientsLoading] = useState(true)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const [form, setForm] = useState({
     firstName: "",
@@ -314,14 +316,25 @@ export default function NewUserPage() {
                     <Label htmlFor="initialPassword">
                       Initial Password <span className="text-destructive">*</span>
                     </Label>
-                    <Input
-                      id="initialPassword"
-                      type="password"
-                      placeholder="Min. 8 characters"
-                      value={form.initialPassword}
-                      onChange={(e) => updateField("initialPassword", e.target.value)}
-                      error={!!errors.initialPassword}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="initialPassword"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Min. 8 characters"
+                        value={form.initialPassword}
+                        onChange={(e) => updateField("initialPassword", e.target.value)}
+                        error={!!errors.initialPassword}
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                     {errors.initialPassword && (
                       <p className="text-sm text-destructive">{errors.initialPassword}</p>
                     )}
@@ -330,14 +343,25 @@ export default function NewUserPage() {
                     <Label htmlFor="confirmPassword">
                       Confirm Password <span className="text-destructive">*</span>
                     </Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      placeholder="Re-enter password"
-                      value={form.confirmPassword}
-                      onChange={(e) => updateField("confirmPassword", e.target.value)}
-                      error={!!errors.confirmPassword}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="Re-enter password"
+                        value={form.confirmPassword}
+                        onChange={(e) => updateField("confirmPassword", e.target.value)}
+                        error={!!errors.confirmPassword}
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        tabIndex={-1}
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                     {errors.confirmPassword && (
                       <p className="text-sm text-destructive">{errors.confirmPassword}</p>
                     )}
