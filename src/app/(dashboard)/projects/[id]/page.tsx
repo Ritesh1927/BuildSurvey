@@ -13,6 +13,7 @@ import {
   Edit,
   FileText,
   FolderOpen,
+  Navigation,
   Save,
   Target,
   Trash2,
@@ -54,6 +55,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { showSuccess, showError } from "@/components/ui/toast"
+import { SiteVisitTab } from "./site-visit-tab"
 
 interface ProjectDetail {
   id: string
@@ -131,6 +133,8 @@ export default function ProjectDetailPage() {
   // Matches the backend's ENGINEER_RESTRICTED_FIELDS — staffing/budget calls
   // aren't an Engineer's to make even on a project they lead.
   const canEditRestricted = !!role && role !== 'ENGINEER'
+  const isLeadEngineer = role === 'ENGINEER' && !!session?.user?.id && project?.leadUserId === session.user.id
+  const canViewSiteVisits = isLeadEngineer || (!!role && ['SUPER_ADMIN', 'ADMIN', 'MANAGER'].includes(role))
 
   const fetchProject = useCallback(async () => {
     setLoading(true)
@@ -434,6 +438,9 @@ export default function ProjectDetailPage() {
           <TabsList className="flex-wrap h-auto gap-1">
             <TabsTrigger value="overview" className="gap-2"><Building2 className="h-4 w-4" />Overview</TabsTrigger>
             <TabsTrigger value="surveys" className="gap-2"><Target className="h-4 w-4" />Surveys</TabsTrigger>
+            {canViewSiteVisits && (
+              <TabsTrigger value="site-visits" className="gap-2"><Navigation className="h-4 w-4" />Site Visits</TabsTrigger>
+            )}
             <TabsTrigger value="boq" className="gap-2"><FileText className="h-4 w-4" />BOQ</TabsTrigger>
             <TabsTrigger value="documents" className="gap-2"><FolderOpen className="h-4 w-4" />Documents</TabsTrigger>
           </TabsList>
@@ -573,6 +580,18 @@ export default function ProjectDetailPage() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {canViewSiteVisits && (
+            <TabsContent value="site-visits">
+              <SiteVisitTab
+                projectId={project.id}
+                isLeadEngineer={isLeadEngineer}
+                canViewAll={!!role && ['SUPER_ADMIN', 'ADMIN', 'MANAGER'].includes(role)}
+                projectLatitude={project.latitude}
+                projectLongitude={project.longitude}
+              />
+            </TabsContent>
+          )}
 
           <TabsContent value="boq" className="space-y-4">
             <Card>

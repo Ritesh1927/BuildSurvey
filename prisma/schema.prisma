@@ -188,6 +188,7 @@ model User {
   changeOrdersApproved      ChangeOrder[]      @relation("COApprovedBy")
   leadsAssigned             Lead[]             @relation("LeadAssignee")
   attendanceRecords         Attendance[]
+  siteVisits                SiteVisit[]
 
   // Links a CLIENT-role login to the Client company they represent. Null
   // for every other role. A direct FK rather than a join table — one
@@ -313,6 +314,7 @@ model Project {
   gpsTracking     GpsTracking[]
   meetings        Meeting[]
   changeOrders    ChangeOrder[]
+  siteVisits      SiteVisit[]
 
   @@index([code])
   @@index([clientId])
@@ -1030,6 +1032,43 @@ model Attendance {
   @@unique([userId, date])
   @@index([userId])
   @@index([date])
+}
+
+// Ongoing post-survey-approval site supervision - an Engineer checks in/out
+// each visit to a project (unlike Survey, which is a one-time record, this
+// repeats across the project's working days). Both check-in and check-out
+// are hard-blocked off-site, unlike Survey's check-in which only flags it -
+// this is a deliberate difference: an off-site "present" record here
+// wouldn't mean anything.
+model SiteVisit {
+  id                String    @id @default(uuid())
+  checkedInAt       DateTime  @default(now())
+  checkedOutAt      DateTime?
+  checkInLatitude   Float
+  checkInLongitude  Float
+  checkInPhotoUrl   String
+  checkOutLatitude  Float?
+  checkOutLongitude Float?
+  checkOutPhotoUrl  String?
+  // Required before checkout - the engineer's own account of the day's
+  // work, replacing Survey's checklist (which doesn't fit a repeating,
+  // free-form supervision visit the way it fits a one-time inspection).
+  workSummary       String?   @db.Text
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  isDeleted         Boolean   @default(false)
+  version           Int       @default(1)
+
+  projectId  String
+  project    Project @relation(fields: [projectId], references: [id])
+  engineerId String
+  engineer   User    @relation(fields: [engineerId], references: [id])
+
+  @@index([projectId])
+  @@index([engineerId])
+  @@index([checkedInAt])
 }
 
 // Org-wide ad-hoc holidays (festivals, company off-days) - one row per

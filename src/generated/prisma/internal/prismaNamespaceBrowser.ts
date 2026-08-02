@@ -85,6 +85,7 @@ export const ModelName = {
   ApiKey: 'ApiKey',
   GpsTracking: 'GpsTracking',
   Attendance: 'Attendance',
+  SiteVisit: 'SiteVisit',
   Holiday: 'Holiday',
   Meeting: 'Meeting',
   ChangeOrder: 'ChangeOrder',
@@ -818,6 +819,30 @@ export const AttendanceScalarFieldEnum = {
 } as const
 
 export type AttendanceScalarFieldEnum = (typeof AttendanceScalarFieldEnum)[keyof typeof AttendanceScalarFieldEnum]
+
+
+export const SiteVisitScalarFieldEnum = {
+  id: 'id',
+  checkedInAt: 'checkedInAt',
+  checkedOutAt: 'checkedOutAt',
+  checkInLatitude: 'checkInLatitude',
+  checkInLongitude: 'checkInLongitude',
+  checkInPhotoUrl: 'checkInPhotoUrl',
+  checkOutLatitude: 'checkOutLatitude',
+  checkOutLongitude: 'checkOutLongitude',
+  checkOutPhotoUrl: 'checkOutPhotoUrl',
+  workSummary: 'workSummary',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  createdBy: 'createdBy',
+  updatedBy: 'updatedBy',
+  isDeleted: 'isDeleted',
+  version: 'version',
+  projectId: 'projectId',
+  engineerId: 'engineerId'
+} as const
+
+export type SiteVisitScalarFieldEnum = (typeof SiteVisitScalarFieldEnum)[keyof typeof SiteVisitScalarFieldEnum]
 
 
 export const HolidayScalarFieldEnum = {

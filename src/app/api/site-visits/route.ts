@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { auth } from '@/lib/auth'
 import { requireAuth, requireRole } from '@/lib/api-auth'
-import { siteStatus } from '@/lib/geo'
 
-// Manager/Admin oversight only — engineers/surveyors already see their own
-// check-in/check-out on the survey detail page.
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
+const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER'] as const
+const TEAM_VIEW_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
 
 export async function GET(req: NextRequest) {
   const authError = await requireAuth()
@@ -15,49 +14,43 @@ export async function GET(req: NextRequest) {
   if (roleError) return roleError
 
   try {
-    const recentSurveys = await db.survey.findMany({
-      where: { isDeleted: false, checkedInAt: { not: null } },
+    const session = await auth()
+    const role = session!.user!.role
+    const userId = session!.user!.id
+
+    const { searchParams } = new URL(req.url)
+    const limit = Math.min(parseInt(searchParams.get('limit') || '50', 10) || 50, 200)
+
+    const visits = await db.siteVisit.findMany({
+      // Engineer only ever sees their own visits (self-scoped, same line as
+      // Attendance) - full cross-project oversight is Admin/Manager only.
+      where: { isDeleted: false, ...(TEAM_VIEW_ROLES.includes(role) ? {} : { engineerId: userId }) },
       orderBy: { checkedInAt: 'desc' },
-      take: 25,
-      select: {
-        id: true,
-        title: true,
-        status: true,
-        checkedInAt: true,
-        checkedOutAt: true,
-        project: { select: { id: true, name: true, latitude: true, longitude: true } },
+      take: limit,
+      include: {
+        project: { select: { id: true, name: true, code: true } },
         engineer: { select: { id: true, firstName: true, lastName: true } },
-        photos: {
-          where: { isDeleted: false, caption: { in: ['Check-In', 'Check-Out'] } },
-          select: { caption: true, url: true, latitude: true, longitude: true, takenAt: true },
-        },
-        _count: { select: { measurements: true, materialRequirements: true } },
       },
     })
 
-    const siteVisits = recentSurveys.map((s: any) => {
-      const checkInPhoto = s.photos.find((p: any) => p.caption === 'Check-In') || null
-      const checkOutPhoto = s.photos.find((p: any) => p.caption === 'Check-Out') || null
+    const data = visits.map((v: any) => ({
+      id: v.id,
+      projectId: v.project.id,
+      projectName: v.project.name,
+      projectCode: v.project.code,
+      engineerId: v.engineer.id,
+      engineerName: `${v.engineer.firstName} ${v.engineer.lastName}`,
+      checkedInAt: v.checkedInAt,
+      checkedOutAt: v.checkedOutAt,
+      checkInPhotoUrl: v.checkInPhotoUrl,
+      checkOutPhotoUrl: v.checkOutPhotoUrl,
+      workSummary: v.workSummary,
+      durationMinutes: v.checkedOutAt
+        ? Math.round((new Date(v.checkedOutAt).getTime() - new Date(v.checkedInAt).getTime()) / 60000)
+        : null,
+    }))
 
-      return {
-        surveyId: s.id,
-        surveyTitle: s.title,
-        status: s.status,
-        projectId: s.project.id,
-        projectName: s.project.name,
-        engineerName: s.engineer ? `${s.engineer.firstName} ${s.engineer.lastName}` : 'Unassigned',
-        checkedInAt: s.checkedInAt,
-        checkedOutAt: s.checkedOutAt,
-        checkInPhoto,
-        checkOutPhoto,
-        checkIn: checkInPhoto ? siteStatus(checkInPhoto.latitude, checkInPhoto.longitude, s.project.latitude, s.project.longitude) : { onSite: null, distanceMeters: null },
-        checkOut: checkOutPhoto ? siteStatus(checkOutPhoto.latitude, checkOutPhoto.longitude, s.project.latitude, s.project.longitude) : { onSite: null, distanceMeters: null },
-        measurementCount: s._count.measurements,
-        materialCount: s._count.materialRequirements,
-      }
-    })
-
-    return NextResponse.json({ success: true, data: siteVisits })
+    return NextResponse.json({ success: true, data })
   } catch (error) {
     console.error('GET /api/site-visits error:', error)
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })

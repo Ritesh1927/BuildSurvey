@@ -22,6 +22,13 @@ export function formatDistance(meters: number): string {
   return `${km % 1 === 0 ? km.toFixed(0) : km.toFixed(1)}km`
 }
 
+export function formatDuration(minutes: number): string {
+  if (minutes < 60) return `${Math.round(minutes)}m`
+  const hours = Math.floor(minutes / 60)
+  const mins = Math.round(minutes % 60)
+  return mins === 0 ? `${hours}h` : `${hours}h ${mins}m`
+}
+
 export function formatDate(date: Date | string): string {
   const d = typeof date === 'string' ? parseISO(date) : date
   return format(d, 'dd MMM yyyy')

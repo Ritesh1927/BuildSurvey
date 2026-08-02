@@ -29,6 +29,7 @@ import {
   Bot,
   ScanLine,
   BookOpen,
+  Navigation,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -63,6 +64,7 @@ const iconMap: Record<string, LucideIcon> = {
   Bot,
   ScanLine,
   BookOpen,
+  Navigation,
 }
 
 export function getIcon(name: string): LucideIcon | null {

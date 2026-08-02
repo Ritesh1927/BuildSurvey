@@ -76,7 +76,7 @@ export default function SiteVisitsPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch('/api/site-visits')
+      const res = await fetch('/api/survey-checkins')
       const data = await res.json()
       if (data.success) setSiteVisits(data.data)
     } catch {

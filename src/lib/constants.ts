@@ -73,7 +73,8 @@ export const SIDEBAR_NAV_ITEMS: readonly {
     group: 'Survey & Field',
     items: [
       { label: 'Surveys', href: '/surveys', icon: 'ClipboardList', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'CLIENT'] },
-      { label: 'Site Visits', href: '/surveys/gps', icon: 'MapPin', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
+      { label: 'Survey Check-ins', href: '/surveys/gps', icon: 'MapPin', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
+      { label: 'Site Visits', href: '/site-visits', icon: 'Navigation', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER'] },
     ],
   },
   {

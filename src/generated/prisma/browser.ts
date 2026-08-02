@@ -188,6 +188,11 @@ export type GpsTracking = Prisma.GpsTrackingModel
  */
 export type Attendance = Prisma.AttendanceModel
 /**
+ * Model SiteVisit
+ * 
+ */
+export type SiteVisit = Prisma.SiteVisitModel
+/**
  * Model Holiday
  * 
  */

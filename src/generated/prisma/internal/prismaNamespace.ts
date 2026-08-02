@@ -418,6 +418,7 @@ export const ModelName = {
   ApiKey: 'ApiKey',
   GpsTracking: 'GpsTracking',
   Attendance: 'Attendance',
+  SiteVisit: 'SiteVisit',
   Holiday: 'Holiday',
   Meeting: 'Meeting',
   ChangeOrder: 'ChangeOrder',
@@ -441,7 +442,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "client" | "lead" | "project" | "survey" | "surveyChecklistItem" | "photo" | "video" | "voiceNote" | "sketch" | "measurement" | "riskAssessment" | "materialRequirement" | "bOQItem" | "costEstimation" | "quotation" | "quotationItem" | "workflow" | "workflowStep" | "approval" | "digitalSignature" | "notification" | "emailLog" | "whatsAppLog" | "report" | "document" | "auditLog" | "activity" | "masterCategory" | "masterItem" | "setting" | "apiKey" | "gpsTracking" | "attendance" | "holiday" | "meeting" | "changeOrder" | "auditTrail" | "notificationTemplate" | "reportTemplate" | "offlineSync" | "accessRequest"
+    modelProps: "user" | "client" | "lead" | "project" | "survey" | "surveyChecklistItem" | "photo" | "video" | "voiceNote" | "sketch" | "measurement" | "riskAssessment" | "materialRequirement" | "bOQItem" | "costEstimation" | "quotation" | "quotationItem" | "workflow" | "workflowStep" | "approval" | "digitalSignature" | "notification" | "emailLog" | "whatsAppLog" | "report" | "document" | "auditLog" | "activity" | "masterCategory" | "masterItem" | "setting" | "apiKey" | "gpsTracking" | "attendance" | "siteVisit" | "holiday" | "meeting" | "changeOrder" | "auditTrail" | "notificationTemplate" | "reportTemplate" | "offlineSync" | "accessRequest"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2961,6 +2962,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SiteVisit: {
+      payload: Prisma.$SiteVisitPayload<ExtArgs>
+      fields: Prisma.SiteVisitFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SiteVisitFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteVisitPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SiteVisitFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteVisitPayload>
+        }
+        findFirst: {
+          args: Prisma.SiteVisitFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteVisitPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SiteVisitFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteVisitPayload>
+        }
+        findMany: {
+          args: Prisma.SiteVisitFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteVisitPayload>[]
+        }
+        create: {
+          args: Prisma.SiteVisitCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteVisitPayload>
+        }
+        createMany: {
+          args: Prisma.SiteVisitCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SiteVisitCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteVisitPayload>[]
+        }
+        delete: {
+          args: Prisma.SiteVisitDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteVisitPayload>
+        }
+        update: {
+          args: Prisma.SiteVisitUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteVisitPayload>
+        }
+        deleteMany: {
+          args: Prisma.SiteVisitDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SiteVisitUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SiteVisitUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteVisitPayload>[]
+        }
+        upsert: {
+          args: Prisma.SiteVisitUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteVisitPayload>
+        }
+        aggregate: {
+          args: Prisma.SiteVisitAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSiteVisit>
+        }
+        groupBy: {
+          args: Prisma.SiteVisitGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SiteVisitGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SiteVisitCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SiteVisitCountAggregateOutputType> | number
+        }
+      }
+    }
     Holiday: {
       payload: Prisma.$HolidayPayload<ExtArgs>
       fields: Prisma.HolidayFieldRefs
@@ -4301,6 +4376,30 @@ export const AttendanceScalarFieldEnum = {
 export type AttendanceScalarFieldEnum = (typeof AttendanceScalarFieldEnum)[keyof typeof AttendanceScalarFieldEnum]
 
 
+export const SiteVisitScalarFieldEnum = {
+  id: 'id',
+  checkedInAt: 'checkedInAt',
+  checkedOutAt: 'checkedOutAt',
+  checkInLatitude: 'checkInLatitude',
+  checkInLongitude: 'checkInLongitude',
+  checkInPhotoUrl: 'checkInPhotoUrl',
+  checkOutLatitude: 'checkOutLatitude',
+  checkOutLongitude: 'checkOutLongitude',
+  checkOutPhotoUrl: 'checkOutPhotoUrl',
+  workSummary: 'workSummary',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  createdBy: 'createdBy',
+  updatedBy: 'updatedBy',
+  isDeleted: 'isDeleted',
+  version: 'version',
+  projectId: 'projectId',
+  engineerId: 'engineerId'
+} as const
+
+export type SiteVisitScalarFieldEnum = (typeof SiteVisitScalarFieldEnum)[keyof typeof SiteVisitScalarFieldEnum]
+
+
 export const HolidayScalarFieldEnum = {
   id: 'id',
   date: 'date',
@@ -4928,6 +5027,7 @@ export type GlobalOmitConfig = {
   apiKey?: Prisma.ApiKeyOmit
   gpsTracking?: Prisma.GpsTrackingOmit
   attendance?: Prisma.AttendanceOmit
+  siteVisit?: Prisma.SiteVisitOmit
   holiday?: Prisma.HolidayOmit
   meeting?: Prisma.MeetingOmit
   changeOrder?: Prisma.ChangeOrderOmit

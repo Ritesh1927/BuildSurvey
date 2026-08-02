@@ -422,6 +422,7 @@ export type ProjectWhereInput = {
   gpsTracking?: Prisma.GpsTrackingListRelationFilter
   meetings?: Prisma.MeetingListRelationFilter
   changeOrders?: Prisma.ChangeOrderListRelationFilter
+  siteVisits?: Prisma.SiteVisitListRelationFilter
 }
 
 export type ProjectOrderByWithRelationInput = {
@@ -465,6 +466,7 @@ export type ProjectOrderByWithRelationInput = {
   gpsTracking?: Prisma.GpsTrackingOrderByRelationAggregateInput
   meetings?: Prisma.MeetingOrderByRelationAggregateInput
   changeOrders?: Prisma.ChangeOrderOrderByRelationAggregateInput
+  siteVisits?: Prisma.SiteVisitOrderByRelationAggregateInput
 }
 
 export type ProjectWhereUniqueInput = Prisma.AtLeast<{
@@ -511,6 +513,7 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   gpsTracking?: Prisma.GpsTrackingListRelationFilter
   meetings?: Prisma.MeetingListRelationFilter
   changeOrders?: Prisma.ChangeOrderListRelationFilter
+  siteVisits?: Prisma.SiteVisitListRelationFilter
 }, "id" | "code">
 
 export type ProjectOrderByWithAggregationInput = {
@@ -617,6 +620,7 @@ export type ProjectCreateInput = {
   gpsTracking?: Prisma.GpsTrackingCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateInput = {
@@ -657,6 +661,7 @@ export type ProjectUncheckedCreateInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingUncheckedCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUpdateInput = {
@@ -697,6 +702,7 @@ export type ProjectUpdateInput = {
   gpsTracking?: Prisma.GpsTrackingUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateInput = {
@@ -737,6 +743,7 @@ export type ProjectUncheckedUpdateInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUncheckedUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUncheckedUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateManyInput = {
@@ -1220,6 +1227,20 @@ export type ProjectUpdateOneWithoutGpsTrackingNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutGpsTrackingInput, Prisma.ProjectUpdateWithoutGpsTrackingInput>, Prisma.ProjectUncheckedUpdateWithoutGpsTrackingInput>
 }
 
+export type ProjectCreateNestedOneWithoutSiteVisitsInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutSiteVisitsInput, Prisma.ProjectUncheckedCreateWithoutSiteVisitsInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutSiteVisitsInput
+  connect?: Prisma.ProjectWhereUniqueInput
+}
+
+export type ProjectUpdateOneRequiredWithoutSiteVisitsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutSiteVisitsInput, Prisma.ProjectUncheckedCreateWithoutSiteVisitsInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutSiteVisitsInput
+  upsert?: Prisma.ProjectUpsertWithoutSiteVisitsInput
+  connect?: Prisma.ProjectWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutSiteVisitsInput, Prisma.ProjectUpdateWithoutSiteVisitsInput>, Prisma.ProjectUncheckedUpdateWithoutSiteVisitsInput>
+}
+
 export type ProjectCreateNestedOneWithoutMeetingsInput = {
   create?: Prisma.XOR<Prisma.ProjectCreateWithoutMeetingsInput, Prisma.ProjectUncheckedCreateWithoutMeetingsInput>
   connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutMeetingsInput
@@ -1285,6 +1306,7 @@ export type ProjectCreateWithoutLeadUserInput = {
   gpsTracking?: Prisma.GpsTrackingCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutLeadUserInput = {
@@ -1324,6 +1346,7 @@ export type ProjectUncheckedCreateWithoutLeadUserInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingUncheckedCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutLeadUserInput = {
@@ -1373,6 +1396,7 @@ export type ProjectCreateWithoutManagerInput = {
   gpsTracking?: Prisma.GpsTrackingCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutManagerInput = {
@@ -1412,6 +1436,7 @@ export type ProjectUncheckedCreateWithoutManagerInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingUncheckedCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutManagerInput = {
@@ -1525,6 +1550,7 @@ export type ProjectCreateWithoutClientInput = {
   gpsTracking?: Prisma.GpsTrackingCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutClientInput = {
@@ -1564,6 +1590,7 @@ export type ProjectUncheckedCreateWithoutClientInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingUncheckedCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutClientInput = {
@@ -1629,6 +1656,7 @@ export type ProjectCreateWithoutSurveysInput = {
   gpsTracking?: Prisma.GpsTrackingCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutSurveysInput = {
@@ -1668,6 +1696,7 @@ export type ProjectUncheckedCreateWithoutSurveysInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingUncheckedCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutSurveysInput = {
@@ -1723,6 +1752,7 @@ export type ProjectUpdateWithoutSurveysInput = {
   gpsTracking?: Prisma.GpsTrackingUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutSurveysInput = {
@@ -1762,6 +1792,7 @@ export type ProjectUncheckedUpdateWithoutSurveysInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUncheckedUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUncheckedUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutBoqItemsInput = {
@@ -1801,6 +1832,7 @@ export type ProjectCreateWithoutBoqItemsInput = {
   gpsTracking?: Prisma.GpsTrackingCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutBoqItemsInput = {
@@ -1840,6 +1872,7 @@ export type ProjectUncheckedCreateWithoutBoqItemsInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingUncheckedCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutBoqItemsInput = {
@@ -1895,6 +1928,7 @@ export type ProjectUpdateWithoutBoqItemsInput = {
   gpsTracking?: Prisma.GpsTrackingUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutBoqItemsInput = {
@@ -1934,6 +1968,7 @@ export type ProjectUncheckedUpdateWithoutBoqItemsInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUncheckedUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUncheckedUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutCostEstimationsInput = {
@@ -1973,6 +2008,7 @@ export type ProjectCreateWithoutCostEstimationsInput = {
   gpsTracking?: Prisma.GpsTrackingCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutCostEstimationsInput = {
@@ -2012,6 +2048,7 @@ export type ProjectUncheckedCreateWithoutCostEstimationsInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingUncheckedCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutCostEstimationsInput = {
@@ -2067,6 +2104,7 @@ export type ProjectUpdateWithoutCostEstimationsInput = {
   gpsTracking?: Prisma.GpsTrackingUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutCostEstimationsInput = {
@@ -2106,6 +2144,7 @@ export type ProjectUncheckedUpdateWithoutCostEstimationsInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUncheckedUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUncheckedUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutQuotationsInput = {
@@ -2145,6 +2184,7 @@ export type ProjectCreateWithoutQuotationsInput = {
   gpsTracking?: Prisma.GpsTrackingCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutQuotationsInput = {
@@ -2184,6 +2224,7 @@ export type ProjectUncheckedCreateWithoutQuotationsInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingUncheckedCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutQuotationsInput = {
@@ -2239,6 +2280,7 @@ export type ProjectUpdateWithoutQuotationsInput = {
   gpsTracking?: Prisma.GpsTrackingUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutQuotationsInput = {
@@ -2278,6 +2320,7 @@ export type ProjectUncheckedUpdateWithoutQuotationsInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUncheckedUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUncheckedUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutWorkflowsInput = {
@@ -2317,6 +2360,7 @@ export type ProjectCreateWithoutWorkflowsInput = {
   gpsTracking?: Prisma.GpsTrackingCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutWorkflowsInput = {
@@ -2356,6 +2400,7 @@ export type ProjectUncheckedCreateWithoutWorkflowsInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingUncheckedCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutWorkflowsInput = {
@@ -2411,6 +2456,7 @@ export type ProjectUpdateWithoutWorkflowsInput = {
   gpsTracking?: Prisma.GpsTrackingUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutWorkflowsInput = {
@@ -2450,6 +2496,7 @@ export type ProjectUncheckedUpdateWithoutWorkflowsInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUncheckedUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUncheckedUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutReportsInput = {
@@ -2489,6 +2536,7 @@ export type ProjectCreateWithoutReportsInput = {
   gpsTracking?: Prisma.GpsTrackingCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutReportsInput = {
@@ -2528,6 +2576,7 @@ export type ProjectUncheckedCreateWithoutReportsInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingUncheckedCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutReportsInput = {
@@ -2583,6 +2632,7 @@ export type ProjectUpdateWithoutReportsInput = {
   gpsTracking?: Prisma.GpsTrackingUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutReportsInput = {
@@ -2622,6 +2672,7 @@ export type ProjectUncheckedUpdateWithoutReportsInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUncheckedUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUncheckedUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutDocumentsInput = {
@@ -2661,6 +2712,7 @@ export type ProjectCreateWithoutDocumentsInput = {
   gpsTracking?: Prisma.GpsTrackingCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutDocumentsInput = {
@@ -2700,6 +2752,7 @@ export type ProjectUncheckedCreateWithoutDocumentsInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingUncheckedCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutDocumentsInput = {
@@ -2755,6 +2808,7 @@ export type ProjectUpdateWithoutDocumentsInput = {
   gpsTracking?: Prisma.GpsTrackingUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutDocumentsInput = {
@@ -2794,6 +2848,7 @@ export type ProjectUncheckedUpdateWithoutDocumentsInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUncheckedUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUncheckedUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutActivitiesInput = {
@@ -2833,6 +2888,7 @@ export type ProjectCreateWithoutActivitiesInput = {
   gpsTracking?: Prisma.GpsTrackingCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutActivitiesInput = {
@@ -2872,6 +2928,7 @@ export type ProjectUncheckedCreateWithoutActivitiesInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingUncheckedCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutActivitiesInput = {
@@ -2927,6 +2984,7 @@ export type ProjectUpdateWithoutActivitiesInput = {
   gpsTracking?: Prisma.GpsTrackingUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutActivitiesInput = {
@@ -2966,6 +3024,7 @@ export type ProjectUncheckedUpdateWithoutActivitiesInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUncheckedUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUncheckedUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutGpsTrackingInput = {
@@ -3005,6 +3064,7 @@ export type ProjectCreateWithoutGpsTrackingInput = {
   reports?: Prisma.ReportCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutGpsTrackingInput = {
@@ -3044,6 +3104,7 @@ export type ProjectUncheckedCreateWithoutGpsTrackingInput = {
   reports?: Prisma.ReportUncheckedCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingUncheckedCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutGpsTrackingInput = {
@@ -3099,6 +3160,7 @@ export type ProjectUpdateWithoutGpsTrackingInput = {
   reports?: Prisma.ReportUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutGpsTrackingInput = {
@@ -3136,6 +3198,183 @@ export type ProjectUncheckedUpdateWithoutGpsTrackingInput = {
   workflows?: Prisma.WorkflowUncheckedUpdateManyWithoutProjectNestedInput
   activities?: Prisma.ActivityUncheckedUpdateManyWithoutProjectNestedInput
   reports?: Prisma.ReportUncheckedUpdateManyWithoutProjectNestedInput
+  meetings?: Prisma.MeetingUncheckedUpdateManyWithoutProjectNestedInput
+  changeOrders?: Prisma.ChangeOrderUncheckedUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUncheckedUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectCreateWithoutSiteVisitsInput = {
+  id?: string
+  name: string
+  code: string
+  description?: string | null
+  type?: $Enums.ProjectType
+  status?: $Enums.ProjectStatus
+  startDate?: Date | string | null
+  endDate?: Date | string | null
+  budget?: number | null
+  actualCost?: number | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  area?: number | null
+  floors?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  createdBy?: string | null
+  updatedBy?: string | null
+  isDeleted?: boolean
+  version?: number
+  client: Prisma.ClientCreateNestedOneWithoutProjectsInput
+  manager?: Prisma.UserCreateNestedOneWithoutManagedProjectsInput
+  leadUser?: Prisma.UserCreateNestedOneWithoutLedProjectsInput
+  surveys?: Prisma.SurveyCreateNestedManyWithoutProjectInput
+  boqItems?: Prisma.BOQItemCreateNestedManyWithoutProjectInput
+  costEstimations?: Prisma.CostEstimationCreateNestedManyWithoutProjectInput
+  quotations?: Prisma.QuotationCreateNestedManyWithoutProjectInput
+  documents?: Prisma.DocumentCreateNestedManyWithoutProjectInput
+  workflows?: Prisma.WorkflowCreateNestedManyWithoutProjectInput
+  activities?: Prisma.ActivityCreateNestedManyWithoutProjectInput
+  reports?: Prisma.ReportCreateNestedManyWithoutProjectInput
+  gpsTracking?: Prisma.GpsTrackingCreateNestedManyWithoutProjectInput
+  meetings?: Prisma.MeetingCreateNestedManyWithoutProjectInput
+  changeOrders?: Prisma.ChangeOrderCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectUncheckedCreateWithoutSiteVisitsInput = {
+  id?: string
+  name: string
+  code: string
+  description?: string | null
+  type?: $Enums.ProjectType
+  status?: $Enums.ProjectStatus
+  startDate?: Date | string | null
+  endDate?: Date | string | null
+  budget?: number | null
+  actualCost?: number | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  area?: number | null
+  floors?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  createdBy?: string | null
+  updatedBy?: string | null
+  isDeleted?: boolean
+  version?: number
+  clientId: string
+  managerId?: string | null
+  leadUserId?: string | null
+  surveys?: Prisma.SurveyUncheckedCreateNestedManyWithoutProjectInput
+  boqItems?: Prisma.BOQItemUncheckedCreateNestedManyWithoutProjectInput
+  costEstimations?: Prisma.CostEstimationUncheckedCreateNestedManyWithoutProjectInput
+  quotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutProjectInput
+  documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutProjectInput
+  workflows?: Prisma.WorkflowUncheckedCreateNestedManyWithoutProjectInput
+  activities?: Prisma.ActivityUncheckedCreateNestedManyWithoutProjectInput
+  reports?: Prisma.ReportUncheckedCreateNestedManyWithoutProjectInput
+  gpsTracking?: Prisma.GpsTrackingUncheckedCreateNestedManyWithoutProjectInput
+  meetings?: Prisma.MeetingUncheckedCreateNestedManyWithoutProjectInput
+  changeOrders?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectCreateOrConnectWithoutSiteVisitsInput = {
+  where: Prisma.ProjectWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutSiteVisitsInput, Prisma.ProjectUncheckedCreateWithoutSiteVisitsInput>
+}
+
+export type ProjectUpsertWithoutSiteVisitsInput = {
+  update: Prisma.XOR<Prisma.ProjectUpdateWithoutSiteVisitsInput, Prisma.ProjectUncheckedUpdateWithoutSiteVisitsInput>
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutSiteVisitsInput, Prisma.ProjectUncheckedCreateWithoutSiteVisitsInput>
+  where?: Prisma.ProjectWhereInput
+}
+
+export type ProjectUpdateToOneWithWhereWithoutSiteVisitsInput = {
+  where?: Prisma.ProjectWhereInput
+  data: Prisma.XOR<Prisma.ProjectUpdateWithoutSiteVisitsInput, Prisma.ProjectUncheckedUpdateWithoutSiteVisitsInput>
+}
+
+export type ProjectUpdateWithoutSiteVisitsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType
+  status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  budget?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  actualCost?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  area?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  floors?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  client?: Prisma.ClientUpdateOneRequiredWithoutProjectsNestedInput
+  manager?: Prisma.UserUpdateOneWithoutManagedProjectsNestedInput
+  leadUser?: Prisma.UserUpdateOneWithoutLedProjectsNestedInput
+  surveys?: Prisma.SurveyUpdateManyWithoutProjectNestedInput
+  boqItems?: Prisma.BOQItemUpdateManyWithoutProjectNestedInput
+  costEstimations?: Prisma.CostEstimationUpdateManyWithoutProjectNestedInput
+  quotations?: Prisma.QuotationUpdateManyWithoutProjectNestedInput
+  documents?: Prisma.DocumentUpdateManyWithoutProjectNestedInput
+  workflows?: Prisma.WorkflowUpdateManyWithoutProjectNestedInput
+  activities?: Prisma.ActivityUpdateManyWithoutProjectNestedInput
+  reports?: Prisma.ReportUpdateManyWithoutProjectNestedInput
+  gpsTracking?: Prisma.GpsTrackingUpdateManyWithoutProjectNestedInput
+  meetings?: Prisma.MeetingUpdateManyWithoutProjectNestedInput
+  changeOrders?: Prisma.ChangeOrderUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectUncheckedUpdateWithoutSiteVisitsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType
+  status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  budget?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  actualCost?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  area?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  floors?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.StringFieldUpdateOperationsInput | string
+  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leadUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  surveys?: Prisma.SurveyUncheckedUpdateManyWithoutProjectNestedInput
+  boqItems?: Prisma.BOQItemUncheckedUpdateManyWithoutProjectNestedInput
+  costEstimations?: Prisma.CostEstimationUncheckedUpdateManyWithoutProjectNestedInput
+  quotations?: Prisma.QuotationUncheckedUpdateManyWithoutProjectNestedInput
+  documents?: Prisma.DocumentUncheckedUpdateManyWithoutProjectNestedInput
+  workflows?: Prisma.WorkflowUncheckedUpdateManyWithoutProjectNestedInput
+  activities?: Prisma.ActivityUncheckedUpdateManyWithoutProjectNestedInput
+  reports?: Prisma.ReportUncheckedUpdateManyWithoutProjectNestedInput
+  gpsTracking?: Prisma.GpsTrackingUncheckedUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUncheckedUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUncheckedUpdateManyWithoutProjectNestedInput
 }
@@ -3177,6 +3416,7 @@ export type ProjectCreateWithoutMeetingsInput = {
   reports?: Prisma.ReportCreateNestedManyWithoutProjectInput
   gpsTracking?: Prisma.GpsTrackingCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutMeetingsInput = {
@@ -3216,6 +3456,7 @@ export type ProjectUncheckedCreateWithoutMeetingsInput = {
   reports?: Prisma.ReportUncheckedCreateNestedManyWithoutProjectInput
   gpsTracking?: Prisma.GpsTrackingUncheckedCreateNestedManyWithoutProjectInput
   changeOrders?: Prisma.ChangeOrderUncheckedCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutMeetingsInput = {
@@ -3271,6 +3512,7 @@ export type ProjectUpdateWithoutMeetingsInput = {
   reports?: Prisma.ReportUpdateManyWithoutProjectNestedInput
   gpsTracking?: Prisma.GpsTrackingUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutMeetingsInput = {
@@ -3310,6 +3552,7 @@ export type ProjectUncheckedUpdateWithoutMeetingsInput = {
   reports?: Prisma.ReportUncheckedUpdateManyWithoutProjectNestedInput
   gpsTracking?: Prisma.GpsTrackingUncheckedUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUncheckedUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutChangeOrdersInput = {
@@ -3349,6 +3592,7 @@ export type ProjectCreateWithoutChangeOrdersInput = {
   reports?: Prisma.ReportCreateNestedManyWithoutProjectInput
   gpsTracking?: Prisma.GpsTrackingCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutChangeOrdersInput = {
@@ -3388,6 +3632,7 @@ export type ProjectUncheckedCreateWithoutChangeOrdersInput = {
   reports?: Prisma.ReportUncheckedCreateNestedManyWithoutProjectInput
   gpsTracking?: Prisma.GpsTrackingUncheckedCreateNestedManyWithoutProjectInput
   meetings?: Prisma.MeetingUncheckedCreateNestedManyWithoutProjectInput
+  siteVisits?: Prisma.SiteVisitUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutChangeOrdersInput = {
@@ -3443,6 +3688,7 @@ export type ProjectUpdateWithoutChangeOrdersInput = {
   reports?: Prisma.ReportUpdateManyWithoutProjectNestedInput
   gpsTracking?: Prisma.GpsTrackingUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutChangeOrdersInput = {
@@ -3482,6 +3728,7 @@ export type ProjectUncheckedUpdateWithoutChangeOrdersInput = {
   reports?: Prisma.ReportUncheckedUpdateManyWithoutProjectNestedInput
   gpsTracking?: Prisma.GpsTrackingUncheckedUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUncheckedUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateManyLeadUserInput = {
@@ -3577,6 +3824,7 @@ export type ProjectUpdateWithoutLeadUserInput = {
   gpsTracking?: Prisma.GpsTrackingUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutLeadUserInput = {
@@ -3616,6 +3864,7 @@ export type ProjectUncheckedUpdateWithoutLeadUserInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUncheckedUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUncheckedUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateManyWithoutLeadUserInput = {
@@ -3683,6 +3932,7 @@ export type ProjectUpdateWithoutManagerInput = {
   gpsTracking?: Prisma.GpsTrackingUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutManagerInput = {
@@ -3722,6 +3972,7 @@ export type ProjectUncheckedUpdateWithoutManagerInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUncheckedUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUncheckedUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateManyWithoutManagerInput = {
@@ -3817,6 +4068,7 @@ export type ProjectUpdateWithoutClientInput = {
   gpsTracking?: Prisma.GpsTrackingUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutClientInput = {
@@ -3856,6 +4108,7 @@ export type ProjectUncheckedUpdateWithoutClientInput = {
   gpsTracking?: Prisma.GpsTrackingUncheckedUpdateManyWithoutProjectNestedInput
   meetings?: Prisma.MeetingUncheckedUpdateManyWithoutProjectNestedInput
   changeOrders?: Prisma.ChangeOrderUncheckedUpdateManyWithoutProjectNestedInput
+  siteVisits?: Prisma.SiteVisitUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateManyWithoutClientInput = {
@@ -3903,6 +4156,7 @@ export type ProjectCountOutputType = {
   gpsTracking: number
   meetings: number
   changeOrders: number
+  siteVisits: number
 }
 
 export type ProjectCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3917,6 +4171,7 @@ export type ProjectCountOutputTypeSelect<ExtArgs extends runtime.Types.Extension
   gpsTracking?: boolean | ProjectCountOutputTypeCountGpsTrackingArgs
   meetings?: boolean | ProjectCountOutputTypeCountMeetingsArgs
   changeOrders?: boolean | ProjectCountOutputTypeCountChangeOrdersArgs
+  siteVisits?: boolean | ProjectCountOutputTypeCountSiteVisitsArgs
 }
 
 /**
@@ -4006,6 +4261,13 @@ export type ProjectCountOutputTypeCountChangeOrdersArgs<ExtArgs extends runtime.
   where?: Prisma.ChangeOrderWhereInput
 }
 
+/**
+ * ProjectCountOutputType without action
+ */
+export type ProjectCountOutputTypeCountSiteVisitsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SiteVisitWhereInput
+}
+
 
 export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -4048,6 +4310,7 @@ export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   gpsTracking?: boolean | Prisma.Project$gpsTrackingArgs<ExtArgs>
   meetings?: boolean | Prisma.Project$meetingsArgs<ExtArgs>
   changeOrders?: boolean | Prisma.Project$changeOrdersArgs<ExtArgs>
+  siteVisits?: boolean | Prisma.Project$siteVisitsArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["project"]>
 
@@ -4160,6 +4423,7 @@ export type ProjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   gpsTracking?: boolean | Prisma.Project$gpsTrackingArgs<ExtArgs>
   meetings?: boolean | Prisma.Project$meetingsArgs<ExtArgs>
   changeOrders?: boolean | Prisma.Project$changeOrdersArgs<ExtArgs>
+  siteVisits?: boolean | Prisma.Project$siteVisitsArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ProjectIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -4190,6 +4454,7 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     gpsTracking: Prisma.$GpsTrackingPayload<ExtArgs>[]
     meetings: Prisma.$MeetingPayload<ExtArgs>[]
     changeOrders: Prisma.$ChangeOrderPayload<ExtArgs>[]
+    siteVisits: Prisma.$SiteVisitPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -4626,6 +4891,7 @@ export interface Prisma__ProjectClient<T, Null = never, ExtArgs extends runtime.
   gpsTracking<T extends Prisma.Project$gpsTrackingArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$gpsTrackingArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GpsTrackingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   meetings<T extends Prisma.Project$meetingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$meetingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MeetingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   changeOrders<T extends Prisma.Project$changeOrdersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$changeOrdersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChangeOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  siteVisits<T extends Prisma.Project$siteVisitsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$siteVisitsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SiteVisitPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5381,6 +5647,30 @@ export type Project$changeOrdersArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.ChangeOrderScalarFieldEnum | Prisma.ChangeOrderScalarFieldEnum[]
+}
+
+/**
+ * Project.siteVisits
+ */
+export type Project$siteVisitsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SiteVisit
+   */
+  select?: Prisma.SiteVisitSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SiteVisit
+   */
+  omit?: Prisma.SiteVisitOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SiteVisitInclude<ExtArgs> | null
+  where?: Prisma.SiteVisitWhereInput
+  orderBy?: Prisma.SiteVisitOrderByWithRelationInput | Prisma.SiteVisitOrderByWithRelationInput[]
+  cursor?: Prisma.SiteVisitWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SiteVisitScalarFieldEnum | Prisma.SiteVisitScalarFieldEnum[]
 }
 
 /**
