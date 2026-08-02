@@ -4,7 +4,8 @@ import { auth } from '@/lib/auth'
 import { requireAuth, requireRole } from '@/lib/api-auth'
 import { uploadPhotoDataUrl } from '@/lib/photo-upload'
 import { siteStatus } from '@/lib/geo'
-import { formatDistance } from '@/lib/utils'
+import { formatDistance, formatDate } from '@/lib/utils'
+import { todayDateOnly, markFieldAttendance } from '@/lib/attendance'
 
 // Self-attested proof-of-presence, same reasoning as survey check-in - only
 // the project's own lead engineer can check themselves in, nobody else.
@@ -41,6 +42,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       )
     }
 
+    if (!project.startDate || !project.endDate) {
+      return NextResponse.json(
+        { success: false, error: 'This project has no start/end date set — an Admin/Manager needs to add them before site visits can be tracked.' },
+        { status: 400 }
+      )
+    }
+
     // Site visits are meant for ongoing supervision after a survey has
     // cleared the site - not available before that point.
     const approvedSurveyCount = await db.survey.count({
@@ -53,12 +61,30 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       )
     }
 
-    const openVisit = await db.siteVisit.findFirst({
-      where: { projectId, engineerId: userId, isDeleted: false, checkedOutAt: null },
-    })
-    if (openVisit) {
+    const today = todayDateOnly()
+    const windowStart = new Date(Date.UTC(project.startDate.getUTCFullYear(), project.startDate.getUTCMonth(), project.startDate.getUTCDate()))
+    const windowEnd = new Date(Date.UTC(project.endDate.getUTCFullYear(), project.endDate.getUTCMonth(), project.endDate.getUTCDate()))
+    if (today < windowStart || today > windowEnd) {
       return NextResponse.json(
-        { success: false, error: "You're already checked in to a site visit for this project. Check out before starting a new one." },
+        {
+          success: false,
+          error: `Today is outside this project's site-visit window (${formatDate(windowStart)} – ${formatDate(windowEnd)}).`,
+        },
+        { status: 400 }
+      )
+    }
+
+    const todayVisit = await db.siteVisit.findUnique({
+      where: { projectId_engineerId_visitDate: { projectId, engineerId: userId, visitDate: today } },
+    })
+    if (todayVisit) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: todayVisit.checkedOutAt
+            ? "You've already completed a site visit for this project today. Only one visit per project per day is allowed."
+            : "You're already checked in to this project today.",
+        },
         { status: 409 }
       )
     }
@@ -98,12 +124,19 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       data: {
         projectId,
         engineerId: userId,
+        visitDate: today,
         checkInLatitude: lat,
         checkInLongitude: lng,
         checkInPhotoUrl: photoUrl,
         createdBy: userId,
       },
     })
+
+    try {
+      await markFieldAttendance(userId, lat, lng)
+    } catch (e) {
+      console.error('markFieldAttendance failed after site-visit checkin:', e)
+    }
 
     return NextResponse.json({ success: true, data: visit, onSite, distanceMeters }, { status: 201 })
   } catch (error) {

@@ -53,6 +53,7 @@ export type SiteVisitMinAggregateOutputType = {
   checkOutLongitude: number | null
   checkOutPhotoUrl: string | null
   workSummary: string | null
+  visitDate: Date | null
   createdAt: Date | null
   updatedAt: Date | null
   createdBy: string | null
@@ -74,6 +75,7 @@ export type SiteVisitMaxAggregateOutputType = {
   checkOutLongitude: number | null
   checkOutPhotoUrl: string | null
   workSummary: string | null
+  visitDate: Date | null
   createdAt: Date | null
   updatedAt: Date | null
   createdBy: string | null
@@ -95,6 +97,7 @@ export type SiteVisitCountAggregateOutputType = {
   checkOutLongitude: number
   checkOutPhotoUrl: number
   workSummary: number
+  visitDate: number
   createdAt: number
   updatedAt: number
   createdBy: number
@@ -134,6 +137,7 @@ export type SiteVisitMinAggregateInputType = {
   checkOutLongitude?: true
   checkOutPhotoUrl?: true
   workSummary?: true
+  visitDate?: true
   createdAt?: true
   updatedAt?: true
   createdBy?: true
@@ -155,6 +159,7 @@ export type SiteVisitMaxAggregateInputType = {
   checkOutLongitude?: true
   checkOutPhotoUrl?: true
   workSummary?: true
+  visitDate?: true
   createdAt?: true
   updatedAt?: true
   createdBy?: true
@@ -176,6 +181,7 @@ export type SiteVisitCountAggregateInputType = {
   checkOutLongitude?: true
   checkOutPhotoUrl?: true
   workSummary?: true
+  visitDate?: true
   createdAt?: true
   updatedAt?: true
   createdBy?: true
@@ -284,6 +290,7 @@ export type SiteVisitGroupByOutputType = {
   checkOutLongitude: number | null
   checkOutPhotoUrl: string | null
   workSummary: string | null
+  visitDate: Date
   createdAt: Date
   updatedAt: Date
   createdBy: string | null
@@ -328,6 +335,7 @@ export type SiteVisitWhereInput = {
   checkOutLongitude?: Prisma.FloatNullableFilter<"SiteVisit"> | number | null
   checkOutPhotoUrl?: Prisma.StringNullableFilter<"SiteVisit"> | string | null
   workSummary?: Prisma.StringNullableFilter<"SiteVisit"> | string | null
+  visitDate?: Prisma.DateTimeFilter<"SiteVisit"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"SiteVisit"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SiteVisit"> | Date | string
   createdBy?: Prisma.StringNullableFilter<"SiteVisit"> | string | null
@@ -351,6 +359,7 @@ export type SiteVisitOrderByWithRelationInput = {
   checkOutLongitude?: Prisma.SortOrderInput | Prisma.SortOrder
   checkOutPhotoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   workSummary?: Prisma.SortOrderInput | Prisma.SortOrder
+  visitDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -365,6 +374,7 @@ export type SiteVisitOrderByWithRelationInput = {
 
 export type SiteVisitWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  projectId_engineerId_visitDate?: Prisma.SiteVisitProjectIdEngineerIdVisitDateCompoundUniqueInput
   AND?: Prisma.SiteVisitWhereInput | Prisma.SiteVisitWhereInput[]
   OR?: Prisma.SiteVisitWhereInput[]
   NOT?: Prisma.SiteVisitWhereInput | Prisma.SiteVisitWhereInput[]
@@ -377,6 +387,7 @@ export type SiteVisitWhereUniqueInput = Prisma.AtLeast<{
   checkOutLongitude?: Prisma.FloatNullableFilter<"SiteVisit"> | number | null
   checkOutPhotoUrl?: Prisma.StringNullableFilter<"SiteVisit"> | string | null
   workSummary?: Prisma.StringNullableFilter<"SiteVisit"> | string | null
+  visitDate?: Prisma.DateTimeFilter<"SiteVisit"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"SiteVisit"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SiteVisit"> | Date | string
   createdBy?: Prisma.StringNullableFilter<"SiteVisit"> | string | null
@@ -387,7 +398,7 @@ export type SiteVisitWhereUniqueInput = Prisma.AtLeast<{
   engineerId?: Prisma.StringFilter<"SiteVisit"> | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   engineer?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-}, "id">
+}, "id" | "projectId_engineerId_visitDate">
 
 export type SiteVisitOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -400,6 +411,7 @@ export type SiteVisitOrderByWithAggregationInput = {
   checkOutLongitude?: Prisma.SortOrderInput | Prisma.SortOrder
   checkOutPhotoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   workSummary?: Prisma.SortOrderInput | Prisma.SortOrder
+  visitDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -429,6 +441,7 @@ export type SiteVisitScalarWhereWithAggregatesInput = {
   checkOutLongitude?: Prisma.FloatNullableWithAggregatesFilter<"SiteVisit"> | number | null
   checkOutPhotoUrl?: Prisma.StringNullableWithAggregatesFilter<"SiteVisit"> | string | null
   workSummary?: Prisma.StringNullableWithAggregatesFilter<"SiteVisit"> | string | null
+  visitDate?: Prisma.DateTimeWithAggregatesFilter<"SiteVisit"> | Date | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"SiteVisit"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"SiteVisit"> | Date | string
   createdBy?: Prisma.StringNullableWithAggregatesFilter<"SiteVisit"> | string | null
@@ -450,6 +463,7 @@ export type SiteVisitCreateInput = {
   checkOutLongitude?: number | null
   checkOutPhotoUrl?: string | null
   workSummary?: string | null
+  visitDate: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -471,6 +485,7 @@ export type SiteVisitUncheckedCreateInput = {
   checkOutLongitude?: number | null
   checkOutPhotoUrl?: string | null
   workSummary?: string | null
+  visitDate: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -492,6 +507,7 @@ export type SiteVisitUpdateInput = {
   checkOutLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   checkOutPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visitDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -513,6 +529,7 @@ export type SiteVisitUncheckedUpdateInput = {
   checkOutLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   checkOutPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visitDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -534,6 +551,7 @@ export type SiteVisitCreateManyInput = {
   checkOutLongitude?: number | null
   checkOutPhotoUrl?: string | null
   workSummary?: string | null
+  visitDate: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -555,6 +573,7 @@ export type SiteVisitUpdateManyMutationInput = {
   checkOutLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   checkOutPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visitDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -574,6 +593,7 @@ export type SiteVisitUncheckedUpdateManyInput = {
   checkOutLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   checkOutPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visitDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -594,6 +614,12 @@ export type SiteVisitOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type SiteVisitProjectIdEngineerIdVisitDateCompoundUniqueInput = {
+  projectId: string
+  engineerId: string
+  visitDate: Date | string
+}
+
 export type SiteVisitCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   checkedInAt?: Prisma.SortOrder
@@ -605,6 +631,7 @@ export type SiteVisitCountOrderByAggregateInput = {
   checkOutLongitude?: Prisma.SortOrder
   checkOutPhotoUrl?: Prisma.SortOrder
   workSummary?: Prisma.SortOrder
+  visitDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrder
@@ -634,6 +661,7 @@ export type SiteVisitMaxOrderByAggregateInput = {
   checkOutLongitude?: Prisma.SortOrder
   checkOutPhotoUrl?: Prisma.SortOrder
   workSummary?: Prisma.SortOrder
+  visitDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrder
@@ -655,6 +683,7 @@ export type SiteVisitMinOrderByAggregateInput = {
   checkOutLongitude?: Prisma.SortOrder
   checkOutPhotoUrl?: Prisma.SortOrder
   workSummary?: Prisma.SortOrder
+  visitDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrder
@@ -768,6 +797,7 @@ export type SiteVisitCreateWithoutEngineerInput = {
   checkOutLongitude?: number | null
   checkOutPhotoUrl?: string | null
   workSummary?: string | null
+  visitDate: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -788,6 +818,7 @@ export type SiteVisitUncheckedCreateWithoutEngineerInput = {
   checkOutLongitude?: number | null
   checkOutPhotoUrl?: string | null
   workSummary?: string | null
+  visitDate: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -837,6 +868,7 @@ export type SiteVisitScalarWhereInput = {
   checkOutLongitude?: Prisma.FloatNullableFilter<"SiteVisit"> | number | null
   checkOutPhotoUrl?: Prisma.StringNullableFilter<"SiteVisit"> | string | null
   workSummary?: Prisma.StringNullableFilter<"SiteVisit"> | string | null
+  visitDate?: Prisma.DateTimeFilter<"SiteVisit"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"SiteVisit"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SiteVisit"> | Date | string
   createdBy?: Prisma.StringNullableFilter<"SiteVisit"> | string | null
@@ -858,6 +890,7 @@ export type SiteVisitCreateWithoutProjectInput = {
   checkOutLongitude?: number | null
   checkOutPhotoUrl?: string | null
   workSummary?: string | null
+  visitDate: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -878,6 +911,7 @@ export type SiteVisitUncheckedCreateWithoutProjectInput = {
   checkOutLongitude?: number | null
   checkOutPhotoUrl?: string | null
   workSummary?: string | null
+  visitDate: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -924,6 +958,7 @@ export type SiteVisitCreateManyEngineerInput = {
   checkOutLongitude?: number | null
   checkOutPhotoUrl?: string | null
   workSummary?: string | null
+  visitDate: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -944,6 +979,7 @@ export type SiteVisitUpdateWithoutEngineerInput = {
   checkOutLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   checkOutPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visitDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -964,6 +1000,7 @@ export type SiteVisitUncheckedUpdateWithoutEngineerInput = {
   checkOutLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   checkOutPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visitDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -984,6 +1021,7 @@ export type SiteVisitUncheckedUpdateManyWithoutEngineerInput = {
   checkOutLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   checkOutPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visitDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1004,6 +1042,7 @@ export type SiteVisitCreateManyProjectInput = {
   checkOutLongitude?: number | null
   checkOutPhotoUrl?: string | null
   workSummary?: string | null
+  visitDate: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -1024,6 +1063,7 @@ export type SiteVisitUpdateWithoutProjectInput = {
   checkOutLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   checkOutPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visitDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1044,6 +1084,7 @@ export type SiteVisitUncheckedUpdateWithoutProjectInput = {
   checkOutLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   checkOutPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visitDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1064,6 +1105,7 @@ export type SiteVisitUncheckedUpdateManyWithoutProjectInput = {
   checkOutLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   checkOutPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visitDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1086,6 +1128,7 @@ export type SiteVisitSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   checkOutLongitude?: boolean
   checkOutPhotoUrl?: boolean
   workSummary?: boolean
+  visitDate?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   createdBy?: boolean
@@ -1109,6 +1152,7 @@ export type SiteVisitSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   checkOutLongitude?: boolean
   checkOutPhotoUrl?: boolean
   workSummary?: boolean
+  visitDate?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   createdBy?: boolean
@@ -1132,6 +1176,7 @@ export type SiteVisitSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   checkOutLongitude?: boolean
   checkOutPhotoUrl?: boolean
   workSummary?: boolean
+  visitDate?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   createdBy?: boolean
@@ -1155,6 +1200,7 @@ export type SiteVisitSelectScalar = {
   checkOutLongitude?: boolean
   checkOutPhotoUrl?: boolean
   workSummary?: boolean
+  visitDate?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   createdBy?: boolean
@@ -1165,7 +1211,7 @@ export type SiteVisitSelectScalar = {
   engineerId?: boolean
 }
 
-export type SiteVisitOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "checkedInAt" | "checkedOutAt" | "checkInLatitude" | "checkInLongitude" | "checkInPhotoUrl" | "checkOutLatitude" | "checkOutLongitude" | "checkOutPhotoUrl" | "workSummary" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy" | "isDeleted" | "version" | "projectId" | "engineerId", ExtArgs["result"]["siteVisit"]>
+export type SiteVisitOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "checkedInAt" | "checkedOutAt" | "checkInLatitude" | "checkInLongitude" | "checkInPhotoUrl" | "checkOutLatitude" | "checkOutLongitude" | "checkOutPhotoUrl" | "workSummary" | "visitDate" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy" | "isDeleted" | "version" | "projectId" | "engineerId", ExtArgs["result"]["siteVisit"]>
 export type SiteVisitInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   engineer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1196,6 +1242,7 @@ export type $SiteVisitPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     checkOutLongitude: number | null
     checkOutPhotoUrl: string | null
     workSummary: string | null
+    visitDate: Date
     createdAt: Date
     updatedAt: Date
     createdBy: string | null
@@ -1639,6 +1686,7 @@ export interface SiteVisitFieldRefs {
   readonly checkOutLongitude: Prisma.FieldRef<"SiteVisit", 'Float'>
   readonly checkOutPhotoUrl: Prisma.FieldRef<"SiteVisit", 'String'>
   readonly workSummary: Prisma.FieldRef<"SiteVisit", 'String'>
+  readonly visitDate: Prisma.FieldRef<"SiteVisit", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"SiteVisit", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"SiteVisit", 'DateTime'>
   readonly createdBy: Prisma.FieldRef<"SiteVisit", 'String'>

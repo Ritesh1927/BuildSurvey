@@ -48,6 +48,7 @@ export type AttendanceMinAggregateOutputType = {
   longitude: number | null
   distanceMeters: number | null
   photoUrl: string | null
+  source: $Enums.AttendanceSource | null
   createdAt: Date | null
   updatedAt: Date | null
   createdBy: string | null
@@ -65,6 +66,7 @@ export type AttendanceMaxAggregateOutputType = {
   longitude: number | null
   distanceMeters: number | null
   photoUrl: string | null
+  source: $Enums.AttendanceSource | null
   createdAt: Date | null
   updatedAt: Date | null
   createdBy: string | null
@@ -82,6 +84,7 @@ export type AttendanceCountAggregateOutputType = {
   longitude: number
   distanceMeters: number
   photoUrl: number
+  source: number
   createdAt: number
   updatedAt: number
   createdBy: number
@@ -115,6 +118,7 @@ export type AttendanceMinAggregateInputType = {
   longitude?: true
   distanceMeters?: true
   photoUrl?: true
+  source?: true
   createdAt?: true
   updatedAt?: true
   createdBy?: true
@@ -132,6 +136,7 @@ export type AttendanceMaxAggregateInputType = {
   longitude?: true
   distanceMeters?: true
   photoUrl?: true
+  source?: true
   createdAt?: true
   updatedAt?: true
   createdBy?: true
@@ -149,6 +154,7 @@ export type AttendanceCountAggregateInputType = {
   longitude?: true
   distanceMeters?: true
   photoUrl?: true
+  source?: true
   createdAt?: true
   updatedAt?: true
   createdBy?: true
@@ -253,6 +259,7 @@ export type AttendanceGroupByOutputType = {
   longitude: number
   distanceMeters: number
   photoUrl: string | null
+  source: $Enums.AttendanceSource
   createdAt: Date
   updatedAt: Date
   createdBy: string | null
@@ -293,6 +300,7 @@ export type AttendanceWhereInput = {
   longitude?: Prisma.FloatFilter<"Attendance"> | number
   distanceMeters?: Prisma.IntFilter<"Attendance"> | number
   photoUrl?: Prisma.StringNullableFilter<"Attendance"> | string | null
+  source?: Prisma.EnumAttendanceSourceFilter<"Attendance"> | $Enums.AttendanceSource
   createdAt?: Prisma.DateTimeFilter<"Attendance"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Attendance"> | Date | string
   createdBy?: Prisma.StringNullableFilter<"Attendance"> | string | null
@@ -311,6 +319,7 @@ export type AttendanceOrderByWithRelationInput = {
   longitude?: Prisma.SortOrder
   distanceMeters?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -333,6 +342,7 @@ export type AttendanceWhereUniqueInput = Prisma.AtLeast<{
   longitude?: Prisma.FloatFilter<"Attendance"> | number
   distanceMeters?: Prisma.IntFilter<"Attendance"> | number
   photoUrl?: Prisma.StringNullableFilter<"Attendance"> | string | null
+  source?: Prisma.EnumAttendanceSourceFilter<"Attendance"> | $Enums.AttendanceSource
   createdAt?: Prisma.DateTimeFilter<"Attendance"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Attendance"> | Date | string
   createdBy?: Prisma.StringNullableFilter<"Attendance"> | string | null
@@ -351,6 +361,7 @@ export type AttendanceOrderByWithAggregationInput = {
   longitude?: Prisma.SortOrder
   distanceMeters?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -376,6 +387,7 @@ export type AttendanceScalarWhereWithAggregatesInput = {
   longitude?: Prisma.FloatWithAggregatesFilter<"Attendance"> | number
   distanceMeters?: Prisma.IntWithAggregatesFilter<"Attendance"> | number
   photoUrl?: Prisma.StringNullableWithAggregatesFilter<"Attendance"> | string | null
+  source?: Prisma.EnumAttendanceSourceWithAggregatesFilter<"Attendance"> | $Enums.AttendanceSource
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Attendance"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Attendance"> | Date | string
   createdBy?: Prisma.StringNullableWithAggregatesFilter<"Attendance"> | string | null
@@ -393,6 +405,7 @@ export type AttendanceCreateInput = {
   longitude: number
   distanceMeters: number
   photoUrl?: string | null
+  source?: $Enums.AttendanceSource
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -410,6 +423,7 @@ export type AttendanceUncheckedCreateInput = {
   longitude: number
   distanceMeters: number
   photoUrl?: string | null
+  source?: $Enums.AttendanceSource
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -427,6 +441,7 @@ export type AttendanceUpdateInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   distanceMeters?: Prisma.IntFieldUpdateOperationsInput | number
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumAttendanceSourceFieldUpdateOperationsInput | $Enums.AttendanceSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -444,6 +459,7 @@ export type AttendanceUncheckedUpdateInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   distanceMeters?: Prisma.IntFieldUpdateOperationsInput | number
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumAttendanceSourceFieldUpdateOperationsInput | $Enums.AttendanceSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -461,6 +477,7 @@ export type AttendanceCreateManyInput = {
   longitude: number
   distanceMeters: number
   photoUrl?: string | null
+  source?: $Enums.AttendanceSource
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -478,6 +495,7 @@ export type AttendanceUpdateManyMutationInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   distanceMeters?: Prisma.IntFieldUpdateOperationsInput | number
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumAttendanceSourceFieldUpdateOperationsInput | $Enums.AttendanceSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -494,6 +512,7 @@ export type AttendanceUncheckedUpdateManyInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   distanceMeters?: Prisma.IntFieldUpdateOperationsInput | number
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumAttendanceSourceFieldUpdateOperationsInput | $Enums.AttendanceSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -526,6 +545,7 @@ export type AttendanceCountOrderByAggregateInput = {
   longitude?: Prisma.SortOrder
   distanceMeters?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrder
@@ -550,6 +570,7 @@ export type AttendanceMaxOrderByAggregateInput = {
   longitude?: Prisma.SortOrder
   distanceMeters?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrder
@@ -567,6 +588,7 @@ export type AttendanceMinOrderByAggregateInput = {
   longitude?: Prisma.SortOrder
   distanceMeters?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrder
@@ -625,6 +647,10 @@ export type AttendanceUncheckedUpdateManyWithoutUserNestedInput = {
   deleteMany?: Prisma.AttendanceScalarWhereInput | Prisma.AttendanceScalarWhereInput[]
 }
 
+export type EnumAttendanceSourceFieldUpdateOperationsInput = {
+  set?: $Enums.AttendanceSource
+}
+
 export type AttendanceCreateWithoutUserInput = {
   id?: string
   date: Date | string
@@ -633,6 +659,7 @@ export type AttendanceCreateWithoutUserInput = {
   longitude: number
   distanceMeters: number
   photoUrl?: string | null
+  source?: $Enums.AttendanceSource
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -649,6 +676,7 @@ export type AttendanceUncheckedCreateWithoutUserInput = {
   longitude: number
   distanceMeters: number
   photoUrl?: string | null
+  source?: $Enums.AttendanceSource
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -694,6 +722,7 @@ export type AttendanceScalarWhereInput = {
   longitude?: Prisma.FloatFilter<"Attendance"> | number
   distanceMeters?: Prisma.IntFilter<"Attendance"> | number
   photoUrl?: Prisma.StringNullableFilter<"Attendance"> | string | null
+  source?: Prisma.EnumAttendanceSourceFilter<"Attendance"> | $Enums.AttendanceSource
   createdAt?: Prisma.DateTimeFilter<"Attendance"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Attendance"> | Date | string
   createdBy?: Prisma.StringNullableFilter<"Attendance"> | string | null
@@ -711,6 +740,7 @@ export type AttendanceCreateManyUserInput = {
   longitude: number
   distanceMeters: number
   photoUrl?: string | null
+  source?: $Enums.AttendanceSource
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: string | null
@@ -727,6 +757,7 @@ export type AttendanceUpdateWithoutUserInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   distanceMeters?: Prisma.IntFieldUpdateOperationsInput | number
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumAttendanceSourceFieldUpdateOperationsInput | $Enums.AttendanceSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -743,6 +774,7 @@ export type AttendanceUncheckedUpdateWithoutUserInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   distanceMeters?: Prisma.IntFieldUpdateOperationsInput | number
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumAttendanceSourceFieldUpdateOperationsInput | $Enums.AttendanceSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -759,6 +791,7 @@ export type AttendanceUncheckedUpdateManyWithoutUserInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   distanceMeters?: Prisma.IntFieldUpdateOperationsInput | number
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumAttendanceSourceFieldUpdateOperationsInput | $Enums.AttendanceSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -777,6 +810,7 @@ export type AttendanceSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   longitude?: boolean
   distanceMeters?: boolean
   photoUrl?: boolean
+  source?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   createdBy?: boolean
@@ -795,6 +829,7 @@ export type AttendanceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   longitude?: boolean
   distanceMeters?: boolean
   photoUrl?: boolean
+  source?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   createdBy?: boolean
@@ -813,6 +848,7 @@ export type AttendanceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   longitude?: boolean
   distanceMeters?: boolean
   photoUrl?: boolean
+  source?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   createdBy?: boolean
@@ -831,6 +867,7 @@ export type AttendanceSelectScalar = {
   longitude?: boolean
   distanceMeters?: boolean
   photoUrl?: boolean
+  source?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   createdBy?: boolean
@@ -840,7 +877,7 @@ export type AttendanceSelectScalar = {
   userId?: boolean
 }
 
-export type AttendanceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "date" | "markedAt" | "latitude" | "longitude" | "distanceMeters" | "photoUrl" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy" | "isDeleted" | "version" | "userId", ExtArgs["result"]["attendance"]>
+export type AttendanceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "date" | "markedAt" | "latitude" | "longitude" | "distanceMeters" | "photoUrl" | "source" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy" | "isDeleted" | "version" | "userId", ExtArgs["result"]["attendance"]>
 export type AttendanceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -864,6 +901,7 @@ export type $AttendancePayload<ExtArgs extends runtime.Types.Extensions.Internal
     longitude: number
     distanceMeters: number
     photoUrl: string | null
+    source: $Enums.AttendanceSource
     createdAt: Date
     updatedAt: Date
     createdBy: string | null
@@ -1302,6 +1340,7 @@ export interface AttendanceFieldRefs {
   readonly longitude: Prisma.FieldRef<"Attendance", 'Float'>
   readonly distanceMeters: Prisma.FieldRef<"Attendance", 'Int'>
   readonly photoUrl: Prisma.FieldRef<"Attendance", 'String'>
+  readonly source: Prisma.FieldRef<"Attendance", 'AttendanceSource'>
   readonly createdAt: Prisma.FieldRef<"Attendance", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Attendance", 'DateTime'>
   readonly createdBy: Prisma.FieldRef<"Attendance", 'String'>

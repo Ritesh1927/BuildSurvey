@@ -20,6 +20,7 @@ interface CalendarDay {
   markedAt: string | null
   distanceMeters: number | null
   photoUrl: string | null
+  source: "OFFICE" | "FIELD_VISIT" | null
   holidayName: string | null
 }
 
@@ -167,7 +168,13 @@ export function EmployeeCalendarDialog({ userId, employeeName, open, onOpenChang
       <PhotoViewDialog
         photoUrl={viewDay?.photoUrl ?? null}
         title={viewDay ? formatDate(viewDay.date) : ""}
-        subtitle={viewDay?.markedAt ? `${formatDateTime(viewDay.markedAt)}${viewDay.distanceMeters != null ? ` · ${formatDistance(viewDay.distanceMeters)} from office` : ""}` : undefined}
+        subtitle={viewDay?.markedAt
+          ? `${formatDateTime(viewDay.markedAt)}${
+              viewDay.source === 'FIELD_VISIT'
+                ? ' · marked from a field visit, no photo'
+                : viewDay.distanceMeters != null ? ` · ${formatDistance(viewDay.distanceMeters)} from office` : ''
+            }`
+          : undefined}
         open={!!viewDay}
         onOpenChange={(open) => { if (!open) setViewDay(null) }}
       />

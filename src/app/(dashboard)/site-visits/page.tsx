@@ -4,13 +4,14 @@ import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
 import {
-  Navigation,
   CheckCircle2,
   Clock,
+  HelpCircle,
   ListChecks,
+  AlertTriangle,
 } from "lucide-react"
 
-import { formatDateTime, formatDuration } from "@/lib/utils"
+import { formatDate } from "@/lib/utils"
 import { PageHeader } from "@/components/ui/page-header"
 import { StatCard } from "@/components/ui/stat-card"
 import { Badge } from "@/components/ui/badge"
@@ -23,21 +24,31 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { PhotoViewDialog } from "@/components/shared/photo-view-dialog"
+import { SiteVisitCalendarDialog } from "./site-visit-calendar-dialog"
 
-interface SiteVisit {
+type TodayStatus = "visited" | "in-progress" | "pending" | "holiday" | "outside-window"
+
+interface EligibleProject {
   id: string
-  projectId: string
-  projectName: string
-  projectCode: string
+  name: string
+  code: string
+  clientName: string
   engineerId: string
   engineerName: string
-  checkedInAt: string
-  checkedOutAt: string | null
-  checkInPhotoUrl: string
-  checkOutPhotoUrl: string | null
-  workSummary: string | null
-  durationMinutes: number | null
+  windowStart: string
+  windowEnd: string
+  eligibleSoFar: number
+  visited: number
+  missed: number
+  todayStatus: TodayStatus
+}
+
+const TODAY_STATUS_META: Record<TodayStatus, { label: string; variant: "success" | "warning" | "secondary" }> = {
+  visited: { label: "Visited Today", variant: "success" },
+  "in-progress": { label: "In Progress", variant: "warning" },
+  pending: { label: "Pending Today", variant: "secondary" },
+  holiday: { label: "Holiday", variant: "secondary" },
+  "outside-window": { label: "Outside Window", variant: "secondary" },
 }
 
 export default function SiteVisitsPage() {
@@ -45,16 +56,16 @@ export default function SiteVisitsPage() {
   const role = session?.user?.role
   const isOwnView = role === 'ENGINEER'
 
-  const [visits, setVisits] = useState<SiteVisit[]>([])
+  const [projects, setProjects] = useState<EligibleProject[]>([])
   const [loading, setLoading] = useState(true)
-  const [viewPhoto, setViewPhoto] = useState<{ url: string | null; title: string; subtitle: string } | null>(null)
+  const [calendarProject, setCalendarProject] = useState<{ id: string; name: string } | null>(null)
 
-  const fetchVisits = useCallback(async () => {
+  const fetchProjects = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/site-visits?limit=100')
+      const res = await fetch('/api/site-visits')
       const data = await res.json()
-      if (data.success) setVisits(data.data)
+      if (data.success) setProjects(data.data)
     } catch {
       // keep whatever was already loaded
     } finally {
@@ -62,21 +73,17 @@ export default function SiteVisitsPage() {
     }
   }, [])
 
-  useEffect(() => { fetchVisits() }, [fetchVisits])
+  useEffect(() => { fetchProjects() }, [fetchProjects])
 
-  const openCount = visits.filter((v) => !v.checkedOutAt).length
-  const completedCount = visits.filter((v) => v.checkedOutAt).length
-  const avgDuration = (() => {
-    const durations = visits.map((v) => v.durationMinutes).filter((d): d is number => d != null)
-    if (durations.length === 0) return null
-    return Math.round(durations.reduce((sum, d) => sum + d, 0) / durations.length)
-  })()
+  const visitedToday = projects.filter((p) => p.todayStatus === 'visited').length
+  const pendingToday = projects.filter((p) => p.todayStatus === 'pending' || p.todayStatus === 'in-progress').length
+  const totalMissed = projects.reduce((sum, p) => sum + p.missed, 0)
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Site Visits"
-        description={isOwnView ? "Your ongoing site supervision visits" : "Engineer site supervision across all projects"}
+        description={isOwnView ? "Your assigned projects' site-visit schedules" : "Engineer site-visit schedules across all projects"}
         breadcrumbs={[
           { label: "Dashboard", href: "/" },
           { label: "Site Visits" },
@@ -84,78 +91,83 @@ export default function SiteVisitsPage() {
       />
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Currently On Site" value={openCount} icon={<Navigation className="h-6 w-6" />} color="info" />
-        <StatCard label="Completed" value={completedCount} icon={<CheckCircle2 className="h-6 w-6" />} color="success" />
-        <StatCard label="Avg. Visit Length" value={avgDuration != null ? formatDuration(avgDuration) : '—'} icon={<Clock className="h-6 w-6" />} color="default" />
+        <StatCard label="Visited Today" value={visitedToday} icon={<CheckCircle2 className="h-6 w-6" />} color="success" />
+        <StatCard label="Pending Today" value={pendingToday} icon={<Clock className="h-6 w-6" />} color="info" />
+        <StatCard label="Total Missed Visits" value={totalMissed} icon={<AlertTriangle className="h-6 w-6" />} color="warning" />
       </div>
 
       <Card>
         <CardContent className="p-0">
           {loading ? (
             <div className="py-12 text-center text-sm text-muted-foreground">Loading site visits...</div>
-          ) : visits.length === 0 ? (
+          ) : projects.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <ListChecks className="h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 text-lg font-semibold">No site visits yet</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {isOwnView ? "Check in from a project's Site Visits tab to get started" : "Site visits open once a survey on a project has been approved"}
+              <h3 className="mt-4 text-lg font-semibold">No site-visit-eligible projects</h3>
+              <p className="mt-1 text-sm text-muted-foreground max-w-md">
+                A project needs an assigned engineer and a start/end date before it shows up here.
               </p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-14">Photo</TableHead>
                   <TableHead>Project</TableHead>
+                  <TableHead>Client</TableHead>
                   {!isOwnView && <TableHead>Engineer</TableHead>}
-                  <TableHead>Checked In</TableHead>
-                  <TableHead>Checked Out</TableHead>
-                  <TableHead>Duration</TableHead>
-                  <TableHead>Work Summary</TableHead>
+                  <TableHead>Window</TableHead>
+                  <TableHead>Progress</TableHead>
+                  <TableHead>Today</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {visits.map((v) => (
-                  <TableRow key={v.id}>
-                    <TableCell>
-                      <button
-                        type="button"
-                        onClick={() => setViewPhoto({ url: v.checkInPhotoUrl, title: v.engineerName, subtitle: `${v.projectName} · ${formatDateTime(v.checkedInAt)}` })}
-                        className="block h-9 w-9 overflow-hidden rounded-full border hover:opacity-80"
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={v.checkInPhotoUrl} alt="" className="h-full w-full object-cover" />
-                      </button>
-                    </TableCell>
-                    <TableCell>
-                      <Link href={`/projects/${v.projectId}`} className="font-medium hover:text-primary transition-colors">
-                        {v.projectName}
-                      </Link>
-                      <p className="text-xs text-muted-foreground">{v.projectCode}</p>
-                    </TableCell>
-                    {!isOwnView && <TableCell className="text-sm">{v.engineerName}</TableCell>}
-                    <TableCell className="text-sm text-muted-foreground">{formatDateTime(v.checkedInAt)}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{v.checkedOutAt ? formatDateTime(v.checkedOutAt) : '—'}</TableCell>
-                    <TableCell className="text-sm">
-                      {v.durationMinutes != null ? formatDuration(v.durationMinutes) : <Badge variant="warning" className="text-[10px]">In Progress</Badge>}
-                    </TableCell>
-                    <TableCell className="max-w-[260px] truncate text-sm text-muted-foreground" title={v.workSummary || undefined}>
-                      {v.workSummary || '—'}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {projects.map((p) => {
+                  const meta = TODAY_STATUS_META[p.todayStatus]
+                  return (
+                    <TableRow
+                      key={p.id}
+                      className="cursor-pointer"
+                      onClick={() => setCalendarProject({ id: p.id, name: p.name })}
+                    >
+                      <TableCell>
+                        <Link
+                          href={`/projects/${p.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="font-medium hover:text-primary transition-colors"
+                        >
+                          {p.name}
+                        </Link>
+                        <p className="text-xs text-muted-foreground">{p.code}</p>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{p.clientName}</TableCell>
+                      {!isOwnView && <TableCell className="text-sm">{p.engineerName}</TableCell>}
+                      <TableCell className="text-sm text-muted-foreground">{formatDate(p.windowStart)} – {formatDate(p.windowEnd)}</TableCell>
+                      <TableCell className="text-sm">
+                        {p.visited}/{p.eligibleSoFar} visited
+                        {p.missed > 0 && <span className="ml-1.5 text-destructive font-medium">· {p.missed} missed</span>}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={meta.variant} className="gap-1">
+                          {p.todayStatus === 'visited' && <CheckCircle2 className="h-3 w-3" />}
+                          {(p.todayStatus === 'pending' || p.todayStatus === 'outside-window' || p.todayStatus === 'holiday') && <HelpCircle className="h-3 w-3" />}
+                          {p.todayStatus === 'in-progress' && <Clock className="h-3 w-3" />}
+                          {meta.label}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           )}
         </CardContent>
       </Card>
 
-      <PhotoViewDialog
-        photoUrl={viewPhoto?.url ?? null}
-        title={viewPhoto?.title ?? ""}
-        subtitle={viewPhoto?.subtitle}
-        open={!!viewPhoto}
-        onOpenChange={(open) => { if (!open) setViewPhoto(null) }}
+      <SiteVisitCalendarDialog
+        projectId={calendarProject?.id ?? null}
+        projectName={calendarProject?.name ?? ""}
+        open={!!calendarProject}
+        onOpenChange={(open) => { if (!open) setCalendarProject(null) }}
       />
     </div>
   )

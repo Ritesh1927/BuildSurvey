@@ -199,3 +199,11 @@ export const ActivityType = {
 } as const
 
 export type ActivityType = (typeof ActivityType)[keyof typeof ActivityType]
+
+
+export const AttendanceSource = {
+  OFFICE: 'OFFICE',
+  FIELD_VISIT: 'FIELD_VISIT'
+} as const
+
+export type AttendanceSource = (typeof AttendanceSource)[keyof typeof AttendanceSource]

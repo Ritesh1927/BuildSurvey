@@ -4364,6 +4364,7 @@ export const AttendanceScalarFieldEnum = {
   longitude: 'longitude',
   distanceMeters: 'distanceMeters',
   photoUrl: 'photoUrl',
+  source: 'source',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   createdBy: 'createdBy',
@@ -4387,6 +4388,7 @@ export const SiteVisitScalarFieldEnum = {
   checkOutLongitude: 'checkOutLongitude',
   checkOutPhotoUrl: 'checkOutPhotoUrl',
   workSummary: 'workSummary',
+  visitDate: 'visitDate',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   createdBy: 'createdBy',
@@ -4881,6 +4883,20 @@ export type EnumActivityTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
  * Reference to a field of type 'ActivityType[]'
  */
 export type ListEnumActivityTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ActivityType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'AttendanceSource'
+ */
+export type EnumAttendanceSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AttendanceSource'>
+    
+
+
+/**
+ * Reference to a field of type 'AttendanceSource[]'
+ */
+export type ListEnumAttendanceSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AttendanceSource[]'>
     
 
 /**

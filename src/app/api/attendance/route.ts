@@ -7,16 +7,12 @@ import { getOfficeLocation } from '@/lib/office-location'
 import { siteStatus, OFFICE_RADIUS_METERS } from '@/lib/geo'
 import { formatDistance } from '@/lib/utils'
 import { getWeeklyHolidayDays, isWeeklyHoliday, getHolidaysInRange } from '@/lib/holidays'
+import { todayDateOnly } from '@/lib/attendance'
 
 // Every internal role marks their own attendance - a Client isn't office
 // staff and has no reason to be on this page at all.
 const MARK_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'ACCOUNTANT'] as const
 const TEAM_VIEW_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
-
-function todayDateOnly(): Date {
-  const now = new Date()
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
-}
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth()
@@ -51,7 +47,7 @@ export async function GET(request: NextRequest) {
         }),
         db.attendance.findMany({
           where: { isDeleted: false, date: targetDate },
-          select: { userId: true, markedAt: true, distanceMeters: true, photoUrl: true },
+          select: { userId: true, markedAt: true, distanceMeters: true, photoUrl: true, source: true },
         }),
         db.attendance.findMany({
           where: { isDeleted: false, date: { gte: monthStart, lt: monthEnd } },
@@ -110,7 +106,7 @@ export async function GET(request: NextRequest) {
       const [records, weeklyHolidayDays, adHocHolidays] = await Promise.all([
         db.attendance.findMany({
           where: { isDeleted: false, userId: targetUserId, date: { gte: monthStart, lt: monthEnd } },
-          select: { date: true, markedAt: true, distanceMeters: true, photoUrl: true },
+          select: { date: true, markedAt: true, distanceMeters: true, photoUrl: true, source: true },
         }),
         getWeeklyHolidayDays(),
         getHolidaysInRange(monthStart, monthEnd),
@@ -153,6 +149,7 @@ export async function GET(request: NextRequest) {
           markedAt: record?.markedAt ?? null,
           distanceMeters: record?.distanceMeters ?? null,
           photoUrl: record?.photoUrl ?? null,
+          source: record?.source ?? null,
           holidayName: adHocName || null,
         })
       }
@@ -175,7 +172,7 @@ export async function GET(request: NextRequest) {
       where: { isDeleted: false, userId },
       orderBy: { date: 'desc' },
       take: limit,
-      select: { id: true, date: true, markedAt: true, distanceMeters: true, photoUrl: true },
+      select: { id: true, date: true, markedAt: true, distanceMeters: true, photoUrl: true, source: true },
     })
 
     return NextResponse.json({ success: true, data: records })

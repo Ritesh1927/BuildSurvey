@@ -5,6 +5,7 @@ import { requireAuth, requireRole } from '@/lib/api-auth'
 import { uploadPhotoDataUrl } from '@/lib/photo-upload'
 import { siteStatus } from '@/lib/geo'
 import { formatDistance } from '@/lib/utils'
+import { markFieldAttendance } from '@/lib/attendance'
 
 // Deliberately narrower than the survey WRITE_ROLES tier: check-in is a
 // self-attested proof-of-presence action. Letting Admin/Manager perform it
@@ -103,6 +104,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         },
       }),
     ], { timeout: 20000 })
+
+    try {
+      await markFieldAttendance(userId, lat, lng)
+    } catch (e) {
+      // Field-attendance marking is a side effect, not the point of this
+      // request - a failure here shouldn't fail the check-in itself.
+      console.error('markFieldAttendance failed after survey checkin:', e)
+    }
 
     return NextResponse.json({ success: true, data: updatedSurvey, photoUrl, onSite: checkInSiteCheck.onSite, distanceMeters: checkInSiteCheck.distanceMeters }, { status: 201 })
   } catch (error) {

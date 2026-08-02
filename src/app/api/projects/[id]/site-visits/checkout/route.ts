@@ -4,7 +4,8 @@ import { auth } from '@/lib/auth'
 import { requireAuth, requireRole } from '@/lib/api-auth'
 import { uploadPhotoDataUrl } from '@/lib/photo-upload'
 import { siteStatus } from '@/lib/geo'
-import { formatDistance } from '@/lib/utils'
+import { formatDistance, formatDate } from '@/lib/utils'
+import { todayDateOnly } from '@/lib/attendance'
 
 const CHECKOUT_ROLES = ['ENGINEER'] as const
 
@@ -34,6 +35,20 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     })
     if (!visit) {
       return NextResponse.json({ success: false, error: 'You must check in before checking out' }, { status: 400 })
+    }
+
+    // Checkout "expires" at midnight - a check-in from an earlier day can no
+    // longer be closed out, it's simply a missed visit for that day. This is
+    // enforced here rather than by a cron mutating old rows.
+    const today = todayDateOnly()
+    if (visit.visitDate.getTime() !== today.getTime()) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Your check-in from ${formatDate(visit.visitDate)} expired at midnight without a checkout and is now marked as a missed visit. Check in again today to start a new visit.`,
+        },
+        { status: 400 }
+      )
     }
 
     if (!workSummary || typeof workSummary !== 'string' || !workSummary.trim()) {

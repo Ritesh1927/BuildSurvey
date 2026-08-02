@@ -13,7 +13,7 @@ import {
   HelpCircle,
 } from "lucide-react"
 
-import { formatDateTime, formatDuration } from "@/lib/utils"
+import { formatDate, formatDateTime, formatDuration } from "@/lib/utils"
 import { compressImage, getCurrentPosition } from "@/lib/image-compress"
 import { siteStatus } from "@/lib/geo"
 import { showSuccess, showError } from "@/components/ui/toast"
@@ -33,6 +33,7 @@ import { PhotoViewDialog } from "@/components/shared/photo-view-dialog"
 
 interface SiteVisitRecord {
   id: string
+  visitDate: string
   checkedInAt: string
   checkedOutAt: string | null
   checkInPhotoUrl: string
@@ -60,9 +61,11 @@ interface SiteVisitTabProps {
   canViewAll: boolean
   projectLatitude: number | null
   projectLongitude: number | null
+  projectStartDate: string | null
+  projectEndDate: string | null
 }
 
-export function SiteVisitTab({ projectId, isLeadEngineer, canViewAll, projectLatitude, projectLongitude }: SiteVisitTabProps) {
+export function SiteVisitTab({ projectId, isLeadEngineer, canViewAll, projectLatitude, projectLongitude, projectStartDate, projectEndDate }: SiteVisitTabProps) {
   const { data: session } = useSession()
   const userId = session?.user?.id
 
@@ -94,7 +97,18 @@ export function SiteVisitTab({ projectId, isLeadEngineer, canViewAll, projectLat
 
   useEffect(() => { fetchVisits() }, [fetchVisits])
 
-  const myOpenVisit = visits.find((v) => v.engineer.id === userId && !v.checkedOutAt) || null
+  // One visit per project per day - "today" here means today's record for
+  // this engineer specifically, keyed by visitDate rather than checkedInAt
+  // so a still-open visit from a previous day (which has expired at
+  // midnight and can no longer be checked out) doesn't get mistaken for an
+  // active one.
+  const todayKey = new Date().toISOString().slice(0, 10)
+  const myVisits = visits.filter((v) => v.engineer.id === userId)
+  const todayVisit = myVisits.find((v) => v.visitDate.slice(0, 10) === todayKey) || null
+  const staleOpenVisit = myVisits.find((v) => !v.checkedOutAt && v.visitDate.slice(0, 10) !== todayKey) || null
+
+  const isWithinWindow = !!projectStartDate && !!projectEndDate
+    && todayKey >= projectStartDate.slice(0, 10) && todayKey <= projectEndDate.slice(0, 10)
 
   const handleCheckInPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -192,17 +206,30 @@ export function SiteVisitTab({ projectId, isLeadEngineer, canViewAll, projectLat
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              {myOpenVisit ? <LogOut className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}
-              {myOpenVisit ? "Check Out" : "Check In"}
+              {todayVisit?.checkedOutAt ? <CheckCircle2 className="h-5 w-5" /> : todayVisit ? <LogOut className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}
+              {todayVisit?.checkedOutAt ? "Today's Visit" : todayVisit ? "Check Out" : "Check In"}
             </CardTitle>
             <CardDescription>
-              {myOpenVisit
-                ? `Checked in ${formatDateTime(myOpenVisit.checkedInAt)} — describe today's work to check out`
-                : "Site visits require a photo taken from the project site — location is captured automatically"}
+              {todayVisit?.checkedOutAt
+                ? `Completed — checked out ${formatDateTime(todayVisit.checkedOutAt)}`
+                : todayVisit
+                  ? `Checked in ${formatDateTime(todayVisit.checkedInAt)} — describe today's work to check out`
+                  : isWithinWindow
+                    ? "Site visits require a photo taken from the project site — location is captured automatically"
+                    : projectStartDate && projectEndDate
+                      ? `Site visits for this project run from ${formatDate(projectStartDate)} to ${formatDate(projectEndDate)} — today is outside that window.`
+                      : "This project has no start/end date set yet — an Admin/Manager needs to add them before site visits can be tracked."}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {mapsHref && (
+            {staleOpenVisit && (
+              <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+                <XCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                <span>Your check-in from {formatDate(staleOpenVisit.visitDate)} expired at midnight without a checkout and is now marked as a missed visit.</span>
+              </div>
+            )}
+
+            {mapsHref && !todayVisit?.checkedOutAt && (isWithinWindow || todayVisit) && (
               <Button variant="outline" className="w-full" asChild>
                 <a href={mapsHref} target="_blank" rel="noopener noreferrer">
                   <Navigation className="mr-2 h-4 w-4" />Get Directions to Site
@@ -210,31 +237,40 @@ export function SiteVisitTab({ projectId, isLeadEngineer, canViewAll, projectLat
               </Button>
             )}
 
-            {!myOpenVisit ? (
-              <>
-                {checkInPhoto ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={checkInPhoto} alt="Check-in preview" className="w-full max-w-xs rounded-lg border object-cover" />
-                ) : (
-                  <label className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-8 text-center cursor-pointer hover:bg-muted/50">
-                    <Camera className="h-8 w-8 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Tap to take a photo</span>
-                    <input type="file" accept="image/*" capture="user" className="hidden" onChange={handleCheckInPhoto} />
-                  </label>
-                )}
-                {checkInError && (
-                  <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{checkInError}</div>
-                )}
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  {checkInPhoto && (
-                    <Button variant="outline" onClick={() => setCheckInPhoto(null)} disabled={checkingIn}>Retake</Button>
+            {todayVisit?.checkedOutAt ? (
+              <div className="space-y-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={todayVisit.checkInPhotoUrl} alt="Check-in" className="w-full max-w-xs rounded-lg border object-cover" />
+                <div className="flex items-center gap-2 text-sm text-emerald-600"><CheckCircle2 className="h-4 w-4" />Only one visit per project per day — see you tomorrow</div>
+                {todayVisit.workSummary && <p className="text-sm text-muted-foreground">{todayVisit.workSummary}</p>}
+              </div>
+            ) : !todayVisit ? (
+              isWithinWindow && (
+                <>
+                  {checkInPhoto ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={checkInPhoto} alt="Check-in preview" className="w-full max-w-xs rounded-lg border object-cover" />
+                  ) : (
+                    <label className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-8 text-center cursor-pointer hover:bg-muted/50">
+                      <Camera className="h-8 w-8 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Tap to take a photo</span>
+                      <input type="file" accept="image/*" capture="user" className="hidden" onChange={handleCheckInPhoto} />
+                    </label>
                   )}
-                  <Button className="sm:flex-1" onClick={handleCheckIn} disabled={!checkInPhoto || checkingIn}>
-                    {checkingIn ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogIn className="mr-2 h-4 w-4" />}
-                    {checkingIn ? "Checking in..." : "Check In"}
-                  </Button>
-                </div>
-              </>
+                  {checkInError && (
+                    <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{checkInError}</div>
+                  )}
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    {checkInPhoto && (
+                      <Button variant="outline" onClick={() => setCheckInPhoto(null)} disabled={checkingIn}>Retake</Button>
+                    )}
+                    <Button className="sm:flex-1" onClick={handleCheckIn} disabled={!checkInPhoto || checkingIn}>
+                      {checkingIn ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogIn className="mr-2 h-4 w-4" />}
+                      {checkingIn ? "Checking in..." : "Check In"}
+                    </Button>
+                  </div>
+                </>
+              )
             ) : (
               <>
                 <div className="space-y-2">
@@ -300,6 +336,7 @@ export function SiteVisitTab({ projectId, isLeadEngineer, canViewAll, projectLat
                   const durationMinutes = v.checkedOutAt
                     ? Math.round((new Date(v.checkedOutAt).getTime() - new Date(v.checkedInAt).getTime()) / 60000)
                     : null
+                  const isToday = v.visitDate.slice(0, 10) === todayKey
                   return (
                     <TableRow key={v.id}>
                       <TableCell>
@@ -315,7 +352,15 @@ export function SiteVisitTab({ projectId, isLeadEngineer, canViewAll, projectLat
                       {canViewAll && <TableCell className="font-medium">{v.engineer.firstName} {v.engineer.lastName}</TableCell>}
                       <TableCell className="text-sm text-muted-foreground">{formatDateTime(v.checkedInAt)}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{v.checkedOutAt ? formatDateTime(v.checkedOutAt) : '—'}</TableCell>
-                      <TableCell className="text-sm">{durationMinutes != null ? formatDuration(durationMinutes) : <Badge variant="warning" className="text-[10px]">In Progress</Badge>}</TableCell>
+                      <TableCell className="text-sm">
+                        {durationMinutes != null ? (
+                          formatDuration(durationMinutes)
+                        ) : isToday ? (
+                          <Badge variant="warning" className="text-[10px]">In Progress</Badge>
+                        ) : (
+                          <Badge variant="destructive" className="text-[10px]">No Checkout</Badge>
+                        )}
+                      </TableCell>
                       <TableCell><SiteBadge onSite={checkInStatus.onSite} /></TableCell>
                       <TableCell className="max-w-[240px] truncate text-sm text-muted-foreground" title={v.workSummary || undefined}>
                         {v.workSummary || '—'}

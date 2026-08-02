@@ -1005,26 +1005,36 @@ model GpsTracking {
   @@index([timestamp])
 }
 
+enum AttendanceSource {
+  // Marked in person from the office attendance page (photo + office geofence).
+  OFFICE
+  // Auto-marked because the user checked in to a Survey or Site Visit that
+  // day - they were doing field work, not skipping the office. No photo is
+  // stored for these (see FIELD_VISIT handling in src/lib/attendance.ts).
+  FIELD_VISIT
+}
+
 model Attendance {
-  id             String   @id @default(uuid())
+  id             String           @id @default(uuid())
   // The calendar day this record is for (stored at UTC midnight) — paired
   // with userId in a unique constraint so an employee can only mark
   // attendance once per day.
   date           DateTime
-  markedAt       DateTime @default(now())
+  markedAt       DateTime         @default(now())
   latitude       Float
   longitude      Float
   distanceMeters Int
   // Nulled out by the daily cleanup cron once the record passes 30 days
   // old — the GPS/date/distance history is kept indefinitely, only the
-  // photo itself is time-limited.
+  // photo itself is time-limited. Always null for FIELD_VISIT records.
   photoUrl       String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  source         AttendanceSource @default(OFFICE)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
   createdBy      String?
   updatedBy      String?
-  isDeleted      Boolean  @default(false)
-  version        Int      @default(1)
+  isDeleted      Boolean          @default(false)
+  version        Int              @default(1)
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -1054,6 +1064,11 @@ model SiteVisit {
   // work, replacing Survey's checklist (which doesn't fit a repeating,
   // free-form supervision visit the way it fits a one-time inspection).
   workSummary       String?   @db.Text
+  // The calendar day (UTC midnight) this visit belongs to, set at check-in -
+  // paired with projectId+engineerId in a unique constraint so an engineer
+  // can only visit a given project once per day, and so checkout can detect
+  // a stale (past-midnight) check-in instead of closing it out late.
+  visitDate         DateTime
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   createdBy         String?
@@ -1066,6 +1081,7 @@ model SiteVisit {
   engineerId String
   engineer   User    @relation(fields: [engineerId], references: [id])
 
+  @@unique([projectId, engineerId, visitDate])
   @@index([projectId])
   @@index([engineerId])
   @@index([checkedInAt])

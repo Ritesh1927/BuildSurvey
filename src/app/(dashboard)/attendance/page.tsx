@@ -36,12 +36,15 @@ import {
 import { EmployeeCalendarDialog } from "./employee-calendar-dialog"
 import { PhotoViewDialog } from "@/components/shared/photo-view-dialog"
 
+type AttendanceSource = "OFFICE" | "FIELD_VISIT"
+
 interface AttendanceRecord {
   id: string
   date: string
   markedAt: string
   distanceMeters: number
   photoUrl: string | null
+  source: AttendanceSource
 }
 
 interface TeamEmployee {
@@ -49,7 +52,7 @@ interface TeamEmployee {
   firstName: string
   lastName: string
   role: string
-  today: { markedAt: string; distanceMeters: number; photoUrl: string | null } | null
+  today: { markedAt: string; distanceMeters: number; photoUrl: string | null; source: AttendanceSource } | null
   monthCount: number
 }
 
@@ -198,6 +201,7 @@ export default function AttendancePage() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm text-emerald-600 font-medium">
                     <CheckCircle2 className="h-4 w-4" />Attendance marked for today
+                    {todayRecord.source === 'FIELD_VISIT' && <Badge variant="secondary" className="text-[10px]">Field Visit</Badge>}
                   </div>
                   <div className="flex items-start gap-4">
                     {todayRecord.photoUrl && (
@@ -206,7 +210,11 @@ export default function AttendancePage() {
                     )}
                     <div className="text-sm space-y-1">
                       <p><span className="text-muted-foreground">Marked at:</span> {formatDateTime(todayRecord.markedAt)}</p>
-                      <p><span className="text-muted-foreground">Distance from office:</span> {formatDistance(todayRecord.distanceMeters)}</p>
+                      {todayRecord.source === 'FIELD_VISIT' ? (
+                        <p className="text-muted-foreground">Marked automatically from a survey/site-visit check-in — no office photo needed today.</p>
+                      ) : (
+                        <p><span className="text-muted-foreground">Distance from office:</span> {formatDistance(todayRecord.distanceMeters)}</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -287,9 +295,14 @@ export default function AttendancePage() {
                             )}
                           </button>
                         </TableCell>
-                        <TableCell className="font-medium">{formatDate(r.date)}</TableCell>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-1.5">
+                            {formatDate(r.date)}
+                            {r.source === 'FIELD_VISIT' && <Badge variant="secondary" className="text-[10px]">Field Visit</Badge>}
+                          </div>
+                        </TableCell>
                         <TableCell className="text-sm text-muted-foreground">{formatDateTime(r.markedAt)}</TableCell>
-                        <TableCell className="text-right text-sm">{formatDistance(r.distanceMeters)}</TableCell>
+                        <TableCell className="text-right text-sm">{r.source === 'FIELD_VISIT' ? '—' : formatDistance(r.distanceMeters)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -367,7 +380,9 @@ export default function AttendancePage() {
                                   setViewPhoto({
                                     url: e.today!.photoUrl,
                                     title: `${e.firstName} ${e.lastName}`,
-                                    subtitle: `${formatDateTime(e.today!.markedAt)} · ${formatDistance(e.today!.distanceMeters)} from office`,
+                                    subtitle: e.today!.source === 'FIELD_VISIT'
+                                      ? `${formatDateTime(e.today!.markedAt)} · marked from a field visit`
+                                      : `${formatDateTime(e.today!.markedAt)} · ${formatDistance(e.today!.distanceMeters)} from office`,
                                   })
                                 }}
                                 className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border hover:opacity-80"
@@ -396,13 +411,16 @@ export default function AttendancePage() {
                           <TableCell className="text-sm text-muted-foreground">{e.role}</TableCell>
                           <TableCell>
                             {e.today ? (
-                              <Badge variant="success" className="gap-1"><CheckCircle2 className="h-3 w-3" />Present</Badge>
+                              <div className="flex items-center gap-1.5">
+                                <Badge variant="success" className="gap-1"><CheckCircle2 className="h-3 w-3" />Present</Badge>
+                                {e.today.source === 'FIELD_VISIT' && <Badge variant="secondary" className="text-[10px]">Field Visit</Badge>}
+                              </div>
                             ) : (
                               <Badge variant="secondary" className="gap-1"><HelpCircle className="h-3 w-3" />Not Marked</Badge>
                             )}
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">{e.today ? formatDateTime(e.today.markedAt) : '—'}</TableCell>
-                          <TableCell className="text-right text-sm">{e.today ? formatDistance(e.today.distanceMeters) : '—'}</TableCell>
+                          <TableCell className="text-right text-sm">{e.today ? (e.today.source === 'FIELD_VISIT' ? '—' : formatDistance(e.today.distanceMeters)) : '—'}</TableCell>
                           <TableCell className="text-right text-sm">{e.monthCount} day{e.monthCount === 1 ? '' : 's'}</TableCell>
                         </TableRow>
                       ))}

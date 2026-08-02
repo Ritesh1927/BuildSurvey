@@ -589,6 +589,8 @@ export default function ProjectDetailPage() {
                 canViewAll={!!role && ['SUPER_ADMIN', 'ADMIN', 'MANAGER'].includes(role)}
                 projectLatitude={project.latitude}
                 projectLongitude={project.longitude}
+                projectStartDate={project.startDate}
+                projectEndDate={project.endDate}
               />
             </TabsContent>
           )}
