@@ -24,6 +24,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import { showSuccess, showError } from "@/components/ui/toast"
+import { differenceInCalendarDays } from "date-fns"
 import { formatDate, formatDistance } from "@/lib/utils"
 import { siteStatus } from "@/lib/geo"
 import { compressImage, getCurrentPosition } from "@/lib/image-compress"
@@ -416,6 +417,15 @@ export default function SurveyDetailPage() {
   const checklistProgress = checklistTotal > 0 ? Math.round((checklistCompleted / checklistTotal) * 100) : 0
   const checklistCategories = [...new Set(survey.checklistItems.map((i) => i.category))]
 
+  // "Delayed" means the survey blew past its scheduled date without being
+  // completed (checked out) yet - once completedDate is set the survey is
+  // done regardless of whether it's still awaiting approval, so it's no
+  // longer counted as delayed.
+  const daysDelayed = survey.scheduledDate && !survey.completedDate
+    ? differenceInCalendarDays(new Date(), new Date(survey.scheduledDate))
+    : 0
+  const isDelayed = daysDelayed > 0
+
   const checkInPhotoRecord = survey.photos.find((p) => p.caption === 'Check-In')
   const checkInSiteCheck = checkInPhotoRecord
     ? siteStatus(checkInPhotoRecord.latitude, checkInPhotoRecord.longitude, survey.project.latitude, survey.project.longitude)
@@ -556,6 +566,19 @@ export default function SurveyDetailPage() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6 mt-4">
+            {isDelayed && (
+              <div className="flex items-center gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+                <AlertTriangle className="h-5 w-5 shrink-0 text-destructive" />
+                <div className="text-sm">
+                  <p className="font-medium text-destructive">
+                    Delayed by {daysDelayed} day{daysDelayed === 1 ? '' : 's'} (scheduled for {formatDate(survey.scheduledDate!)})
+                  </p>
+                  <p className="text-muted-foreground">
+                    Surveyor: {survey.engineer ? `${survey.engineer.firstName} ${survey.engineer.lastName}` : 'Unassigned'}
+                  </p>
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <Card className="lg:col-span-2">
                 <CardHeader><CardTitle>Survey Information</CardTitle></CardHeader>
