@@ -7,10 +7,12 @@ import { ProjectStatus, ProjectType } from '@/generated/prisma/enums'
 const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'ACCOUNTANT', 'CLIENT'] as const
 const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER'] as const
 const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const
-// Fields an Engineer, even one leading the project, cannot change —
-// reassignment and sanctioned budget are staffing/financial authority,
-// not operational authority.
-const ENGINEER_RESTRICTED_FIELDS = ['managerId', 'leadUserId', 'budget']
+// Allowlist, not a blocklist - an Engineer, even one leading the project,
+// can only touch these day-to-day operational fields. Everything else
+// (reassignment, budget, location, timeline, name/type) is staffing/
+// financial/structural authority, not operational authority, and stays
+// Admin/Manager/Super Admin only.
+const ENGINEER_ALLOWED_FIELDS = ['status', 'description', 'area', 'floors']
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth()
@@ -84,7 +86,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
 
     if (role === 'ENGINEER') {
-      for (const field of ENGINEER_RESTRICTED_FIELDS) delete body[field]
+      for (const key of Object.keys(body)) {
+        if (!ENGINEER_ALLOWED_FIELDS.includes(key)) delete body[key]
+      }
     }
 
     const {

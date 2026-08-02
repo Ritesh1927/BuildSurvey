@@ -331,11 +331,11 @@ export default function ProjectDetailPage() {
             <CardHeader><CardTitle>Basic Info</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2 sm:col-span-2"><Label>Name</Label><Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} /></div>
+                <div className="space-y-2 sm:col-span-2"><Label>Name</Label><Input value={form.name} disabled={!canEditRestricted} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} /></div>
                 <div className="space-y-2 sm:col-span-2"><Label>Description</Label><Textarea rows={3} value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} /></div>
                 <div className="space-y-2">
                   <Label>Type</Label>
-                  <Select value={form.type} onValueChange={(v) => setForm((f) => ({ ...f, type: v }))}>
+                  <Select value={form.type} disabled={!canEditRestricted} onValueChange={(v) => setForm((f) => ({ ...f, type: v }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {Object.entries(TYPE_META).map(([value, label]) => (
@@ -363,11 +363,11 @@ export default function ProjectDetailPage() {
             <CardHeader><CardTitle>Location & Site Details</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2 sm:col-span-2"><Label>Site Address</Label><Input value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>City</Label><Input value={form.city} onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))} /></div>
+                <div className="space-y-2 sm:col-span-2"><Label>Site Address</Label><Input value={form.address} disabled={!canEditRestricted} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>City</Label><Input value={form.city} disabled={!canEditRestricted} onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))} /></div>
                 <div className="space-y-2">
                   <Label>State</Label>
-                  <Select value={form.state} onValueChange={(v) => setForm((f) => ({ ...f, state: v }))}>
+                  <Select value={form.state} disabled={!canEditRestricted} onValueChange={(v) => setForm((f) => ({ ...f, state: v }))}>
                     <SelectTrigger><SelectValue placeholder="Select state" /></SelectTrigger>
                     <SelectContent>
                       {INDIAN_STATES.map((state) => (
@@ -376,8 +376,8 @@ export default function ProjectDetailPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2"><Label>Latitude</Label><Input type="number" step="any" value={form.latitude} onChange={(e) => setForm((f) => ({ ...f, latitude: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>Longitude</Label><Input type="number" step="any" value={form.longitude} onChange={(e) => setForm((f) => ({ ...f, longitude: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>Latitude</Label><Input type="number" step="any" value={form.latitude} disabled={!canEditRestricted} onChange={(e) => setForm((f) => ({ ...f, latitude: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>Longitude</Label><Input type="number" step="any" value={form.longitude} disabled={!canEditRestricted} onChange={(e) => setForm((f) => ({ ...f, longitude: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>Total Area (sq.ft)</Label><Input type="number" value={form.area} onChange={(e) => setForm((f) => ({ ...f, area: e.target.value }))} /></div>
                 <div className="space-y-2"><Label>Number of Floors</Label><Input type="number" value={form.floors} onChange={(e) => setForm((f) => ({ ...f, floors: e.target.value }))} /></div>
               </div>
@@ -392,8 +392,8 @@ export default function ProjectDetailPage() {
                 {canEditRestricted && (
                   <div className="space-y-2"><Label>Budget (INR)</Label><Input type="number" value={form.budget} onChange={(e) => setForm((f) => ({ ...f, budget: e.target.value }))} /></div>
                 )}
-                <div className="space-y-2"><Label>Start Date</Label><Input type="date" value={form.startDate} onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>End Date</Label><Input type="date" value={form.endDate} onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>Start Date</Label><Input type="date" value={form.startDate} disabled={!canEditRestricted} onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>End Date</Label><Input type="date" value={form.endDate} disabled={!canEditRestricted} onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))} /></div>
               </div>
             </CardContent>
           </Card>
