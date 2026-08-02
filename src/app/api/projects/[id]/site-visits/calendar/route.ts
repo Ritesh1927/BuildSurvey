@@ -80,20 +80,23 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       const adHocName = holidayNameByDate.get(key)
       const eligible = d >= windowStart && d <= windowEnd
 
+      // An actual visit record always wins over the holiday/future/pending
+      // classification, even on a holiday - an engineer who chose to visit
+      // on a day off still gets it marked visited, not masked as a holiday.
       let status: 'not-eligible' | 'holiday' | 'future' | 'visited' | 'in-progress' | 'expired' | 'pending' | 'missed'
       if (!eligible) {
         status = 'not-eligible'
-      } else if (adHocName || isWeeklyHoliday(d, weeklyHolidayDays)) {
-        status = 'holiday'
-        holidayCount++
-      } else if (d > today) {
-        status = 'future'
       } else if (record?.checkedOutAt) {
         status = 'visited'
         visited++
       } else if (record) {
         status = d.getTime() === today.getTime() ? 'in-progress' : 'expired'
         if (status === 'expired') expired++
+      } else if (adHocName || isWeeklyHoliday(d, weeklyHolidayDays)) {
+        status = 'holiday'
+        holidayCount++
+      } else if (d > today) {
+        status = 'future'
       } else if (d.getTime() === today.getTime()) {
         status = 'pending'
       } else {
