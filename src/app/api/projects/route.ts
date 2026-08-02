@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
+import { requireAuth, requireRole, hasRole } from '@/lib/api-auth'
 import { ProjectType } from '@/generated/prisma/enums'
 
 const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'ACCOUNTANT', 'CLIENT'] as const
@@ -28,15 +28,18 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(parseInt(searchParams.get('limit') || '25', 10) || 25, 100)
 
     const where: any = { isDeleted: false }
+    const andConditions: any[] = []
 
     if (search) {
       const s = search.toLowerCase()
-      where.OR = [
-        { name: { contains: s, mode: 'insensitive' } },
-        { code: { contains: s, mode: 'insensitive' } },
-        { address: { contains: s, mode: 'insensitive' } },
-        { city: { contains: s, mode: 'insensitive' } },
-      ]
+      andConditions.push({
+        OR: [
+          { name: { contains: s, mode: 'insensitive' } },
+          { code: { contains: s, mode: 'insensitive' } },
+          { address: { contains: s, mode: 'insensitive' } },
+          { city: { contains: s, mode: 'insensitive' } },
+        ],
+      })
     }
 
     if (status) where.status = status
@@ -44,15 +47,25 @@ export async function GET(request: NextRequest) {
     if (clientId) where.clientId = clientId
 
     // Engineer sees only projects they lead; Surveyor only projects they
-    // have an assigned survey on; Client only their own company's
-    // projects. None of these can be widened by query params.
-    if (role === 'ENGINEER') {
-      where.leadUserId = userId
-    } else if (role === 'SURVEYOR') {
-      where.surveys = { some: { engineerId: userId, isDeleted: false } }
-    } else if (role === 'CLIENT') {
+    // have an assigned survey on - a dual-capability user (secondaryRole)
+    // sees the union of both. Client only their own company's projects.
+    // None of these can be widened by query params. Scoped by *primary*
+    // role only - a stray secondaryRole on an Admin/Manager/Accountant
+    // must never narrow their normally-unrestricted visibility.
+    if (role === 'CLIENT') {
       where.clientId = session!.user!.clientId || '__no_client__'
+    } else if (role === 'ENGINEER' || role === 'SURVEYOR') {
+      const scopeConditions: any[] = []
+      if (hasRole(session!.user!, 'ENGINEER')) scopeConditions.push({ leadUserId: userId })
+      if (hasRole(session!.user!, 'SURVEYOR')) scopeConditions.push({ surveys: { some: { engineerId: userId, isDeleted: false } } })
+      if (scopeConditions.length === 1) {
+        Object.assign(where, scopeConditions[0])
+      } else if (scopeConditions.length > 1) {
+        andConditions.push({ OR: scopeConditions })
+      }
     }
+
+    if (andConditions.length > 0) where.AND = andConditions
 
     const [projects, total] = await Promise.all([
       db.project.findMany({

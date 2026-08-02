@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
+import { requireAuth, requireRole, hasRole } from '@/lib/api-auth'
 import { ProjectStatus, ProjectType } from '@/generated/prisma/enums'
 
 const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'ACCOUNTANT', 'CLIENT'] as const
@@ -42,12 +42,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
     }
 
-    if (role === 'ENGINEER' && project.leadUserId !== userId) {
-      return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
-    }
-
-    if (role === 'SURVEYOR' && !project.surveys.some((s: any) => s.engineerId === userId)) {
-      return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
+    // Scoped by *primary* role - a stray secondaryRole on an Admin/Manager/
+    // Accountant must never narrow their normally-unrestricted visibility.
+    // A dual-capability Engineer/Surveyor passes if *either* path matches.
+    if (role === 'ENGINEER' || role === 'SURVEYOR') {
+      const engineerOk = hasRole(session!.user!, 'ENGINEER') && project.leadUserId === userId
+      const surveyorOk = hasRole(session!.user!, 'SURVEYOR') && project.surveys.some((s: any) => s.engineerId === userId)
+      if (!engineerOk && !surveyorOk) {
+        return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
+      }
     }
 
     if (role === 'CLIENT' && project.clientId !== session!.user!.clientId) {
@@ -81,11 +84,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
     }
 
-    if (role === 'ENGINEER' && existing.leadUserId !== userId) {
-      return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
-    }
-
-    if (role === 'ENGINEER') {
+    // Super Admin/Admin/Manager have unrestricted authority regardless of
+    // any secondaryRole. Everyone else who reaches here only does so
+    // because they're the project's own lead engineer - whether that's
+    // their primary role or a secondaryRole=ENGINEER grant - and is
+    // restricted to ENGINEER_ALLOWED_FIELDS either way.
+    const isUnrestrictedRole = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'].includes(role)
+    if (!isUnrestrictedRole) {
+      if (existing.leadUserId !== userId) {
+        return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
+      }
       for (const key of Object.keys(body)) {
         if (!ENGINEER_ALLOWED_FIELDS.includes(key)) delete body[key]
       }

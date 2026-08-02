@@ -49,6 +49,7 @@ interface UserDetail {
   email: string
   phone: string | null
   role: string
+  secondaryRole: string | null
   isActive: boolean
   avatar: string | null
   createdAt: string
@@ -82,7 +83,7 @@ export default function UserDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(searchParams.get('edit') === 'true')
   const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', role: 'ENGINEER', isActive: true })
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', role: 'ENGINEER', secondaryRole: '', isActive: true })
 
   const [resetOpen, setResetOpen] = useState(false)
 
@@ -106,6 +107,7 @@ export default function UserDetailPage() {
         email: data.user.email || '',
         phone: data.user.phone || '',
         role: data.user.role,
+        secondaryRole: data.user.secondaryRole || '',
         isActive: data.user.isActive,
       })
     } catch {
@@ -130,7 +132,7 @@ export default function UserDetailPage() {
           lastName: form.lastName,
           email: form.email,
           phone: form.phone || null,
-          ...(isSelf ? {} : { role: form.role }),
+          ...(isSelf ? {} : { role: form.role, secondaryRole: form.secondaryRole || null }),
           isActive: form.isActive,
         }),
       })
@@ -200,6 +202,9 @@ export default function UserDetailPage() {
               <div className="flex flex-wrap items-center gap-3">
                 <h2 className="text-2xl font-bold">{fullName}</h2>
                 <Badge variant={roleMeta.variant}>{roleMeta.label}</Badge>
+                {user.secondaryRole && (
+                  <Badge variant="outline">+ {ROLE_META[user.secondaryRole]?.label || user.secondaryRole}</Badge>
+                )}
                 <Badge variant={user.isActive ? "success" : "secondary"}>
                   {user.isActive ? "Active" : "Inactive"}
                 </Badge>
@@ -240,6 +245,23 @@ export default function UserDetailPage() {
                 </Select>
                 {isSelf && <p className="text-xs text-muted-foreground">You cannot change your own role.</p>}
               </div>
+              <div className="space-y-2">
+                <Label>Secondary Role (optional)</Label>
+                <Select
+                  value={form.secondaryRole || '__none'}
+                  onValueChange={(v) => setForm((f) => ({ ...f, secondaryRole: v === '__none' ? '' : v }))}
+                  disabled={isSelf}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none">None</SelectItem>
+                    {(['ENGINEER', 'SURVEYOR'] as const).filter((r) => r !== form.role).map((r) => (
+                      <SelectItem key={r} value={r}>{ROLE_META[r].label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">For someone who does both jobs - grants the other role&apos;s eligibility (site visits, survey work) on top of their primary role.</p>
+              </div>
               <div className="flex items-center justify-between rounded-lg border p-4 sm:col-span-2">
                 <div className="space-y-0.5">
                   <Label className="text-base">Active</Label>
@@ -249,7 +271,7 @@ export default function UserDetailPage() {
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => { setIsEditing(false); router.replace(`/users/${userId}`); setForm({ firstName: user.firstName, lastName: user.lastName, email: user.email, phone: user.phone || '', role: user.role, isActive: user.isActive }) }} disabled={saving}>
+              <Button variant="outline" onClick={() => { setIsEditing(false); router.replace(`/users/${userId}`); setForm({ firstName: user.firstName, lastName: user.lastName, email: user.email, phone: user.phone || '', role: user.role, secondaryRole: user.secondaryRole || '', isActive: user.isActive }) }} disabled={saving}>
                 <X className="mr-2 h-4 w-4" />Cancel
               </Button>
               <Button onClick={handleSave} disabled={saving}>
@@ -288,6 +310,9 @@ export default function UserDetailPage() {
               <CardHeader><CardTitle>Account Information</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between"><span className="text-sm text-muted-foreground">Role</span><span className="text-sm font-medium">{roleMeta.label}</span></div>
+                {user.secondaryRole && (
+                  <div className="flex justify-between"><span className="text-sm text-muted-foreground">Secondary Role</span><span className="text-sm font-medium">{ROLE_META[user.secondaryRole]?.label || user.secondaryRole}</span></div>
+                )}
                 <div className="flex justify-between"><span className="text-sm text-muted-foreground">Status</span><span className="text-sm font-medium">{user.isActive ? 'Active' : 'Inactive'}</span></div>
                 <div className="flex justify-between"><span className="text-sm text-muted-foreground">Member Since</span><span className="text-sm font-medium">{formatDate(user.createdAt)}</span></div>
                 <div className="flex justify-between"><span className="text-sm text-muted-foreground">Last Login</span><span className="text-sm font-medium">{user.lastLoginAt ? formatDateTime(user.lastLoginAt) : 'Never'}</span></div>

@@ -153,22 +153,28 @@ enum ActivityType {
 // --- MODELS ---
 
 model User {
-  id          String    @id @default(uuid())
-  email       String    @unique
-  password    String
-  firstName   String
-  lastName    String
-  phone       String?
-  avatar      String?
-  role        UserRole  @default(ENGINEER)
-  isActive    Boolean   @default(true)
-  lastLoginAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  createdBy   String?
-  updatedBy   String?
-  isDeleted   Boolean   @default(false)
-  version     Int       @default(1)
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  firstName     String
+  lastName      String
+  phone         String?
+  avatar        String?
+  role          UserRole  @default(ENGINEER)
+  // Optional dual-capability role (ENGINEER or SURVEYOR only, enforced at
+  // the API layer) - additive, not a replacement: it grants the other
+  // role's specific eligibility (site-visit check-in, leading a project,
+  // assignment lists) on top of whatever `role` already allows, rather
+  // than switching the user's whole identity/scoping to it.
+  secondaryRole UserRole?
+  isActive      Boolean   @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  isDeleted     Boolean   @default(false)
+  version       Int       @default(1)
 
   ledProjects               Project[]          @relation("LedProjects")
   managedProjects           Project[]          @relation("ManagedProjects")
@@ -235,7 +241,7 @@ model Client {
 
   projects Project[]
   leads    Lead[]
-  users    User[]   @relation("ClientUsers")
+  users    User[]    @relation("ClientUsers")
 
   @@index([companyName])
   @@index([email])
@@ -587,12 +593,12 @@ model CostEstimation {
 }
 
 model Quotation {
-  id              String        @id @default(uuid())
-  quotationNumber String        @unique
+  id              String          @id @default(uuid())
+  quotationNumber String          @unique
   title           String
   totalAmount     Float
-  taxAmount       Float         @default(0)
-  discountAmount  Float         @default(0)
+  taxAmount       Float           @default(0)
+  discountAmount  Float           @default(0)
   grandTotal      Float
   validUntil      DateTime?
   terms           String?
@@ -602,13 +608,13 @@ model Quotation {
   // collection and is only meaningful once quotationStatus = ACCEPTED —
   // the two were previously conflated into one PaymentStatus field.
   quotationStatus QuotationStatus @default(DRAFT)
-  status          PaymentStatus @default(PENDING)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  status          PaymentStatus   @default(PENDING)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
   createdBy       String?
   updatedBy       String?
-  isDeleted       Boolean       @default(false)
-  version         Int           @default(1)
+  isDeleted       Boolean         @default(false)
+  version         Int             @default(1)
 
   projectId String
   project   Project         @relation(fields: [projectId], references: [id])

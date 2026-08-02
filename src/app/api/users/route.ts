@@ -52,6 +52,7 @@ export async function GET(req: NextRequest) {
           email: true,
           phone: true,
           role: true,
+          secondaryRole: true,
           isActive: true,
           avatar: true,
           createdAt: true,
@@ -82,11 +83,24 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
-    const { firstName, lastName, email, phone, role, isActive, initialPassword, clientId } = body
+    const { firstName, lastName, email, phone, role, secondaryRole, isActive, initialPassword, clientId } = body
 
     if (!firstName || !lastName || !email || !role || !initialPassword) {
       return NextResponse.json(
         { error: 'First name, last name, email, role, and password are required' },
+        { status: 400 }
+      )
+    }
+
+    if (secondaryRole && !['ENGINEER', 'SURVEYOR'].includes(secondaryRole)) {
+      return NextResponse.json(
+        { error: 'Secondary role must be Engineer, Surveyor, or none' },
+        { status: 400 }
+      )
+    }
+    if (secondaryRole && secondaryRole === role) {
+      return NextResponse.json(
+        { error: 'Secondary role cannot be the same as the primary role' },
         { status: 400 }
       )
     }
@@ -150,6 +164,7 @@ export async function POST(req: NextRequest) {
         phone: phone || null,
         password: hashedPassword,
         role: role || 'ENGINEER',
+        secondaryRole: role === 'CLIENT' ? null : (secondaryRole || null),
         isActive: isActive !== false,
         clientId: role === 'CLIENT' ? clientId : null,
       },
@@ -160,6 +175,7 @@ export async function POST(req: NextRequest) {
         email: true,
         phone: true,
         role: true,
+        secondaryRole: true,
         isActive: true,
         clientId: true,
         createdAt: true,

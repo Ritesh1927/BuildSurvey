@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
+import { requireAuth, requireRole, hasRole } from '@/lib/api-auth'
 import { todayDateOnly } from '@/lib/attendance'
 import { countEligibleDays } from '@/lib/site-visit-days'
 import { getWeeklyHolidayDays, isWeeklyHoliday, getHolidaysInRange } from '@/lib/holidays'
@@ -24,13 +24,19 @@ export async function GET(req: NextRequest) {
     const role = session!.user!.role
     const userId = session!.user!.id
 
+    // Scoped by *primary* role - Super Admin/Admin/Manager see every
+    // eligible project regardless of any secondaryRole; everyone else who
+    // reaches here only does so via ENGINEER capability (primary or
+    // secondaryRole) and is scoped to projects they lead.
+    const isUnrestrictedRole = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'].includes(role)
+
     const projects = await db.project.findMany({
       where: {
         isDeleted: false,
         leadUserId: { not: null },
         startDate: { not: null },
         endDate: { not: null },
-        ...(role === 'ENGINEER' ? { leadUserId: userId } : {}),
+        ...(!isUnrestrictedRole && hasRole(session!.user!, 'ENGINEER') ? { leadUserId: userId } : {}),
       },
       select: {
         id: true, name: true, code: true, startDate: true, endDate: true,

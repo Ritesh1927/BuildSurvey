@@ -10,9 +10,21 @@ export async function requireAuth() {
   return null
 }
 
+// A user's secondaryRole (ENGINEER or SURVEYOR only) grants that role's
+// eligibility on top of their primary role, without replacing it - a
+// Surveyor with secondaryRole=ENGINEER passes a check for either role.
+export function hasRole(user: { role: UserRole; secondaryRole?: UserRole | null }, role: UserRole): boolean {
+  return user.role === role || user.secondaryRole === role
+}
+
 export async function requireRole(allowedRoles: UserRole[]) {
   const session = await auth()
-  if (!session?.user || !allowedRoles.includes(session.user.role)) {
+  if (!session?.user) {
+    return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
+  }
+  const allowed = allowedRoles.includes(session.user.role)
+    || (!!session.user.secondaryRole && allowedRoles.includes(session.user.secondaryRole))
+  if (!allowed) {
     return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
   }
   return null

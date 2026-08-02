@@ -54,6 +54,7 @@ export default function NewUserPage() {
     email: "",
     phone: "+91",
     role: "",
+    secondaryRole: "",
     clientId: "",
     isActive: true,
     initialPassword: "",
@@ -117,6 +118,7 @@ export default function NewUserPage() {
           email: form.email.trim().toLowerCase(),
           phone: form.phone,
           role: form.role,
+          ...(form.role !== "CLIENT" && form.secondaryRole ? { secondaryRole: form.secondaryRole } : {}),
           initialPassword: form.initialPassword,
           isActive: form.isActive,
           ...(form.role === "CLIENT" ? { clientId: form.clientId } : {}),
@@ -285,6 +287,25 @@ export default function NewUserPage() {
                     <p className="text-sm text-destructive">{errors.role}</p>
                   )}
                 </div>
+
+                {form.role && form.role !== "CLIENT" && (
+                  <div className="space-y-2">
+                    <Label>Secondary Role (optional)</Label>
+                    <Select
+                      value={form.secondaryRole || "__none"}
+                      onValueChange={(value) => updateField("secondaryRole", value === "__none" ? "" : value)}
+                    >
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none">None</SelectItem>
+                        {["ENGINEER", "SURVEYOR"].filter((r) => r !== form.role).map((r) => (
+                          <SelectItem key={r} value={r}>{roles.find((ro) => ro.value === r)?.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">For someone who does both jobs - grants the other role&apos;s eligibility (site visits, survey work) on top of their primary role.</p>
+                  </div>
+                )}
 
                 {form.role === "CLIENT" && (
                   <div className="space-y-2">

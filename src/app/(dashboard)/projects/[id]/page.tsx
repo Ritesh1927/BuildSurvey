@@ -85,7 +85,7 @@ interface ProjectDetail {
   boqItems: { id: string; serialNumber: number; description: string; category: string; quantity: number; unitRate: number; amount: number }[]
 }
 
-interface UserOption { id: string; firstName: string; lastName: string; role: string }
+interface UserOption { id: string; firstName: string; lastName: string; role: string; secondaryRole?: string | null }
 
 const STATUS_META: Record<string, { label: string; variant: "success" | "info" | "warning" | "destructive" | "secondary" }> = {
   PLANNING: { label: "Planning", variant: "info" },
@@ -421,7 +421,7 @@ export default function ProjectDetailPage() {
                       <SelectTrigger><SelectValue placeholder="Select lead engineer" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="__none">Unassigned</SelectItem>
-                        {users.filter((u) => u.role === 'ENGINEER').map((u) => (
+                        {users.filter((u) => u.role === 'ENGINEER' || u.secondaryRole === 'ENGINEER').map((u) => (
                           <SelectItem key={u.id} value={u.id}>{u.firstName} {u.lastName}</SelectItem>
                         ))}
                       </SelectContent>

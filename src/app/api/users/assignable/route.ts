@@ -23,7 +23,9 @@ export async function GET(req: NextRequest) {
       where: {
         isDeleted: false,
         isActive: true,
-        ...(roles.length > 0 ? { role: { in: roles as any } } : {}),
+        ...(roles.length > 0
+          ? { OR: [{ role: { in: roles as any } }, { secondaryRole: { in: roles as any } }] }
+          : {}),
       },
       select: { id: true, firstName: true, lastName: true, role: true },
       orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],

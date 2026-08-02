@@ -17,7 +17,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       where: { id },
       select: {
         id: true, firstName: true, lastName: true, email: true, phone: true,
-        role: true, isActive: true, avatar: true, createdAt: true, lastLoginAt: true,
+        role: true, secondaryRole: true, isActive: true, avatar: true, createdAt: true, lastLoginAt: true,
         _count: { select: { ledProjects: true, managedProjects: true, assignedSurveys: true } },
       },
     })
@@ -44,7 +44,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   try {
     const { id } = await params
     const body = await req.json()
-    const { firstName, lastName, email, phone, role, isActive, password, clientId } = body
+    const { firstName, lastName, email, phone, role, secondaryRole, isActive, password, clientId } = body
 
     const existing = await db.user.findUnique({ where: { id } })
     if (!existing) {
@@ -55,10 +55,20 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const actingRole = session!.user!.role
     const actingUserId = session!.user!.id
 
-    if (role && id === actingUserId) {
+    if ((role || secondaryRole !== undefined) && id === actingUserId) {
       return NextResponse.json(
         { error: 'You cannot change your own role' },
         { status: 403 }
+      )
+    }
+
+    // Secondary role is deliberately restricted to ENGINEER/SURVEYOR - it's
+    // meant for one specific gap (a person doing both jobs), not a general
+    // second role. Enforced here regardless of what the client sends.
+    if (secondaryRole !== undefined && secondaryRole !== null && !['ENGINEER', 'SURVEYOR'].includes(secondaryRole)) {
+      return NextResponse.json(
+        { error: 'Secondary role must be Engineer, Surveyor, or none' },
+        { status: 400 }
       )
     }
 
@@ -77,6 +87,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
 
     const effectiveRole = role || existing.role
+
+    if (secondaryRole && secondaryRole === effectiveRole) {
+      return NextResponse.json(
+        { error: 'Secondary role cannot be the same as the primary role' },
+        { status: 400 }
+      )
+    }
 
     if (effectiveRole === 'CLIENT') {
       const resolvedClientId = clientId !== undefined ? clientId : existing.clientId
@@ -114,6 +131,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
     if (phone !== undefined) updateData.phone = phone
     if (role) updateData.role = role
+    if (effectiveRole === 'CLIENT') {
+      // A Client login has no business holding field-staff capability -
+      // force-clear regardless of what was sent, mirroring clientId below.
+      updateData.secondaryRole = null
+    } else if (secondaryRole !== undefined) {
+      updateData.secondaryRole = secondaryRole || null
+    }
     if (isActive !== undefined) updateData.isActive = isActive
     if (effectiveRole === 'CLIENT') {
       if (clientId !== undefined) updateData.clientId = clientId
@@ -134,7 +158,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       data: updateData,
       select: {
         id: true, firstName: true, lastName: true, email: true, phone: true,
-        role: true, isActive: true, clientId: true, createdAt: true,
+        role: true, secondaryRole: true, isActive: true, clientId: true, createdAt: true,
       },
     })
 

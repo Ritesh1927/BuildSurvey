@@ -85,6 +85,7 @@ export default function Sidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const userRole = session?.user?.role
+  const userSecondaryRole = session?.user?.secondaryRole
   const userName = session?.user?.name ?? 'Guest User'
   const userInitials = userName.split(' ').map((n) => n[0]).filter(Boolean).join('').toUpperCase() || '?'
   const { sidebarCollapsed, toggleSidebarCollapsed } = useUIStore()
@@ -128,7 +129,7 @@ export default function Sidebar() {
               const visibleItems = group.items.filter((item) => {
                 if (!item.roles) return true
                 if (!userRole) return false
-                return item.roles.includes(userRole)
+                return item.roles.includes(userRole) || (!!userSecondaryRole && item.roles.includes(userSecondaryRole))
               })
               if (visibleItems.length === 0) return null
               return (

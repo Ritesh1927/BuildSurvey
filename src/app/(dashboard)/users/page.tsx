@@ -57,6 +57,7 @@ interface DbUser {
   email: string
   phone: string | null
   role: string
+  secondaryRole: string | null
   isActive: boolean
   avatar: string | null
   createdAt: string
@@ -322,9 +323,14 @@ export default function UsersPage() {
                           {user.phone || '—'}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={roleColorMap[user.role] || 'default'}>
-                            {roleDisplayNames[user.role] || user.role}
-                          </Badge>
+                          <div className="flex items-center gap-1.5">
+                            <Badge variant={roleColorMap[user.role] || 'default'}>
+                              {roleDisplayNames[user.role] || user.role}
+                            </Badge>
+                            {user.secondaryRole && (
+                              <Badge variant="outline" className="text-[10px]">+ {roleDisplayNames[user.secondaryRole] || user.secondaryRole}</Badge>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell className="text-center">
                           <Badge variant={user.isActive ? 'success' : 'secondary'}>

@@ -88,7 +88,7 @@ interface FormData {
 }
 
 interface ClientOption { id: string; companyName: string }
-interface UserOption { id: string; firstName: string; lastName: string; role: string }
+interface UserOption { id: string; firstName: string; lastName: string; role: string; secondaryRole?: string | null }
 
 export default function NewProjectPage() {
   const router = useRouter()
@@ -567,11 +567,11 @@ export default function NewProjectPage() {
                       <SelectContent>
                         {usersLoading ? (
                           <SelectItem value="__loading" disabled>Loading users...</SelectItem>
-                        ) : teamMembers.filter((m) => m.role === "ENGINEER").length === 0 ? (
+                        ) : teamMembers.filter((m) => m.role === "ENGINEER" || m.secondaryRole === "ENGINEER").length === 0 ? (
                           <SelectItem value="__none" disabled>No engineers found</SelectItem>
                         ) : (
                           teamMembers
-                            .filter((m) => m.role === "ENGINEER")
+                            .filter((m) => m.role === "ENGINEER" || m.secondaryRole === "ENGINEER")
                             .map((member) => (
                               <SelectItem key={member.id} value={member.id}>
                                 {member.firstName} {member.lastName}
