@@ -83,6 +83,7 @@ interface FormData {
   endDate: string
   // Step 4: Assignment
   managerId: string
+  leadUserId: string
   notes: string
 }
 
@@ -117,6 +118,7 @@ export default function NewProjectPage() {
     startDate: "",
     endDate: "",
     managerId: "",
+    leadUserId: "",
     notes: "",
   })
 
@@ -169,6 +171,7 @@ export default function NewProjectPage() {
           type: formData.type,
           clientId: formData.clientId,
           managerId: formData.managerId || undefined,
+          leadUserId: formData.leadUserId || undefined,
           startDate: formData.startDate || undefined,
           endDate: formData.endDate || undefined,
           budget: formData.budget ? Number(formData.budget) : undefined,
@@ -550,6 +553,34 @@ export default function NewProjectPage() {
                       </SelectContent>
                     </Select>
                     <p className="text-xs text-muted-foreground">Optional — can be assigned later</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Lead Engineer</Label>
+                    <Select
+                      value={formData.leadUserId}
+                      onValueChange={(value) => updateField("leadUserId", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select lead engineer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {usersLoading ? (
+                          <SelectItem value="__loading" disabled>Loading users...</SelectItem>
+                        ) : teamMembers.filter((m) => m.role === "ENGINEER").length === 0 ? (
+                          <SelectItem value="__none" disabled>No engineers found</SelectItem>
+                        ) : (
+                          teamMembers
+                            .filter((m) => m.role === "ENGINEER")
+                            .map((member) => (
+                              <SelectItem key={member.id} value={member.id}>
+                                {member.firstName} {member.lastName}
+                              </SelectItem>
+                            ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">The Engineer who can see and manage this project — also optional, can be assigned later.</p>
                   </div>
 
                   <div className="space-y-2">
