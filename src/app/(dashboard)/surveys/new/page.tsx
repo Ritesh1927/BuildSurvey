@@ -80,11 +80,10 @@ export default function NewSurveyPage() {
       .catch(() => {})
       .finally(() => setProjectsLoading(false))
 
-    fetch('/api/users')
+    fetch('/api/users/assignable?roles=ENGINEER,SURVEYOR')
       .then((res) => res.json())
       .then((data) => {
-        const list = Array.isArray(data) ? data : data.users || []
-        setEngineers(list.filter((u: EngineerOption) => u.role === 'ENGINEER' || u.role === 'SURVEYOR'))
+        if (data.success && Array.isArray(data.data)) setEngineers(data.data)
       })
       .catch(() => {})
       .finally(() => setEngineersLoading(false))
@@ -290,14 +289,14 @@ export default function NewSurveyPage() {
                     <Input type="date" value={formData.scheduledDate} onChange={(e) => updateFormData("scheduledDate", e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Assign Engineer *</Label>
+                    <Label>Assign Surveyor / Engineer *</Label>
                     <Select value={formData.engineer} onValueChange={(v) => updateFormData("engineer", v)}>
-                      <SelectTrigger><SelectValue placeholder={engineersLoading ? "Loading engineers..." : "Select engineer"} /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder={engineersLoading ? "Loading..." : "Select surveyor or engineer"} /></SelectTrigger>
                       <SelectContent>
                         {engineersLoading ? (
-                          <SelectItem value="__loading" disabled>Loading engineers...</SelectItem>
+                          <SelectItem value="__loading" disabled>Loading...</SelectItem>
                         ) : engineers.length === 0 ? (
-                          <SelectItem value="__none" disabled>No engineers found</SelectItem>
+                          <SelectItem value="__none" disabled>No surveyors or engineers found</SelectItem>
                         ) : (
                           engineers.map(e => (
                             <SelectItem key={e.id} value={e.id}>
@@ -423,7 +422,7 @@ export default function NewSurveyPage() {
                       </div>
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         <div><span className="text-muted-foreground">Date:</span> <span className="font-medium">{formData.scheduledDate || "—"}</span></div>
-                        <div><span className="text-muted-foreground">Engineer:</span> <span className="font-medium">{(() => { const eng = engineers.find(e => e.id === formData.engineer); return eng ? `${eng.firstName} ${eng.lastName}` : "—"; })()}</span></div>
+                        <div><span className="text-muted-foreground">Assigned to:</span> <span className="font-medium">{(() => { const eng = engineers.find(e => e.id === formData.engineer); return eng ? `${eng.firstName} ${eng.lastName}` : "—"; })()}</span></div>
                       </div>
                     </div>
 
