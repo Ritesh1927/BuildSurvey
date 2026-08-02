@@ -119,6 +119,7 @@ export default function SurveyDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(searchParams.get('edit') === 'true')
   const [saving, setSaving] = useState(false)
+  const [approving, setApproving] = useState(false)
   const [form, setForm] = useState({ title: '', description: '', status: 'ASSIGNED', scheduledDate: '' })
 
   const canWrite = !!role && WRITE_ROLES.includes(role)
@@ -226,6 +227,29 @@ export default function SurveyDetailPage() {
       router.push('/surveys')
     } catch {
       showError('Network error while deleting survey')
+    }
+  }
+
+  const handleApprove = async () => {
+    if (!survey || !confirm(`Approve survey "${survey.title}"?`)) return
+    setApproving(true)
+    try {
+      const res = await fetch(`/api/surveys/${surveyId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'APPROVED' }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        showError(data.error || 'Failed to approve survey')
+        return
+      }
+      showSuccess('Survey approved')
+      fetchSurvey(false)
+    } catch {
+      showError('Network error while approving survey')
+    } finally {
+      setApproving(false)
     }
   }
 
@@ -477,6 +501,12 @@ export default function SurveyDetailPage() {
               </>
             ) : (
               <>
+                {canApprove && survey.status === 'SUBMITTED' && (
+                  <Button onClick={handleApprove} disabled={approving}>
+                    {approving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                    {approving ? 'Approving...' : 'Approve'}
+                  </Button>
+                )}
                 {canWrite && (
                   <Button variant="outline" onClick={() => setIsEditing(true)}>
                     <Edit className="mr-2 h-4 w-4" />Edit
