@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { ChevronLeft, ChevronRight, CheckCircle2, XCircle, AlertTriangle, Clock, Loader2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, CheckCircle2, XCircle, AlertTriangle, Clock, CalendarOff, Loader2 } from "lucide-react"
 
 import { cn, formatDate, formatDateTime } from "@/lib/utils"
 import {
@@ -70,7 +70,7 @@ const CELL_CLASS: Record<DayStatus, string> = {
   missed: "bg-red-500/15 border-red-500/40 text-red-700 dark:text-red-400",
   pending: "bg-slate-500/15 border-slate-500/40 text-foreground",
   future: "bg-slate-500/15 border-slate-500/40 text-muted-foreground",
-  holiday: "bg-slate-500/10 border-slate-500/30 text-slate-600 dark:text-slate-400",
+  holiday: "bg-indigo-500/15 border-indigo-500/40 text-indigo-700 dark:text-indigo-400",
   "not-eligible": "border-transparent text-muted-foreground/40",
 }
 
@@ -166,6 +166,7 @@ export function SiteVisitCalendarDialog({ projectId, projectName, open, onOpenCh
                   {day.status === "missed" && <XCircle className="h-3 w-3" />}
                   {day.status === "expired" && <AlertTriangle className="h-3 w-3" />}
                   {day.status === "in-progress" && <Clock className="h-3 w-3" />}
+                  {day.status === "holiday" && <CalendarOff className="h-3 w-3" />}
                 </button>
               ))}
             </div>
@@ -174,7 +175,8 @@ export function SiteVisitCalendarDialog({ projectId, projectName, open, onOpenCh
               <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-emerald-500/30 border border-emerald-500/50" />Visited</span>
               <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-red-500/30 border border-red-500/50" />Missed / No Checkout</span>
               <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-amber-500/30 border border-amber-500/50" />In Progress</span>
-              <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-slate-500/20 border border-slate-500/40" />Holiday / Not Yet Due</span>
+              <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-indigo-500/30 border border-indigo-500/50" />Holiday</span>
+              <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-slate-500/20 border border-slate-500/40" />Not Yet Due</span>
             </div>
           </>
         ) : (
