@@ -287,13 +287,7 @@ export default function SurveyDetailPage() {
         showError(data.error || 'Failed to check in')
         return
       }
-      showSuccess(
-        data.onSite === true
-          ? 'Checked in successfully — On Site'
-          : data.onSite === false
-            ? `Checked in — Off Site (${formatDistance(data.distanceMeters)} from the project location)`
-            : 'Checked in successfully'
-      )
+      showSuccess(data.onSite === true ? 'Checked in successfully — On Site' : 'Checked in successfully')
       setCheckInPhoto(null)
       setResubmittingCheckIn(false)
       fetchSurvey(false)

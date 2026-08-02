@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth'
 import { requireAuth, requireRole } from '@/lib/api-auth'
 import { uploadPhotoDataUrl } from '@/lib/photo-upload'
 import { siteStatus } from '@/lib/geo'
+import { formatDistance } from '@/lib/utils'
 
 // Deliberately narrower than the survey WRITE_ROLES tier: check-in is a
 // self-attested proof-of-presence action. Letting Admin/Manager perform it
@@ -55,6 +56,19 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ success: false, error: 'A check-in photo is required' }, { status: 400 })
     }
 
+    // Reject up front (before touching photo storage or the DB) rather than
+    // recording an off-site check-in - mirrors checkout's behavior below.
+    const checkInSiteCheck = siteStatus(lat, lng, survey.project.latitude, survey.project.longitude)
+    if (checkInSiteCheck.onSite === false) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `You're off-site (${formatDistance(checkInSiteCheck.distanceMeters ?? 0)} from the project location) — check-in is only allowed from the site. Get directions, head to the site, then try again.`,
+        },
+        { status: 400 }
+      )
+    }
+
     let photoUrl: string
     try {
       photoUrl = await uploadPhotoDataUrl(photo, `surveys/${id}/checkin`)
@@ -90,9 +104,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       }),
     ], { timeout: 20000 })
 
-    const { onSite, distanceMeters } = siteStatus(lat, lng, survey.project.latitude, survey.project.longitude)
-
-    return NextResponse.json({ success: true, data: updatedSurvey, photoUrl, onSite, distanceMeters }, { status: 201 })
+    return NextResponse.json({ success: true, data: updatedSurvey, photoUrl, onSite: checkInSiteCheck.onSite, distanceMeters: checkInSiteCheck.distanceMeters }, { status: 201 })
   } catch (error) {
     console.error('POST /api/surveys/[id]/checkin error:', error)
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
