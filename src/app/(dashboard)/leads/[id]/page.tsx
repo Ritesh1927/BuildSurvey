@@ -85,6 +85,10 @@ interface UserOption {
   role: string
 }
 
+// Matches READ_ROLES in /api/leads - anyone outside this set can't see
+// leads at all, so assigning one to them would be a dead end.
+const LEAD_ASSIGNABLE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
+
 const STATUS_META: Record<string, { label: string; color: string }> = {
   NEW: { label: 'New', color: 'bg-blue-600 text-white' },
   CONTACTED: { label: 'Contacted', color: 'bg-violet-600 text-white' },
@@ -177,7 +181,10 @@ export default function LeadDetailPage() {
     if (!canWrite) return
     fetch('/api/users')
       .then((res) => res.json())
-      .then((data) => setUsers(Array.isArray(data) ? data : data.users || []))
+      .then((data) => {
+        const list: UserOption[] = Array.isArray(data) ? data : data.users || []
+        setUsers(list.filter((u) => LEAD_ASSIGNABLE_ROLES.includes(u.role)))
+      })
       .catch(() => {})
   }, [canWrite])
 

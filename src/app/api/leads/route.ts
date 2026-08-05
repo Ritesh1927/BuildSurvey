@@ -4,7 +4,7 @@ import { auth } from '@/lib/auth'
 import { requireAuth, requireRole } from '@/lib/api-auth'
 import { LeadStatus, Priority } from '@/generated/prisma/enums'
 
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER'] as const
+const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
 const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
 const BACKFILL_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const
 
@@ -16,9 +16,6 @@ export async function GET(request: NextRequest) {
   if (roleError) return roleError
 
   try {
-    const session = await auth()
-    const role = session!.user!.role
-
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search') || ''
     const status = searchParams.get('status') || ''
@@ -38,14 +35,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (status) where.status = status
-
-    if (role === 'ENGINEER') {
-      // Engineers may only ever see leads assigned to themselves — the
-      // client-supplied assignedTo filter is never honored for this role.
-      where.assignedToId = session!.user!.id
-    } else if (assignedTo) {
-      where.assignedToId = assignedTo
-    }
+    if (assignedTo) where.assignedToId = assignedTo
 
     const [leads, total] = await Promise.all([
       db.lead.findMany({

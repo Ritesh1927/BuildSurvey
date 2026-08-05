@@ -85,6 +85,9 @@ interface UserOption {
 }
 
 const BACKFILL_ROLES = ['SUPER_ADMIN', 'ADMIN']
+// Matches READ_ROLES in /api/leads - anyone outside this set can't see
+// leads at all, so assigning one to them would be a dead end.
+const LEAD_ASSIGNABLE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
 
 export default function NewLeadPage() {
   const router = useRouter()
@@ -102,8 +105,8 @@ export default function NewLeadPage() {
     fetch('/api/users')
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data)) setUsers(data)
-        else if (data.users) setUsers(data.users)
+        const list: UserOption[] = Array.isArray(data) ? data : data.users || []
+        setUsers(list.filter((u) => LEAD_ASSIGNABLE_ROLES.includes(u.role)))
       })
       .catch(() => {})
       .finally(() => setUsersLoading(false))

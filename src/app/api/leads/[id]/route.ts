@@ -4,7 +4,7 @@ import { auth } from '@/lib/auth'
 import { requireAuth, requireRole } from '@/lib/api-auth'
 import { LeadStatus, Priority } from '@/generated/prisma/enums'
 
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER'] as const
+const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
 const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
 const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const
 
@@ -16,9 +16,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   if (roleError) return roleError
 
   try {
-    const session = await auth()
-    const role = session!.user!.role
-
     const { id } = await params
     const lead = await db.lead.findUnique({
       where: { id },
@@ -28,14 +25,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       },
     })
 
-    // Soft-deleted leads and ownership-denied Engineer requests are both
-    // treated as not-found, to avoid revealing a record's existence to
-    // someone not entitled to see it.
     if (!lead || lead.isDeleted) {
-      return NextResponse.json({ success: false, error: 'Lead not found' }, { status: 404 })
-    }
-
-    if (role === 'ENGINEER' && lead.assignedToId !== session!.user!.id) {
       return NextResponse.json({ success: false, error: 'Lead not found' }, { status: 404 })
     }
 
