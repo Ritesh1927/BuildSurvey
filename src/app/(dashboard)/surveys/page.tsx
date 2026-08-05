@@ -226,14 +226,12 @@ export default function SurveysPage() {
                     <TableHead>Status</TableHead>
                     <TableHead>Engineer</TableHead>
                     <TableHead>Scheduled</TableHead>
-                    <TableHead>GPS</TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {paginatedSurveys.map((survey) => {
                     const statusMeta = STATUS_META[survey.status] || { label: survey.status, variant: 'secondary' as const }
-                    const hasGps = survey.gpsLatitude != null && survey.gpsLongitude != null
                     return (
                       <TableRow key={survey.id}>
                         <TableCell>
@@ -267,16 +265,6 @@ export default function SurveysPage() {
                             <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                             {survey.scheduledDate ? new Date(survey.scheduledDate).toLocaleDateString('en-IN') : '—'}
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          {hasGps ? (
-                            <div className="flex items-center gap-1">
-                              <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                              <span className="text-xs text-emerald-600">Set</span>
-                            </div>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">—</span>
-                          )}
                         </TableCell>
                         <TableCell>
                           <DropdownMenu>
