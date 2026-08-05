@@ -608,7 +608,7 @@ export default function BOQPage() {
           <div className="space-y-3">
             {boqDrafts.map((d, i) => (
               <div key={i} className="grid grid-cols-12 gap-2 items-end rounded-lg border p-3">
-                <div className="col-span-12 sm:col-span-4 space-y-1">
+                <div className="col-span-12 sm:col-span-3 space-y-1">
                   <Label className="text-xs">Description *</Label>
                   <Input placeholder="Item description" value={d.description} onChange={(e) => updateDraftRow(i, "description", e.target.value)} />
                 </div>
@@ -630,7 +630,7 @@ export default function BOQPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="col-span-5 sm:col-span-1 space-y-1">
+                <div className="col-span-5 sm:col-span-2 space-y-1">
                   <Label className="text-xs">Qty *</Label>
                   <Input type="number" placeholder="0" value={d.quantity} onChange={(e) => updateDraftRow(i, "quantity", e.target.value)} />
                 </div>
