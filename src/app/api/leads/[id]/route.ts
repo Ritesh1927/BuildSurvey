@@ -78,6 +78,20 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       }
     }
 
+    if (assignedToId) {
+      // Only a Manager owns a lead through its lifecycle (status changes,
+      // eventual conversion) - Admin/Super Admin can still create/manage
+      // leads, but aren't valid assignees themselves. Enforced here, not
+      // just hidden in the picker, so a stray API call can't bypass it.
+      const assignee = await db.user.findUnique({ where: { id: assignedToId } })
+      if (!assignee || assignee.isDeleted || assignee.role !== 'MANAGER') {
+        return NextResponse.json(
+          { success: false, error: 'A lead can only be assigned to a Manager' },
+          { status: 400 }
+        )
+      }
+    }
+
     const updateData: any = { updatedBy: session!.user!.id }
 
     if (name) updateData.name = name

@@ -85,9 +85,10 @@ interface UserOption {
 }
 
 const BACKFILL_ROLES = ['SUPER_ADMIN', 'ADMIN']
-// Matches READ_ROLES in /api/leads - anyone outside this set can't see
-// leads at all, so assigning one to them would be a dead end.
-const LEAD_ASSIGNABLE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
+// Only a Manager owns a lead through its lifecycle (status changes,
+// eventual conversion to a client) - matches the assignedToId check in
+// POST/PATCH /api/leads, not just hidden here in the picker.
+const LEAD_ASSIGNABLE_ROLES = ['MANAGER']
 
 export default function NewLeadPage() {
   const router = useRouter()

@@ -130,6 +130,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (assignedToId) {
+      // Only a Manager owns a lead through its lifecycle (status changes,
+      // eventual conversion) - Admin/Super Admin can still create/manage
+      // leads, but aren't valid assignees themselves. Enforced here, not
+      // just hidden in the picker, so a stray API call can't bypass it.
+      const assignee = await db.user.findUnique({ where: { id: assignedToId } })
+      if (!assignee || assignee.isDeleted || assignee.role !== 'MANAGER') {
+        return NextResponse.json(
+          { success: false, error: 'A lead can only be assigned to a Manager' },
+          { status: 400 }
+        )
+      }
+    }
+
     // Creation always defaults to NEW. A non-NEW initial status is only
     // honored for SUPER_ADMIN/ADMIN as an explicit backfill/migration
     // exception — Managers always create leads as NEW.
