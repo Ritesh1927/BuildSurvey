@@ -44,6 +44,7 @@ import { DataTable } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { showSuccess, showError } from '@/components/ui/toast'
 import { cn, formatCurrency, formatDate, getInitials } from '@/lib/utils'
+import { generateLeadsReport, downloadPdf } from '@/lib/pdf-generator'
 
 interface LeadData {
   id: string
@@ -149,6 +150,28 @@ export default function LeadsPage() {
       setLeads((prev) => prev.filter((l) => l.id !== lead.id))
     } catch {
       showError('Network error while deleting lead')
+    }
+  }
+
+  const handleExportPdf = async (rows: LeadData[]) => {
+    try {
+      const bytes = await generateLeadsReport({
+        generatedAt: formatDate(new Date()),
+        rows: rows.map((lead) => ({
+          name: lead.name,
+          company: lead.company || '-',
+          contact: lead.email || lead.phone || '-',
+          status: STATUS_META[lead.status]?.label || lead.status,
+          priority: PRIORITY_META[lead.priority]?.label || lead.priority,
+          estimatedValue: lead.estimatedValue,
+          assignedTo: lead.assignedTo ? `${lead.assignedTo.firstName} ${lead.assignedTo.lastName}` : 'Unassigned',
+          createdAt: formatDate(lead.createdAt),
+        })),
+      })
+      downloadPdf(bytes, `leads-export-${new Date().toISOString().slice(0, 10)}.pdf`)
+      showSuccess('Download started — the leads report will be saved to your downloads folder')
+    } catch {
+      showError('Failed to generate the leads PDF')
     }
   }
 
@@ -413,6 +436,7 @@ export default function LeadsPage() {
           pageSize={10}
           showColumnVisibility={false}
           showExport
+          onExport={handleExportPdf}
         />
       )}
     </div>

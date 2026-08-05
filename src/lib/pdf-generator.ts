@@ -761,6 +761,92 @@ export async function generateInvoicePdf(data: InvoicePdfData): Promise<Uint8Arr
   return pdfDoc.save()
 }
 
+export interface LeadsReportRow {
+  name: string
+  company: string
+  contact: string
+  status: string
+  priority: string
+  estimatedValue: number | null
+  assignedTo: string
+  createdAt: string
+}
+
+export interface LeadsReportData {
+  generatedAt: string
+  rows: LeadsReportRow[]
+}
+
+// Landscape, unlike the invoice/survey reports above - eight columns of
+// lead data need the extra width a portrait A4 page doesn't have.
+export async function generateLeadsReport(data: LeadsReportData): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.create()
+  const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica)
+  const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+
+  const pageSize: [number, number] = [PageSizes.A4[1], PageSizes.A4[0]]
+  const pages: PDFPage[] = []
+  const tableLeft = 40
+  const tableRight = pageSize[0] - 40
+  const colX = { name: 45, company: 165, contact: 265, status: 385, priority: 465, value: 525, assigned: 610, created: 695 }
+
+  let page!: PDFPage
+  let y = 0
+
+  const addPage = () => {
+    page = pdfDoc.addPage(pageSize)
+    pages.push(page)
+    drawHeader(pdfDoc, page, helvetica, helveticaBold)
+    y = page.getSize().height - 110
+  }
+
+  const drawTableHeaderRow = () => {
+    page.drawRectangle({ x: tableLeft, y: y - 5, width: tableRight - tableLeft, height: 22, color: COLORS.primary })
+    page.drawText('Name', { x: colX.name, y, size: 9, font: helveticaBold, color: COLORS.white })
+    page.drawText('Company', { x: colX.company, y, size: 9, font: helveticaBold, color: COLORS.white })
+    page.drawText('Contact', { x: colX.contact, y, size: 9, font: helveticaBold, color: COLORS.white })
+    page.drawText('Status', { x: colX.status, y, size: 9, font: helveticaBold, color: COLORS.white })
+    page.drawText('Priority', { x: colX.priority, y, size: 9, font: helveticaBold, color: COLORS.white })
+    page.drawText('Value', { x: colX.value, y, size: 9, font: helveticaBold, color: COLORS.white })
+    page.drawText('Assigned To', { x: colX.assigned, y, size: 9, font: helveticaBold, color: COLORS.white })
+    page.drawText('Created', { x: colX.created, y, size: 9, font: helveticaBold, color: COLORS.white })
+    y -= 28
+  }
+
+  addPage()
+
+  page.drawText('LEADS REPORT', { x: 50, y, size: 20, font: helveticaBold, color: COLORS.primary })
+  page.drawText(`Generated: ${data.generatedAt}`, { x: tableRight - 160, y, size: 9, font: helvetica, color: COLORS.gray })
+  page.drawText(`Total: ${data.rows.length} lead${data.rows.length === 1 ? '' : 's'}`, { x: tableRight - 160, y: y - 15, size: 9, font: helvetica, color: COLORS.gray })
+  y -= 55
+
+  drawTableHeaderRow()
+
+  data.rows.forEach((lead, index) => {
+    if (y < 90) {
+      addPage()
+      drawTableHeaderRow()
+    }
+    if (index % 2 === 0) {
+      page.drawRectangle({ x: tableLeft, y: y - 6, width: tableRight - tableLeft, height: 18, color: COLORS.bgColor })
+    }
+    page.drawText(truncate(lead.name, 20), { x: colX.name, y, size: 8, font: helveticaBold, color: COLORS.dark })
+    page.drawText(truncate(lead.company, 18), { x: colX.company, y, size: 8, font: helvetica, color: COLORS.dark })
+    page.drawText(truncate(lead.contact, 20), { x: colX.contact, y, size: 8, font: helvetica, color: COLORS.dark })
+    page.drawText(lead.status, { x: colX.status, y, size: 8, font: helvetica, color: COLORS.dark })
+    page.drawText(lead.priority, { x: colX.priority, y, size: 8, font: helvetica, color: COLORS.dark })
+    page.drawText(lead.estimatedValue != null ? formatInr(lead.estimatedValue) : '-', { x: colX.value, y, size: 8, font: helvetica, color: COLORS.dark })
+    page.drawText(truncate(lead.assignedTo, 15), { x: colX.assigned, y, size: 8, font: helvetica, color: COLORS.dark })
+    page.drawText(lead.createdAt, { x: colX.created, y, size: 8, font: helvetica, color: COLORS.dark })
+    y -= 20
+  })
+
+  const totalPages = pages.length
+  pages.forEach((p, i) => drawFooter(pdfDoc, p, helvetica, i + 1, totalPages))
+
+  return pdfDoc.save()
+}
+
 export function downloadPdf(data: Uint8Array, filename: string) {
   const bytes = data.slice().buffer as ArrayBuffer
   const blob = new Blob([bytes], { type: 'application/pdf' })

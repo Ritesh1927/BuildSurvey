@@ -121,9 +121,14 @@ export function DataTable<TData, TValue>({
       onExport(data)
     } else {
       const rows = table.getFilteredRowModel().rows
+      // Most column defs here use accessorKey rather than an explicit id -
+      // react-table derives the row-lookup key from it internally, but the
+      // raw ColumnDef object itself only has `.id` set when given one
+      // explicitly, so falling back to accessorKey is required or this
+      // silently produces zero headers (and therefore an empty file).
       const headers = columns
-        .filter((col) => col.id)
-        .map((col) => col.id as string)
+        .map((col) => (col.id as string | undefined) || ('accessorKey' in col ? String((col as any).accessorKey) : undefined))
+        .filter((id): id is string => !!id)
       const csvContent = [
         headers.join(","),
         ...rows.map((row) =>
