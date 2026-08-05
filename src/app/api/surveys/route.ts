@@ -153,6 +153,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (scheduledDate) {
+      const today = new Date(new Date().toISOString().slice(0, 10))
+      const parsedScheduledDate = new Date(scheduledDate)
+      if (Number.isNaN(parsedScheduledDate.getTime()) || parsedScheduledDate < today) {
+        return NextResponse.json(
+          { success: false, error: 'Scheduled date cannot be in the past' },
+          { status: 400 }
+        )
+      }
+    }
+
     const project = await db.project.findUnique({ where: { id: projectId } })
     if (!project || project.isDeleted) {
       return NextResponse.json(

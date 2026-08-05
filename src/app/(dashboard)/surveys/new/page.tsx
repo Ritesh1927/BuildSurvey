@@ -53,6 +53,7 @@ const defaultChecklistItems = [
 
 export default function NewSurveyPage() {
   const router = useRouter()
+  const todayKey = new Date().toISOString().slice(0, 10)
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState("")
@@ -286,7 +287,7 @@ export default function NewSurveyPage() {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label>Scheduled Date *</Label>
-                    <Input type="date" value={formData.scheduledDate} onChange={(e) => updateFormData("scheduledDate", e.target.value)} />
+                    <Input type="date" min={todayKey} value={formData.scheduledDate} onChange={(e) => updateFormData("scheduledDate", e.target.value)} />
                   </div>
                   <div className="space-y-2">
                     <Label>Assign Surveyor / Engineer *</Label>
