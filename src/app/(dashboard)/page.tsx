@@ -164,11 +164,11 @@ export default function DashboardPage() {
                   <Link
                     key={project.id}
                     href={`/projects/${project.id}`}
-                    className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition-colors"
+                    className="flex flex-col gap-2 rounded-lg border p-3 hover:bg-muted/50 transition-colors sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium truncate">{project.name}</p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-medium break-words">{project.name}</p>
                         <Badge variant={statusMeta.variant} className="text-[10px] shrink-0">{statusMeta.label}</Badge>
                       </div>
                       <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
@@ -177,7 +177,7 @@ export default function DashboardPage() {
                         <span className="truncate">{project.clientName}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0 ml-3 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-3 shrink-0 text-xs text-muted-foreground sm:ml-3">
                       {project.budget != null && <span>{formatCurrency(project.budget)}</span>}
                       <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatDate(project.createdAt)}</span>
                     </div>
