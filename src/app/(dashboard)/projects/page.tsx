@@ -231,15 +231,11 @@ export default function ProjectsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Code</TableHead>
-                    <TableHead>Project Name</TableHead>
+                    <TableHead>Project</TableHead>
                     <TableHead>Client</TableHead>
-                    <TableHead className="hidden xl:table-cell">Type</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="hidden lg:table-cell">Manager</TableHead>
+                    <TableHead>Manager</TableHead>
                     <TableHead className="text-right">Budget</TableHead>
-                    <TableHead className="hidden md:table-cell w-[150px]">Progress</TableHead>
-                    <TableHead className="hidden xl:table-cell">Start Date</TableHead>
                     <TableHead className="text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -248,36 +244,26 @@ export default function ProjectsPage() {
                     const statusMeta = STATUS_META[project.status] || { label: project.status, variant: "secondary" as const }
                     return (
                       <TableRow key={project.id}>
-                        <TableCell className="font-mono text-xs">{project.code}</TableCell>
                         <TableCell>
                           <Link href={`/projects/${project.id}`} className="font-medium hover:text-primary transition-colors">
                             {project.name}
                           </Link>
+                          <p className="font-mono text-xs text-muted-foreground">{project.code}</p>
                         </TableCell>
-                        <TableCell className="text-sm">{project.clientName}</TableCell>
-                        <TableCell className="hidden xl:table-cell"><Badge variant="outline">{TYPE_META[project.type] || project.type}</Badge></TableCell>
+                        <TableCell className="max-w-[160px] truncate text-sm">{project.clientName}</TableCell>
                         <TableCell><Badge variant={statusMeta.variant}>{statusMeta.label}</Badge></TableCell>
-                        <TableCell className="hidden lg:table-cell">
+                        <TableCell>
                           <div className="flex items-center gap-2">
                             <Avatar className="h-6 w-6">
                               <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
                                 {project.managerName === 'Unassigned' ? '—' : project.managerName.split(' ').map((n) => n[0]).join('').slice(0, 2)}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="text-sm">{project.managerName}</span>
+                            <span className="max-w-[120px] truncate text-sm">{project.managerName}</span>
                           </div>
                         </TableCell>
                         <TableCell className="text-right text-sm font-medium">
                           {project.budget != null ? formatCurrency(project.budget) : '—'}
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          <div className="flex items-center gap-2">
-                            <Progress value={project.progress} className="h-1.5 flex-1" />
-                            <span className="text-xs font-medium w-8">{project.progress}%</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden xl:table-cell text-sm text-muted-foreground">
-                          {project.startDate ? new Date(project.startDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : '—'}
                         </TableCell>
                         <TableCell className="text-center">
                           <DropdownMenu>

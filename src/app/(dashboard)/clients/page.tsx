@@ -199,8 +199,7 @@ export default function ClientsPage() {
                   <TableRow>
                     <TableHead>Company Name</TableHead>
                     <TableHead>Contact Person</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
+                    <TableHead>Contact</TableHead>
                     <TableHead>City</TableHead>
                     <TableHead className="text-center">Projects</TableHead>
                     <TableHead className="text-center">Actions</TableHead>
@@ -225,13 +224,23 @@ export default function ClientsPage() {
                           </div>
                         </Link>
                       </TableCell>
-                      <TableCell>{client.contactPerson}</TableCell>
-                      <TableCell className="text-muted-foreground text-sm">{client.email}</TableCell>
-                      <TableCell className="text-sm">{client.phone}</TableCell>
+                      <TableCell className="max-w-[140px] truncate text-sm">{client.contactPerson}</TableCell>
+                      <TableCell>
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Mail className="h-3 w-3 shrink-0" />
+                            <span className="max-w-[160px] truncate">{client.email}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Phone className="h-3 w-3 shrink-0" />
+                            <span>{client.phone}</span>
+                          </div>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
-                          <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-sm">{client.city || '—'}</span>
+                          <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                          <span className="max-w-[100px] truncate text-sm">{client.city || '—'}</span>
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
