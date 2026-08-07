@@ -54,12 +54,6 @@ interface LineItem {
   amount: number
 }
 
-const defaultLineItems: LineItem[] = [
-  { id: "LI-1", description: "Earthwork excavation in foundation trenches", unit: "Cum", qty: 4500, rate: 320, amount: 1440000 },
-  { id: "LI-2", description: "PCC 1:4:8 in foundation", unit: "Cum", qty: 850, rate: 4200, amount: 3570000 },
-  { id: "LI-3", description: "RCC M30 in footings and columns", unit: "Cum", qty: 1200, rate: 5800, amount: 6960000 },
-]
-
 const defaultTerms = `1. This invoice is valid for 90 days from the date of issue.
 2. Prices are inclusive of all taxes (GST @ 18%).
 3. Payment Terms: 30% advance, 40% at mid-stage, 30% on completion.
@@ -75,7 +69,8 @@ export default function NewQuotationPage() {
   const [selectedProject, setSelectedProject] = useState("")
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
-  const [lineItems, setLineItems] = useState<LineItem[]>(defaultLineItems)
+  const [lineItems, setLineItems] = useState<LineItem[]>([])
+  const [loadingLineItems, setLoadingLineItems] = useState(false)
   const [gstPercent, setGstPercent] = useState(18)
   const [discount, setDiscount] = useState(0)
   const [terms, setTerms] = useState(defaultTerms)
@@ -97,6 +92,35 @@ export default function NewQuotationPage() {
   }, [])
 
   useEffect(() => { fetchProjects() }, [fetchProjects])
+
+  // Line items start from the selected project's actual BOQ - not sample
+  // placeholder text - same source of truth as the "Generate Invoice"
+  // action on the BOQ page. Still fully editable/removable in Step 2.
+  useEffect(() => {
+    if (!selectedProject) {
+      setLineItems([])
+      return
+    }
+    setLoadingLineItems(true)
+    fetch(`/api/boq?projectId=${selectedProject}&limit=500`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setLineItems(
+            data.data.map((item: any) => ({
+              id: item.id,
+              description: item.description,
+              unit: item.unit,
+              qty: item.quantity,
+              rate: item.unitRate,
+              amount: item.amount,
+            }))
+          )
+        }
+      })
+      .catch(() => showError("Failed to load BOQ items for this project"))
+      .finally(() => setLoadingLineItems(false))
+  }, [selectedProject])
 
   const subtotal = lineItems.reduce((s, i) => s + i.amount, 0)
   const discountAmount = (subtotal * discount) / 100
@@ -345,7 +369,15 @@ export default function NewQuotationPage() {
             </div>
           </CardHeader>
           <CardContent>
+            {loadingLineItems ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">Loading this project&apos;s BOQ items...</div>
+            ) : (
             <div className="space-y-3">
+              {lineItems.length === 0 && (
+                <p className="text-sm text-muted-foreground px-2 pb-1">
+                  No BOQ items found for this project yet — use &quot;Add Item&quot; to add line items manually.
+                </p>
+              )}
               <div className="grid grid-cols-[1fr_100px_100px_120px_140px_40px] gap-2 text-xs font-medium text-muted-foreground px-2">
                 <span>Description</span>
                 <span>Unit</span>
@@ -409,6 +441,7 @@ export default function NewQuotationPage() {
                 </div>
               </div>
             </div>
+            )}
             <div className="flex justify-between pt-4">
               <Button variant="outline" onClick={() => setStep(1)}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
