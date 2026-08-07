@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { SearchInput } from "@/components/ui/search-input"
 import { StatCard } from "@/components/ui/stat-card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -78,11 +79,18 @@ export default function AttendancePage() {
   const [activeTab, setActiveTab] = useState("mine")
   const [teamDate, setTeamDate] = useState(todayKey())
   const [teamEmployees, setTeamEmployees] = useState<TeamEmployee[]>([])
+  const [teamSearchQuery, setTeamSearchQuery] = useState("")
   const [teamLoading, setTeamLoading] = useState(false)
   const [calendarEmployee, setCalendarEmployee] = useState<{ id: string; name: string } | null>(null)
   const [viewPhoto, setViewPhoto] = useState<{ url: string | null; title: string; subtitle: string } | null>(null)
 
   const todayRecord = history.find((r) => r.date.slice(0, 10) === todayKey()) || null
+
+  const filteredTeamEmployees = teamEmployees.filter((e) => {
+    if (!teamSearchQuery.trim()) return true
+    const q = teamSearchQuery.toLowerCase()
+    return `${e.firstName} ${e.lastName}`.toLowerCase().includes(q) || e.role.toLowerCase().includes(q)
+  })
 
   const fetchHistory = useCallback(async () => {
     setLoadingHistory(true)
@@ -314,13 +322,18 @@ export default function AttendancePage() {
 
         {canViewTeam && (
           <TabsContent value="team" className="space-y-6">
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <Input
                 type="date"
                 value={teamDate}
                 max={todayKey()}
                 onChange={(e) => setTeamDate(e.target.value)}
                 className="w-[180px]"
+              />
+              <SearchInput
+                placeholder="Search by name or role..."
+                className="w-full sm:w-[250px]"
+                onSearch={setTeamSearchQuery}
               />
             </div>
 
@@ -351,6 +364,8 @@ export default function AttendancePage() {
                   <div className="py-12 text-center text-sm text-muted-foreground">Loading team attendance...</div>
                 ) : teamEmployees.length === 0 ? (
                   <div className="py-12 text-center text-sm text-muted-foreground">No employees found</div>
+                ) : filteredTeamEmployees.length === 0 ? (
+                  <div className="py-12 text-center text-sm text-muted-foreground">No employees match &quot;{teamSearchQuery}&quot;</div>
                 ) : (
                   <Table>
                     <TableHeader>
@@ -365,7 +380,7 @@ export default function AttendancePage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {teamEmployees.map((e) => (
+                      {filteredTeamEmployees.map((e) => (
                         <TableRow
                           key={e.id}
                           className="cursor-pointer"
