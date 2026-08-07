@@ -15,7 +15,8 @@ import { formatDate } from "@/lib/utils"
 import { PageHeader } from "@/components/ui/page-header"
 import { StatCard } from "@/components/ui/stat-card"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { SearchInput } from "@/components/ui/search-input"
 import {
   Table,
   TableBody,
@@ -59,6 +60,7 @@ export default function SiteVisitsPage() {
   const [projects, setProjects] = useState<EligibleProject[]>([])
   const [loading, setLoading] = useState(true)
   const [calendarProject, setCalendarProject] = useState<{ id: string; name: string } | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
 
   const fetchProjects = useCallback(async () => {
     setLoading(true)
@@ -79,6 +81,17 @@ export default function SiteVisitsPage() {
   const pendingToday = projects.filter((p) => p.todayStatus === 'pending' || p.todayStatus === 'in-progress').length
   const totalMissed = projects.reduce((sum, p) => sum + p.missed, 0)
 
+  const filteredProjects = projects.filter((p) => {
+    if (!searchQuery.trim()) return true
+    const q = searchQuery.toLowerCase()
+    return (
+      p.name.toLowerCase().includes(q) ||
+      p.code.toLowerCase().includes(q) ||
+      p.clientName.toLowerCase().includes(q) ||
+      p.engineerName.toLowerCase().includes(q)
+    )
+  })
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -97,6 +110,9 @@ export default function SiteVisitsPage() {
       </div>
 
       <Card>
+        <CardHeader>
+          <SearchInput placeholder="Search by project, code, client, or engineer..." className="w-full sm:w-[300px]" onSearch={setSearchQuery} />
+        </CardHeader>
         <CardContent className="p-0">
           {loading ? (
             <div className="py-12 text-center text-sm text-muted-foreground">Loading site visits...</div>
@@ -106,6 +122,14 @@ export default function SiteVisitsPage() {
               <h3 className="mt-4 text-lg font-semibold">No site-visit-eligible projects</h3>
               <p className="mt-1 text-sm text-muted-foreground max-w-md">
                 A project needs an assigned engineer and a start/end date before it shows up here.
+              </p>
+            </div>
+          ) : filteredProjects.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <ListChecks className="h-12 w-12 text-muted-foreground/50" />
+              <h3 className="mt-4 text-lg font-semibold">No matches</h3>
+              <p className="mt-1 text-sm text-muted-foreground max-w-md">
+                No projects match &quot;{searchQuery}&quot; — try a different search.
               </p>
             </div>
           ) : (
@@ -121,7 +145,7 @@ export default function SiteVisitsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {projects.map((p) => {
+                {filteredProjects.map((p) => {
                   const meta = TODAY_STATUS_META[p.todayStatus]
                   return (
                     <TableRow
