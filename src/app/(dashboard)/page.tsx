@@ -10,13 +10,14 @@ import {
   Building2,
   FileText,
   ArrowUpRight,
+  ChevronRight,
   Clock,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatCard } from '@/components/ui/stat-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { cn, formatCurrency, formatDate } from '@/lib/utils'
 
 interface ProjectRow {
   id: string
@@ -34,6 +35,14 @@ const STATUS_META: Record<string, { label: string; variant: "success" | "info" |
   ON_HOLD: { label: "On Hold", variant: "warning" },
   COMPLETED: { label: "Completed", variant: "secondary" },
   CANCELLED: { label: "Cancelled", variant: "destructive" },
+}
+
+const STATUS_ICON_BG: Record<string, string> = {
+  PLANNING: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  IN_PROGRESS: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  ON_HOLD: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  COMPLETED: "bg-slate-500/10 text-slate-600 dark:text-slate-400",
+  CANCELLED: "bg-red-500/10 text-red-600 dark:text-red-400",
 }
 
 // Mirrors each API's own CREATE_ROLES exactly - a quick-action button for
@@ -157,29 +166,40 @@ export default function DashboardPage() {
           ) : recentProjects.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">No projects yet</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {recentProjects.map((project) => {
                 const statusMeta = STATUS_META[project.status] || { label: project.status, variant: 'secondary' as const }
+                const iconBg = STATUS_ICON_BG[project.status] || "bg-muted text-muted-foreground"
                 return (
                   <Link
                     key={project.id}
                     href={`/projects/${project.id}`}
-                    className="flex flex-col gap-2 rounded-lg border p-3 hover:bg-muted/50 transition-colors sm:flex-row sm:items-center sm:justify-between"
+                    className="group flex flex-col gap-3 rounded-xl border border-border/70 p-3.5 transition-all hover:border-primary/30 hover:bg-muted/40 hover:shadow-sm sm:flex-row sm:items-center sm:justify-between"
                   >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-sm font-medium break-words">{project.name}</p>
-                        <Badge variant={statusMeta.variant} className="text-[10px] shrink-0">{statusMeta.label}</Badge>
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg", iconBg)}>
+                        <FolderKanban className="h-5 w-5" />
                       </div>
-                      <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                        <span className="font-mono">{project.code}</span>
-                        <span>·</span>
-                        <span className="truncate">{project.clientName}</span>
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-sm font-semibold break-words">{project.name}</p>
+                          <Badge variant={statusMeta.variant} className="text-[10px] shrink-0">{statusMeta.label}</Badge>
+                        </div>
+                        <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <span className="font-mono">{project.code}</span>
+                          <span>·</span>
+                          <span className="truncate">{project.clientName}</span>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0 text-xs text-muted-foreground sm:ml-3">
-                      {project.budget != null && <span>{formatCurrency(project.budget)}</span>}
-                      <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatDate(project.createdAt)}</span>
+                    <div className="flex shrink-0 items-center justify-between gap-3 pl-[52px] sm:justify-end sm:pl-0">
+                      <div className="text-left sm:text-right">
+                        {project.budget != null && <p className="text-sm font-semibold">{formatCurrency(project.budget)}</p>}
+                        <p className="flex items-center gap-1 text-xs text-muted-foreground sm:justify-end">
+                          <Clock className="h-3 w-3" />{formatDate(project.createdAt)}
+                        </p>
+                      </div>
+                      <ChevronRight className="hidden h-4 w-4 shrink-0 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5 group-hover:text-muted-foreground sm:block" />
                     </div>
                   </Link>
                 )
