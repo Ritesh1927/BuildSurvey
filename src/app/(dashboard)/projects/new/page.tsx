@@ -316,9 +316,10 @@ export default function NewProjectPage() {
                       <Input
                         id="code"
                         value={formData.code}
-                        onChange={(e) => updateField("code", e.target.value)}
+                        disabled
                         className="font-mono"
                       />
+                      <p className="text-xs text-muted-foreground">Auto-generated and permanent — cannot be changed once the project is created.</p>
                     </div>
                   </div>
                   <div className="space-y-2">
