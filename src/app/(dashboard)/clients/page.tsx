@@ -160,7 +160,7 @@ export default function ClientsPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <StatCard icon={<Building2 className="h-6 w-6" />} label="Total Clients" value={clients.length} color="info" />
         <StatCard icon={<FolderOpen className="h-6 w-6" />} label="Total Projects" value={totalProjectsAcrossClients} color="success" />
-        <StatCard icon={<Users className="h-6 w-6" />} label="Total Leads" value={clients.reduce((sum, c) => sum + c.totalLeads, 0)} color="default" />
+        <StatCard icon={<Users className="h-6 w-6" />} label="Converted Leads" value={clients.reduce((sum, c) => sum + c.totalLeads, 0)} color="default" />
       </div>
 
       <Card>
