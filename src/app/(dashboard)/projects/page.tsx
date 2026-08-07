@@ -234,12 +234,12 @@ export default function ProjectsPage() {
                     <TableHead>Code</TableHead>
                     <TableHead>Project Name</TableHead>
                     <TableHead>Client</TableHead>
-                    <TableHead>Type</TableHead>
+                    <TableHead className="hidden xl:table-cell">Type</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Manager</TableHead>
+                    <TableHead className="hidden lg:table-cell">Manager</TableHead>
                     <TableHead className="text-right">Budget</TableHead>
-                    <TableHead className="w-[150px]">Progress</TableHead>
-                    <TableHead>Start Date</TableHead>
+                    <TableHead className="hidden md:table-cell w-[150px]">Progress</TableHead>
+                    <TableHead className="hidden xl:table-cell">Start Date</TableHead>
                     <TableHead className="text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -255,9 +255,9 @@ export default function ProjectsPage() {
                           </Link>
                         </TableCell>
                         <TableCell className="text-sm">{project.clientName}</TableCell>
-                        <TableCell><Badge variant="outline">{TYPE_META[project.type] || project.type}</Badge></TableCell>
+                        <TableCell className="hidden xl:table-cell"><Badge variant="outline">{TYPE_META[project.type] || project.type}</Badge></TableCell>
                         <TableCell><Badge variant={statusMeta.variant}>{statusMeta.label}</Badge></TableCell>
-                        <TableCell>
+                        <TableCell className="hidden lg:table-cell">
                           <div className="flex items-center gap-2">
                             <Avatar className="h-6 w-6">
                               <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
@@ -270,13 +270,13 @@ export default function ProjectsPage() {
                         <TableCell className="text-right text-sm font-medium">
                           {project.budget != null ? formatCurrency(project.budget) : '—'}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell">
                           <div className="flex items-center gap-2">
                             <Progress value={project.progress} className="h-1.5 flex-1" />
                             <span className="text-xs font-medium w-8">{project.progress}%</span>
                           </div>
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className="hidden xl:table-cell text-sm text-muted-foreground">
                           {project.startDate ? new Date(project.startDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : '—'}
                         </TableCell>
                         <TableCell className="text-center">
