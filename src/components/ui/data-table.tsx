@@ -42,6 +42,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Card, CardContent } from "@/components/ui/card"
 import {
   Table,
   TableBody,
@@ -216,7 +217,8 @@ export function DataTable<TData, TValue>({
         </div>
       </div>
 
-      <div className="rounded-md border">
+      <Card>
+      <CardContent className="p-0">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -282,7 +284,8 @@ export function DataTable<TData, TValue>({
             )}
           </TableBody>
         </Table>
-      </div>
+      </CardContent>
+      </Card>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm text-muted-foreground">
