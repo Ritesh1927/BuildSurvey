@@ -24,6 +24,11 @@ import {
 } from '@/components/ui/dropdown-menu'
 import Breadcrumbs from '@/components/layout/breadcrumbs'
 
+// Matches the Settings nav item's roles in src/lib/constants.ts - the
+// sidebar already hides it from everyone else, this shortcut shouldn't
+// be a back door around that.
+const SETTINGS_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
+
 export default function Header() {
   const router = useRouter()
   const { data: session } = useSession()
@@ -38,6 +43,7 @@ export default function Header() {
   const userEmail = sessionUser?.email || ''
   const userRole = sessionUser?.role?.replace(/_/g, ' ') || 'Viewer'
   const userInitials = userName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
+  const canViewSettings = !!sessionUser?.role && SETTINGS_ROLES.includes(sessionUser.role)
 
   const handleLogout = useCallback(() => {
     signOut({ callbackUrl: '/login' })
@@ -109,11 +115,15 @@ export default function Header() {
                 <span className="text-xs font-normal text-muted-foreground">{userEmail}</span>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push('/settings')}>
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
-            </DropdownMenuItem>
+            {canViewSettings && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => router.push('/settings')}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
+                </DropdownMenuItem>
+              </>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600">
               <LogOut className="mr-2 h-4 w-4" />
