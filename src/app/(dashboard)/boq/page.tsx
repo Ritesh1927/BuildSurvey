@@ -453,27 +453,37 @@ export default function BOQPage() {
           ) : (
             projectGroups.map(({ project, items: projectItems, total }) => {
               const isExpanded = expandedProjects[project.id] !== false
+              const shareOfTotal = grandTotal > 0 ? Math.round((total / grandTotal) * 1000) / 10 : 0
               return (
-                <div key={project.id} className="mb-4">
-                  <div className="w-full flex items-center justify-between gap-2 px-4 py-3 bg-muted/50 rounded-t-lg">
+                <div key={project.id} className="mb-4 overflow-hidden rounded-xl border border-border/70 shadow-sm">
+                  <div className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-muted/40">
                     <button
                       onClick={() => toggleProject(project.id)}
-                      className="flex flex-1 items-center gap-2 text-left min-w-0"
+                      className="flex flex-1 items-center gap-3 text-left min-w-0"
                     >
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                        <FolderKanban className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-semibold text-sm truncate">{project.name}</span>
+                          <Badge variant="outline" className="text-[10px] shrink-0">
+                            {projectItems.length} item{projectItems.length === 1 ? '' : 's'}
+                          </Badge>
+                        </div>
+                        <span className="text-xs font-mono text-muted-foreground">{project.code}</span>
+                      </div>
                       {isExpanded ? (
-                        <ChevronDown className="h-4 w-4 shrink-0" />
+                        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
                       ) : (
-                        <ChevronRight className="h-4 w-4 shrink-0" />
+                        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
                       )}
-                      <FolderKanban className="h-4 w-4 shrink-0 text-muted-foreground" />
-                      <span className="font-semibold text-sm truncate">{project.name}</span>
-                      <span className="text-xs font-mono text-muted-foreground shrink-0">{project.code}</span>
-                      <Badge variant="outline" className="ml-1 text-xs shrink-0">
-                        {projectItems.length} items
-                      </Badge>
                     </button>
                     <div className="flex items-center gap-3 shrink-0">
-                      <span className="font-semibold text-sm">{formatCurrency(total)}</span>
+                      <div className="text-right">
+                        <p className="font-semibold text-sm">{formatCurrency(total)}</p>
+                        <p className="text-[11px] text-muted-foreground">{shareOfTotal}% of total</p>
+                      </div>
                       {canCreate && (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -492,6 +502,9 @@ export default function BOQPage() {
                         </DropdownMenu>
                       )}
                     </div>
+                  </div>
+                  <div className="h-1 w-full bg-muted/60">
+                    <div className="h-full bg-primary/60" style={{ width: `${Math.min(shareOfTotal, 100)}%` }} />
                   </div>
                   {isExpanded && (
                     <Table>
