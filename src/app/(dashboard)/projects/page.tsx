@@ -4,13 +4,9 @@ import { useState, useEffect, useCallback, useMemo } from "react"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
 import {
-  Download,
   GanttChart,
-  LayoutGrid,
-  MapPin,
   MoreHorizontal,
   Plus,
-  TableIcon,
 } from "lucide-react"
 
 import { cn, formatCurrency } from "@/lib/utils"
@@ -42,7 +38,6 @@ import {
 import { Pagination } from "@/components/ui/pagination"
 import { SearchInput } from "@/components/ui/search-input"
 import { PageHeader } from "@/components/ui/page-header"
-import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { showSuccess, showError } from "@/components/ui/toast"
 
@@ -81,7 +76,6 @@ const TYPE_META: Record<string, string> = {
   RENOVATION: "Renovation",
 }
 
-const kanbanStatuses = Object.keys(STATUS_META)
 const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
 const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN']
 
@@ -92,7 +86,6 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState<ProjectRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<"table" | "kanban">("table")
   const [searchQuery, setSearchQuery] = useState("")
   const [typeFilter, setTypeFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -167,14 +160,6 @@ export default function ProjectsPage() {
         ]}
         actions={
           <div className="flex items-center gap-2">
-            <div className="flex items-center rounded-lg border bg-background p-1">
-              <Button variant={viewMode === "table" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("table")} className="h-8">
-                <TableIcon className="h-4 w-4" />
-              </Button>
-              <Button variant={viewMode === "kanban" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("kanban")} className="h-8">
-                <LayoutGrid className="h-4 w-4" />
-              </Button>
-            </div>
             {role && CREATE_ROLES.includes(role) && (
               <Link href="/projects/new">
                 <Button><Plus className="mr-2 h-4 w-4" />New Project</Button>
@@ -226,7 +211,7 @@ export default function ProjectsPage() {
             <div className="py-12 text-center text-sm text-muted-foreground">Loading projects...</div>
           ) : error ? (
             <div className="py-12 text-center text-sm text-destructive">{error}</div>
-          ) : viewMode === "table" ? (
+          ) : (
             <>
               <Table>
                 <TableHeader>
@@ -303,64 +288,9 @@ export default function ProjectsPage() {
                 <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={filteredProjects.length} pageSize={pageSize} onPageChange={setCurrentPage} />
               </div>
             </>
-          ) : (
-            <div className="grid grid-cols-5 gap-4 overflow-x-auto">
-              {kanbanStatuses.map((status) => {
-                const meta = STATUS_META[status]
-                const columnProjects = filteredProjects.filter((p) => p.status === status)
-                return (
-                  <div key={status} className="min-w-[260px] rounded-lg border-2 p-3 bg-muted/30">
-                    <div className="mb-3 rounded-md px-3 py-2 text-center bg-muted">
-                      <h3 className="text-sm font-semibold">
-                        {meta.label}<span className="ml-2 text-xs opacity-70">({columnProjects.length})</span>
-                      </h3>
-                    </div>
-                    <div className="space-y-3">
-                      {columnProjects.map((project) => (
-                        <KanbanCard key={project.id} project={project} />
-                      ))}
-                      {columnProjects.length === 0 && (
-                        <p className="text-center text-xs text-muted-foreground py-8">No projects</p>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
           )}
         </CardContent>
       </Card>
     </div>
-  )
-}
-
-function KanbanCard({ project }: { project: ProjectRow }) {
-  return (
-    <Card className="cursor-pointer hover:shadow-md transition-shadow bg-background">
-      <CardContent className="p-3 space-y-2">
-        <Link href={`/projects/${project.id}`} className="text-sm font-semibold hover:text-primary transition-colors line-clamp-2">
-          {project.name}
-        </Link>
-        <p className="text-xs text-muted-foreground font-mono">{project.code}</p>
-        <p className="text-xs text-muted-foreground">{project.clientName}</p>
-        {project.city && (
-          <div className="flex items-center gap-2 text-xs">
-            <MapPin className="h-3 w-3 text-muted-foreground" />
-            <span>{project.city}</span>
-          </div>
-        )}
-        <div className="space-y-1">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Progress</span>
-            <span className="font-medium">{project.progress}%</span>
-          </div>
-          <Progress value={project.progress} className="h-1" />
-        </div>
-        <div className="flex items-center justify-between pt-2 border-t">
-          <span className="text-[11px] text-muted-foreground">{project.managerName}</span>
-          <span className="text-[11px] font-medium">{project.budget != null ? formatCurrency(project.budget) : '—'}</span>
-        </div>
-      </CardContent>
-    </Card>
   )
 }
