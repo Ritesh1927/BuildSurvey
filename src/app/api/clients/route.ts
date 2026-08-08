@@ -44,7 +44,14 @@ export async function GET(request: NextRequest) {
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: { _count: { select: { projects: true, leads: true } } },
+        include: {
+          _count: {
+            select: {
+              projects: { where: { isDeleted: false } },
+              leads: { where: { isDeleted: false } },
+            },
+          },
+        },
       }),
       db.client.count({ where }),
     ])

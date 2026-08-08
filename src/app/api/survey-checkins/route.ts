@@ -31,7 +31,12 @@ export async function GET(req: NextRequest) {
           where: { isDeleted: false, caption: { in: ['Check-In', 'Check-Out'] } },
           select: { caption: true, url: true, latitude: true, longitude: true, takenAt: true },
         },
-        _count: { select: { measurements: true, materialRequirements: true } },
+        _count: {
+          select: {
+            measurements: { where: { isDeleted: false } },
+            materialRequirements: { where: { isDeleted: false } },
+          },
+        },
       },
     })
 

@@ -59,7 +59,12 @@ export async function GET(request: NextRequest) {
         include: {
           project: { select: { name: true, code: true } },
           engineer: { select: { firstName: true, lastName: true } },
-          _count: { select: { checklistItems: true, photos: true } },
+          _count: {
+            select: {
+              checklistItems: { where: { isDeleted: false } },
+              photos: { where: { isDeleted: false } },
+            },
+          },
         },
       }),
       db.survey.count({ where }),
@@ -211,7 +216,7 @@ export async function POST(request: NextRequest) {
             }
           : undefined,
       },
-      include: { _count: { select: { checklistItems: true } } },
+      include: { _count: { select: { checklistItems: { where: { isDeleted: false } } } } },
     })
 
     return NextResponse.json({ success: true, data: survey }, { status: 201 })

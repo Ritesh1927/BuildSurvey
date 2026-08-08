@@ -76,7 +76,12 @@ export async function GET(request: NextRequest) {
         include: {
           client: { select: { companyName: true, contactPerson: true } },
           manager: { select: { firstName: true, lastName: true } },
-          _count: { select: { surveys: true, boqItems: true } },
+          _count: {
+            select: {
+              surveys: { where: { isDeleted: false } },
+              boqItems: { where: { isDeleted: false } },
+            },
+          },
         },
       }),
       db.project.count({ where }),

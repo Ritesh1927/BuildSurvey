@@ -18,7 +18,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       select: {
         id: true, firstName: true, lastName: true, email: true, phone: true,
         role: true, secondaryRole: true, isActive: true, avatar: true, createdAt: true, lastLoginAt: true,
-        _count: { select: { ledProjects: true, managedProjects: true, assignedSurveys: true } },
+        _count: {
+          select: {
+            ledProjects: { where: { isDeleted: false } },
+            managedProjects: { where: { isDeleted: false } },
+            assignedSurveys: { where: { isDeleted: false } },
+          },
+        },
       },
     })
 
