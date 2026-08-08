@@ -17,7 +17,7 @@ import {
   Receipt,
 } from "lucide-react"
 
-import { formatCurrency } from "@/lib/utils"
+import { cn, formatCurrency } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -97,6 +97,18 @@ const emptyDraft: BOQDraft = { description: "", category: "", unit: "", quantity
 const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT']
 const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT']
 const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN']
+
+// Cycled by index across project clusters purely for visual variety - not
+// tied to any status/meaning, just so a page full of clusters doesn't read
+// as one monotone block.
+const CLUSTER_PALETTE = [
+  { icon: "bg-blue-500/10 text-blue-600 dark:text-blue-400", bar: "bg-blue-500" },
+  { icon: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400", bar: "bg-emerald-500" },
+  { icon: "bg-amber-500/10 text-amber-600 dark:text-amber-400", bar: "bg-amber-500" },
+  { icon: "bg-violet-500/10 text-violet-600 dark:text-violet-400", bar: "bg-violet-500" },
+  { icon: "bg-rose-500/10 text-rose-600 dark:text-rose-400", bar: "bg-rose-500" },
+  { icon: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400", bar: "bg-cyan-500" },
+]
 
 export default function BOQPage() {
   const { data: session } = useSession()
@@ -410,24 +422,28 @@ export default function BOQPage() {
         <StatCard
           label="Total Items"
           value={items.length}
+          caption={`Across ${projectGroups.length} project${projectGroups.length === 1 ? '' : 's'}`}
           icon={<FileText className="h-6 w-6" />}
           color="default"
         />
         <StatCard
           label="Total Amount"
           value={formatCurrency(grandTotal)}
+          caption="Pre-tax BOQ baseline"
           icon={<FileSpreadsheet className="h-6 w-6" />}
           color="info"
         />
         <StatCard
           label={`GST (${gstRatePercent}%)`}
           value={formatCurrency(gstAmount)}
+          caption="Applied on total amount"
           icon={<FileText className="h-6 w-6" />}
           color="warning"
         />
         <StatCard
           label="Grand Total"
           value={formatCurrency(netTotal)}
+          caption="Baseline + GST"
           icon={<FileSpreadsheet className="h-6 w-6" />}
           color="success"
         />
@@ -451,17 +467,21 @@ export default function BOQPage() {
               </p>
             </div>
           ) : (
-            projectGroups.map(({ project, items: projectItems, total }) => {
+            projectGroups.map(({ project, items: projectItems, total }, index) => {
               const isExpanded = expandedProjects[project.id] !== false
               const shareOfTotal = grandTotal > 0 ? Math.round((total / grandTotal) * 1000) / 10 : 0
+              const palette = CLUSTER_PALETTE[index % CLUSTER_PALETTE.length]
               return (
-                <div key={project.id} className="mb-4 overflow-hidden rounded-xl border border-border/70 shadow-sm">
+                <div
+                  key={project.id}
+                  className="mb-4 overflow-hidden rounded-xl border border-border/70 shadow-sm transition-shadow hover:shadow-md"
+                >
                   <div className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-muted/40">
                     <button
                       onClick={() => toggleProject(project.id)}
                       className="flex flex-1 items-center gap-3 text-left min-w-0"
                     >
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg", palette.icon)}>
                         <FolderKanban className="h-4 w-4" />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -481,8 +501,8 @@ export default function BOQPage() {
                     </button>
                     <div className="flex items-center gap-3 shrink-0">
                       <div className="text-right">
-                        <p className="font-semibold text-sm">{formatCurrency(total)}</p>
-                        <p className="text-[11px] text-muted-foreground">{shareOfTotal}% of total</p>
+                        <p className="font-semibold text-base">{formatCurrency(total)}</p>
+                        <Badge variant="secondary" className="text-[10px] font-normal">{shareOfTotal}% of total</Badge>
                       </div>
                       {canCreate && (
                         <DropdownMenu>
@@ -504,7 +524,7 @@ export default function BOQPage() {
                     </div>
                   </div>
                   <div className="h-1 w-full bg-muted/60">
-                    <div className="h-full bg-primary/60" style={{ width: `${Math.min(shareOfTotal, 100)}%` }} />
+                    <div className={cn("h-full", palette.bar)} style={{ width: `${Math.min(shareOfTotal, 100)}%` }} />
                   </div>
                   {isExpanded && (
                     <Table>

@@ -8,6 +8,7 @@ interface StatCardProps extends React.HTMLAttributes<HTMLDivElement> {
   icon?: React.ReactNode
   label: string
   value: string | number
+  caption?: React.ReactNode
   change?: number
   trend?: "up" | "down"
   color?: "default" | "success" | "warning" | "danger" | "info"
@@ -41,6 +42,7 @@ function StatCard({
   icon,
   label,
   value,
+  caption,
   change,
   trend,
   color = "default",
@@ -48,7 +50,7 @@ function StatCard({
   ...props
 }: StatCardProps) {
   return (
-    <Card className={cn("relative overflow-hidden", className)} {...props}>
+    <Card className={cn("relative overflow-hidden transition-shadow hover:shadow-md", className)} {...props}>
       <span className={cn("absolute inset-x-0 top-0 h-1", barMap[color])} />
       <CardContent className="p-6">
         <div className="flex items-start justify-between gap-3">
@@ -67,6 +69,9 @@ function StatCard({
             </div>
           )}
         </div>
+        {caption && (
+          <p className="mt-2 truncate text-xs text-muted-foreground/80">{caption}</p>
+        )}
         {change !== undefined && (
           <div className="mt-2 flex items-center gap-1">
             {trend === "up" ? (
