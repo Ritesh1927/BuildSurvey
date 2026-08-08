@@ -78,7 +78,7 @@ export default function Header() {
               <><Moon className="h-4 w-4 text-primary" />Dark</>
             )
           ) : (
-            <><Moon className="h-4 w-4" />Dark</>
+            <><Sun className="h-4 w-4" />Light</>
           )}
         </button>
 

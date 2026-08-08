@@ -29,6 +29,15 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        {/* Runs before paint so the page never flashes light mode first -
+            mirrors the default/fallback logic in providers.tsx exactly. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=localStorage.getItem('bsp-theme');var t=(s==='light'||s==='dark'||s==='system')?s:'dark';var r=t==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):t;if(r==='dark')document.documentElement.classList.add('dark');}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-screen bg-background text-foreground">
         <Providers>{children}</Providers>
       </body>

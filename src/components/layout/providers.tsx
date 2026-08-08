@@ -21,22 +21,22 @@ export function useTheme() {
 }
 
 function getInitialTheme(): Theme {
-  if (typeof window === 'undefined') return 'light'
+  if (typeof window === 'undefined') return 'dark'
   try {
     const stored = localStorage.getItem('bsp-theme') as Theme | null
     if (stored && ['light', 'dark', 'system'].includes(stored)) return stored
   } catch {
     /* noop */
   }
-  // Default to light regardless of OS/browser preference — a visitor's
+  // Default to dark regardless of OS/browser preference — a visitor's
   // first impression shouldn't depend on their system dark-mode setting.
   // Once they explicitly pick a theme, that choice persists via localStorage.
-  return 'light'
+  return 'dark'
 }
 
 function getInitialResolved(theme: Theme): 'light' | 'dark' {
   if (theme === 'system') {
-    if (typeof window === 'undefined') return 'light'
+    if (typeof window === 'undefined') return 'dark'
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   }
   return theme
