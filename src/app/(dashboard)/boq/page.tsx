@@ -467,7 +467,7 @@ export default function BOQPage() {
               </p>
             </div>
           ) : (
-            <div className="space-y-5 rounded-lg bg-muted/40 p-4 dark:bg-black/15">
+            <div className="space-y-6">
             {projectGroups.map(({ project, items: projectItems, total }, index) => {
               const isExpanded = expandedProjects[project.id] !== false
               const shareOfTotal = grandTotal > 0 ? Math.round((total / grandTotal) * 1000) / 10 : 0
@@ -475,7 +475,7 @@ export default function BOQPage() {
               return (
                 <div
                   key={project.id}
-                  className="overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm transition-shadow hover:shadow-md"
+                  className="overflow-hidden rounded-xl border border-border bg-card shadow transition-shadow hover:shadow-md"
                 >
                   <div className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-muted/40">
                     <button
