@@ -4,15 +4,20 @@ import { useState, useEffect, useCallback, useMemo } from "react"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
 import {
+  Building2,
+  CheckCircle2,
   GanttChart,
+  IndianRupee,
   MoreHorizontal,
   Plus,
+  TrendingUp,
 } from "lucide-react"
 
 import { cn, formatCurrency } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { StatCard } from "@/components/ui/stat-card"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -130,6 +135,13 @@ export default function ProjectsPage() {
     })
   }, [projects, typeFilter, statusFilter, managerFilter])
 
+  const projectStats = {
+    total: projects.length,
+    inProgress: projects.filter((p) => p.status === 'IN_PROGRESS').length,
+    completed: projects.filter((p) => p.status === 'COMPLETED').length,
+    totalBudget: projects.reduce((sum, p) => sum + (p.budget || 0), 0),
+  }
+
   const totalPages = Math.ceil(filteredProjects.length / pageSize)
   const paginatedProjects = filteredProjects.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
@@ -168,6 +180,13 @@ export default function ProjectsPage() {
           </div>
         }
       />
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard icon={<Building2 className="h-6 w-6" />} label="Total Projects" value={projectStats.total} color="info" />
+        <StatCard icon={<TrendingUp className="h-6 w-6" />} label="In Progress" value={projectStats.inProgress} color="success" />
+        <StatCard icon={<CheckCircle2 className="h-6 w-6" />} label="Completed" value={projectStats.completed} color="default" />
+        <StatCard icon={<IndianRupee className="h-6 w-6" />} label="Total Budget" value={formatCurrency(projectStats.totalBudget)} color="warning" />
+      </div>
 
       <Card>
         <CardHeader>
