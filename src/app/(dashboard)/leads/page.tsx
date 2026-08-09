@@ -179,11 +179,10 @@ export default function LeadsPage() {
   }
 
   const handleConvert = (lead: LeadData) => {
-    // Conversion itself (and the dialog that collects the client-only
-    // fields a lead never captures) lives on the lead detail page — this
-    // just gets there and opens it, rather than duplicating that form here
-    // or converting instantly with everything left blank.
-    router.push(`/leads/${lead.id}?convert=true`)
+    // Conversion is just saving the lead as Won — the detail page's edit
+    // form reveals the client-only fields inline once status is Won, then
+    // Save both updates the lead and creates the client in one step.
+    router.push(`/leads/${lead.id}?edit=true`)
   }
 
   const columns: ColumnDef<LeadData, unknown>[] = [

@@ -35,14 +35,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog'
 import { showSuccess, showError } from '@/components/ui/toast'
 import { cn, formatCurrency, formatDate, getInitials } from '@/lib/utils'
 
@@ -133,8 +125,6 @@ export default function LeadDetailPage() {
     name: '', email: '', phone: '', company: '', source: '',
     status: 'NEW', priority: 'MEDIUM', estimatedValue: '', notes: '', assignedToId: '',
   })
-  const [convertDialogOpen, setConvertDialogOpen] = useState(false)
-  const [converting, setConverting] = useState(false)
   const [convertForm, setConvertForm] = useState({
     address: '', city: '', state: '', zipCode: '', country: 'India',
     gstNumber: '', panNumber: '', website: '', clientType: '',
@@ -143,6 +133,10 @@ export default function LeadDetailPage() {
   const canWrite = !!role && WRITE_ROLES.includes(role)
   const canDelete = !!role && DELETE_ROLES.includes(role)
   const canConvert = canWrite && lead?.status === 'WON' && !lead?.clientId
+  // Live against the in-progress form, not the loaded lead, so the client
+  // fields appear the instant Status is switched to Won during editing.
+  const willConvertOnSave = form.status === 'WON' && !lead?.clientId
+  const convertBlocked = willConvertOnSave && (!form.email.trim() || !form.phone.trim())
 
   const fetchLead = useCallback(async () => {
     setLoading(true)
@@ -189,14 +183,6 @@ export default function LeadDetailPage() {
       .catch(() => {})
   }, [canWrite])
 
-  // Arriving via the leads list's "Convert to Client" action (?convert=true)
-  // opens the dialog straight away instead of requiring an extra click.
-  useEffect(() => {
-    if (canConvert && searchParams.get('convert') === 'true') {
-      setConvertDialogOpen(true)
-    }
-  }, [canConvert, searchParams])
-
   const handleSave = async () => {
     setSaving(true)
     try {
@@ -221,6 +207,39 @@ export default function LeadDetailPage() {
         showError(data.error || 'Failed to save lead')
         return
       }
+
+      // Won and "converted" are the same real-world moment now — saving
+      // a lead as Won converts it to a client in the same action, using
+      // whatever client-only details were filled in below the status field.
+      if (willConvertOnSave) {
+        const convertRes = await fetch(`/api/leads/${leadId}/convert`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            address: convertForm.address.trim() || undefined,
+            city: convertForm.city.trim() || undefined,
+            state: convertForm.state || undefined,
+            zipCode: convertForm.zipCode.trim() || undefined,
+            country: convertForm.country || undefined,
+            gstNumber: convertForm.gstNumber.trim() || undefined,
+            panNumber: convertForm.panNumber.trim() || undefined,
+            website: convertForm.website.trim() || undefined,
+            clientType: convertForm.clientType || undefined,
+          }),
+        })
+        const convertData = await convertRes.json()
+        if (!convertRes.ok || !convertData.success) {
+          showError(convertData.error || 'Lead was saved, but converting it to a client failed')
+          setIsEditing(false)
+          router.replace(`/leads/${leadId}`)
+          fetchLead()
+          return
+        }
+        showSuccess('Lead updated and converted to client')
+        router.push(`/clients/${convertData.data.clientId}`)
+        return
+      }
+
       showSuccess('Lead updated')
       setIsEditing(false)
       router.replace(`/leads/${leadId}`)
@@ -245,38 +264,6 @@ export default function LeadDetailPage() {
       router.push('/leads')
     } catch {
       showError('Network error while deleting lead')
-    }
-  }
-
-  const submitConvert = async () => {
-    setConverting(true)
-    try {
-      const res = await fetch(`/api/leads/${leadId}/convert`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          address: convertForm.address.trim() || undefined,
-          city: convertForm.city.trim() || undefined,
-          state: convertForm.state || undefined,
-          zipCode: convertForm.zipCode.trim() || undefined,
-          country: convertForm.country || undefined,
-          gstNumber: convertForm.gstNumber.trim() || undefined,
-          panNumber: convertForm.panNumber.trim() || undefined,
-          website: convertForm.website.trim() || undefined,
-          clientType: convertForm.clientType || undefined,
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok || !data.success) {
-        showError(data.error || 'Failed to convert lead')
-        return
-      }
-      showSuccess('Lead converted to client')
-      router.push(`/clients/${data.data.clientId}`)
-    } catch {
-      showError('Network error while converting lead')
-    } finally {
-      setConverting(false)
     }
   }
 
@@ -323,9 +310,9 @@ export default function LeadDetailPage() {
                   <X className="mr-1 h-4 w-4" />
                   Cancel
                 </Button>
-                <Button onClick={handleSave} disabled={saving}>
+                <Button onClick={handleSave} disabled={saving || convertBlocked} title={convertBlocked ? 'Add an email and phone above before saving a Won lead' : undefined}>
                   <Save className="mr-1 h-4 w-4" />
-                  {saving ? 'Saving...' : 'Save'}
+                  {saving ? (willConvertOnSave ? 'Converting...' : 'Saving...') : willConvertOnSave ? 'Save & Convert' : 'Save'}
                 </Button>
               </>
             ) : (
@@ -337,7 +324,7 @@ export default function LeadDetailPage() {
                   </Button>
                 )}
                 {canConvert && (
-                  <Button variant="outline" onClick={() => setConvertDialogOpen(true)}>
+                  <Button variant="outline" onClick={() => setIsEditing(true)}>
                     <ArrowRightLeft className="mr-1 h-4 w-4" />
                     Convert to Client
                   </Button>
@@ -374,6 +361,7 @@ export default function LeadDetailPage() {
             </CardHeader>
             <CardContent>
               {isEditing ? (
+                <>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label>Name</Label>
@@ -438,6 +426,87 @@ export default function LeadDetailPage() {
                     <Textarea rows={4} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} />
                   </div>
                 </div>
+
+                {willConvertOnSave && (
+                  <div className="mt-6 space-y-4 rounded-lg border border-emerald-300/60 bg-emerald-50/50 p-4 dark:border-emerald-800/60 dark:bg-emerald-950/20">
+                    <div>
+                      <p className="flex items-center gap-1.5 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                        <ArrowRightLeft className="h-4 w-4" />
+                        Convert to Client
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Saving this lead as Won converts it to a client. Name, company, email, and phone
+                        carry over automatically — fill in what a client record needs but a lead never
+                        captured.
+                      </p>
+                      {convertBlocked && (
+                        <p className="mt-2 text-xs font-medium text-destructive">
+                          Add an email and phone above — a client record requires both.
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>Client Type</Label>
+                        <Select value={convertForm.clientType} onValueChange={(v) => setConvertForm((f) => ({ ...f, clientType: v }))}>
+                          <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                          <SelectContent>
+                            {clientTypes.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Website</Label>
+                        <Input placeholder="https://www.example.com" value={convertForm.website} onChange={(e) => setConvertForm((f) => ({ ...f, website: e.target.value }))} />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Street Address</Label>
+                      <Input placeholder="e.g., 123, Brigade Road" value={convertForm.address} onChange={(e) => setConvertForm((f) => ({ ...f, address: e.target.value }))} />
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>City</Label>
+                        <Input placeholder="e.g., Mumbai" value={convertForm.city} onChange={(e) => setConvertForm((f) => ({ ...f, city: e.target.value }))} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>State</Label>
+                        <Select value={convertForm.state} onValueChange={(v) => setConvertForm((f) => ({ ...f, state: v }))}>
+                          <SelectTrigger><SelectValue placeholder="Select state" /></SelectTrigger>
+                          <SelectContent>
+                            {indianStates.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>PIN Code</Label>
+                        <Input placeholder="e.g., 400001" value={convertForm.zipCode} onChange={(e) => setConvertForm((f) => ({ ...f, zipCode: e.target.value }))} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Country</Label>
+                        <Input value={convertForm.country} onChange={(e) => setConvertForm((f) => ({ ...f, country: e.target.value }))} />
+                      </div>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>GST Number</Label>
+                        <Input placeholder="27AABCL1234F1ZP" className="font-mono" value={convertForm.gstNumber} onChange={(e) => setConvertForm((f) => ({ ...f, gstNumber: e.target.value.toUpperCase() }))} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>PAN Number</Label>
+                        <Input placeholder="ABCDE1234F" className="font-mono" value={convertForm.panNumber} onChange={(e) => setConvertForm((f) => ({ ...f, panNumber: e.target.value.toUpperCase() }))} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                </>
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="flex items-center gap-3">
@@ -641,95 +710,6 @@ export default function LeadDetailPage() {
           </div>
         )}
       </div>
-
-      <Dialog open={convertDialogOpen} onOpenChange={setConvertDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Convert to Client</DialogTitle>
-            <DialogDescription>
-              Name, company, email, and phone carry over from the lead automatically. Fill in the
-              details below that a client record needs but a lead never captured.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="rounded-lg border bg-muted/30 p-3 text-sm">
-              <p className="font-medium">{lead.name}{lead.company ? ` · ${lead.company}` : ''}</p>
-              <p className="text-muted-foreground">{lead.email || 'No email'} · {lead.phone || 'No phone'}</p>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Client Type</Label>
-                <Select value={convertForm.clientType} onValueChange={(v) => setConvertForm((f) => ({ ...f, clientType: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                  <SelectContent>
-                    {clientTypes.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Website</Label>
-                <Input placeholder="https://www.example.com" value={convertForm.website} onChange={(e) => setConvertForm((f) => ({ ...f, website: e.target.value }))} />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Street Address</Label>
-              <Input placeholder="e.g., 123, Brigade Road" value={convertForm.address} onChange={(e) => setConvertForm((f) => ({ ...f, address: e.target.value }))} />
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>City</Label>
-                <Input placeholder="e.g., Mumbai" value={convertForm.city} onChange={(e) => setConvertForm((f) => ({ ...f, city: e.target.value }))} />
-              </div>
-              <div className="space-y-2">
-                <Label>State</Label>
-                <Select value={convertForm.state} onValueChange={(v) => setConvertForm((f) => ({ ...f, state: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Select state" /></SelectTrigger>
-                  <SelectContent>
-                    {indianStates.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>PIN Code</Label>
-                <Input placeholder="e.g., 400001" value={convertForm.zipCode} onChange={(e) => setConvertForm((f) => ({ ...f, zipCode: e.target.value }))} />
-              </div>
-              <div className="space-y-2">
-                <Label>Country</Label>
-                <Input value={convertForm.country} onChange={(e) => setConvertForm((f) => ({ ...f, country: e.target.value }))} />
-              </div>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>GST Number</Label>
-                <Input placeholder="27AABCL1234F1ZP" className="font-mono" value={convertForm.gstNumber} onChange={(e) => setConvertForm((f) => ({ ...f, gstNumber: e.target.value.toUpperCase() }))} />
-              </div>
-              <div className="space-y-2">
-                <Label>PAN Number</Label>
-                <Input placeholder="ABCDE1234F" className="font-mono" value={convertForm.panNumber} onChange={(e) => setConvertForm((f) => ({ ...f, panNumber: e.target.value.toUpperCase() }))} />
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConvertDialogOpen(false)} disabled={converting}>Cancel</Button>
-            <Button onClick={submitConvert} disabled={converting}>
-              {converting ? (
-                <><span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />Converting...</>
-              ) : (
-                <><ArrowRightLeft className="mr-2 h-4 w-4" />Convert to Client</>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
