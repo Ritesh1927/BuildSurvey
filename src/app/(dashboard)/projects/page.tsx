@@ -137,7 +137,7 @@ export default function ProjectsPage() {
 
   const projectStats = {
     total: projects.length,
-    inProgress: projects.filter((p) => p.status === 'IN_PROGRESS').length,
+    inProgress: projects.filter((p) => p.status !== 'COMPLETED' && p.status !== 'CANCELLED').length,
     completed: projects.filter((p) => p.status === 'COMPLETED').length,
     totalBudget: projects.reduce((sum, p) => sum + (p.budget || 0), 0),
   }
