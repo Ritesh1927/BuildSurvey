@@ -7,7 +7,7 @@ import {
   Plus, Search, Eye, Trash2,
   MoreHorizontal, Calendar, ClipboardCheck, FileText,
   ChevronLeft, ChevronRight,
-  CheckSquare, Clock, X
+  CheckSquare, Clock, X, UserPlus, XCircle
 } from "lucide-react"
 import { PageHeader } from "@/components/ui/page-header"
 import { StatCard } from "@/components/ui/stat-card"
@@ -154,11 +154,13 @@ export default function SurveysPage() {
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard icon={<ClipboardCheck className="h-6 w-6" />} label="Total Surveys" value={surveys.length} color="default" />
+        <StatCard icon={<UserPlus className="h-6 w-6" />} label="Assigned" value={surveys.filter(s => s.status === "ASSIGNED").length} color="default" />
         <StatCard icon={<Clock className="h-6 w-6" />} label="In Progress" value={surveys.filter(s => s.status === "IN_PROGRESS").length} color="info" />
         <StatCard icon={<FileText className="h-6 w-6" />} label="Pending Review" value={surveys.filter(s => s.status === "SUBMITTED").length} color="warning" />
         <StatCard icon={<CheckSquare className="h-6 w-6" />} label="Approved" value={surveys.filter(s => s.status === "APPROVED").length} color="success" />
+        <StatCard icon={<XCircle className="h-6 w-6" />} label="Rejected" value={surveys.filter(s => s.status === "REJECTED").length} color="danger" />
       </div>
 
       <Card>
