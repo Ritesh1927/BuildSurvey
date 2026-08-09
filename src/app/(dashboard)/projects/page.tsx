@@ -6,8 +6,10 @@ import { useSession } from "next-auth/react"
 import {
   Building2,
   CheckCircle2,
+  ClipboardList,
   GanttChart,
   MoreHorizontal,
+  PauseCircle,
   Plus,
   TrendingUp,
   XCircle,
@@ -137,7 +139,9 @@ export default function ProjectsPage() {
 
   const projectStats = {
     total: projects.length,
-    inProgress: projects.filter((p) => p.status !== 'COMPLETED' && p.status !== 'CANCELLED').length,
+    planning: projects.filter((p) => p.status === 'PLANNING').length,
+    inProgress: projects.filter((p) => p.status === 'IN_PROGRESS').length,
+    onHold: projects.filter((p) => p.status === 'ON_HOLD').length,
     completed: projects.filter((p) => p.status === 'COMPLETED').length,
     cancelled: projects.filter((p) => p.status === 'CANCELLED').length,
   }
@@ -181,10 +185,12 @@ export default function ProjectsPage() {
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard icon={<Building2 className="h-6 w-6" />} label="Total Projects" value={projectStats.total} color="info" />
+        <StatCard icon={<ClipboardList className="h-6 w-6" />} label="Planning" value={projectStats.planning} color="default" />
         <StatCard icon={<TrendingUp className="h-6 w-6" />} label="In Progress" value={projectStats.inProgress} color="success" />
-        <StatCard icon={<CheckCircle2 className="h-6 w-6" />} label="Completed" value={projectStats.completed} color="default" />
+        <StatCard icon={<PauseCircle className="h-6 w-6" />} label="On Hold" value={projectStats.onHold} color="warning" />
+        <StatCard icon={<CheckCircle2 className="h-6 w-6" />} label="Completed" value={projectStats.completed} color="success" />
         <StatCard icon={<XCircle className="h-6 w-6" />} label="Cancelled" value={projectStats.cancelled} color="danger" />
       </div>
 
