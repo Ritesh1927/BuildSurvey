@@ -224,15 +224,15 @@ export default function LeadsPage() {
       accessorKey: 'status',
       header: 'Status',
       cell: ({ row }) => {
-        const meta = STATUS_META[row.original.status] || { label: row.original.status, color: 'bg-gray-600 text-white' }
-        return (
-          <div className="flex flex-wrap items-center gap-1">
-            <Badge className={cn('text-[10px]', meta.color)}>{meta.label}</Badge>
-            {row.original.clientId && (
-              <Badge variant="outline" className="text-[10px] border-emerald-300 text-emerald-700 dark:text-emerald-400">Converted</Badge>
-            )}
-          </div>
-        )
+        // Won + converted is one state now, not two - a Won lead is
+        // converted to a client in the same save (see the lead edit
+        // form), so show a single "Converted" badge instead of stacking
+        // Won next to it once that's happened.
+        const isConverted = row.original.status === 'WON' && !!row.original.clientId
+        const meta = isConverted
+          ? { label: 'Converted', color: 'bg-emerald-600 text-white' }
+          : STATUS_META[row.original.status] || { label: row.original.status, color: 'bg-gray-600 text-white' }
+        return <Badge className={cn('text-[10px]', meta.color)}>{meta.label}</Badge>
       },
     },
     {

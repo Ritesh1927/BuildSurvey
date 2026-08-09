@@ -293,7 +293,13 @@ export default function LeadDetailPage() {
     )
   }
 
-  const statusMeta = STATUS_META[lead.status] || { label: lead.status, color: 'bg-gray-600 text-white' }
+  // Won + converted is one state now, not two - a Won lead is converted
+  // to a client in the same save, so show a single "Converted" badge
+  // instead of stacking Won next to it once that's happened.
+  const isConverted = lead.status === 'WON' && !!lead.clientId
+  const statusMeta = isConverted
+    ? { label: 'Converted', color: 'bg-emerald-600 text-white' }
+    : STATUS_META[lead.status] || { label: lead.status, color: 'bg-gray-600 text-white' }
   const priorityMeta = PRIORITY_META[lead.priority] || { label: lead.priority, color: '' }
   const currentStepIndex = PIPELINE.indexOf(lead.status)
 
@@ -363,9 +369,6 @@ export default function LeadDetailPage() {
                   <div className="flex items-center gap-2">
                     <Badge className={cn('text-[10px]', statusMeta.color)}>{statusMeta.label}</Badge>
                     <Badge variant="outline" className={cn('text-[10px]', priorityMeta.color)}>{priorityMeta.label}</Badge>
-                    {lead.clientId && (
-                      <Badge variant="outline" className="text-[10px] border-emerald-300 text-emerald-700 dark:text-emerald-400">Converted</Badge>
-                    )}
                   </div>
                 )}
               </div>
