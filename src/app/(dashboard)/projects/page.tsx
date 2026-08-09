@@ -7,10 +7,10 @@ import {
   Building2,
   CheckCircle2,
   GanttChart,
-  IndianRupee,
   MoreHorizontal,
   Plus,
   TrendingUp,
+  XCircle,
 } from "lucide-react"
 
 import { cn, formatCurrency } from "@/lib/utils"
@@ -139,7 +139,7 @@ export default function ProjectsPage() {
     total: projects.length,
     inProgress: projects.filter((p) => p.status !== 'COMPLETED' && p.status !== 'CANCELLED').length,
     completed: projects.filter((p) => p.status === 'COMPLETED').length,
-    totalBudget: projects.reduce((sum, p) => sum + (p.budget || 0), 0),
+    cancelled: projects.filter((p) => p.status === 'CANCELLED').length,
   }
 
   const totalPages = Math.ceil(filteredProjects.length / pageSize)
@@ -185,7 +185,7 @@ export default function ProjectsPage() {
         <StatCard icon={<Building2 className="h-6 w-6" />} label="Total Projects" value={projectStats.total} color="info" />
         <StatCard icon={<TrendingUp className="h-6 w-6" />} label="In Progress" value={projectStats.inProgress} color="success" />
         <StatCard icon={<CheckCircle2 className="h-6 w-6" />} label="Completed" value={projectStats.completed} color="default" />
-        <StatCard icon={<IndianRupee className="h-6 w-6" />} label="Total Budget" value={formatCurrency(projectStats.totalBudget)} color="warning" />
+        <StatCard icon={<XCircle className="h-6 w-6" />} label="Cancelled" value={projectStats.cancelled} color="danger" />
       </div>
 
       <Card>
