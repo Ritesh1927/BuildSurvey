@@ -365,7 +365,7 @@ export default function LeadsPage() {
       />
 
       {/* Summary Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard icon={<Users className="h-5 w-5" />} label="Total Leads" value={statusCounts.total} color="info" />
         <StatCard icon={<UserPlus className="h-5 w-5" />} label="New Leads" value={statusCounts.new} color="default" />
         <StatCard icon={<Activity className="h-5 w-5" />} label="In Progress" value={statusCounts.inProgress} color="warning" />
