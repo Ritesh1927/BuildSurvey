@@ -19,6 +19,8 @@ import {
   Trash2,
   UserPlus,
   Filter,
+  Activity,
+  XCircle,
 } from 'lucide-react'
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent } from '@/components/ui/card'
@@ -127,13 +129,14 @@ export default function LeadsPage() {
   }, [leads, statusFilter, priorityFilter])
 
   const statusCounts = useMemo(() => {
-    const won = leads.filter((l) => l.status === 'WON').length
     const converted = leads.filter((l) => !!l.clientId).length
     return {
       total: leads.length,
       new: leads.filter((l) => l.status === 'NEW').length,
       converted,
       conversionRate: leads.length ? Math.round((converted / leads.length) * 100) : 0,
+      inProgress: leads.filter((l) => l.status !== 'WON' && l.status !== 'LOST').length,
+      lost: leads.filter((l) => l.status === 'LOST').length,
     }
   }, [leads])
 
@@ -362,10 +365,12 @@ export default function LeadsPage() {
       />
 
       {/* Summary Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard icon={<Users className="h-5 w-5" />} label="Total Leads" value={statusCounts.total} color="info" />
         <StatCard icon={<UserPlus className="h-5 w-5" />} label="New Leads" value={statusCounts.new} color="default" />
+        <StatCard icon={<Activity className="h-5 w-5" />} label="In Progress" value={statusCounts.inProgress} color="warning" />
         <StatCard icon={<ArrowUpRight className="h-5 w-5" />} label="Converted" value={statusCounts.converted} color="success" />
+        <StatCard icon={<XCircle className="h-5 w-5" />} label="Lost" value={statusCounts.lost} color="danger" />
         <StatCard icon={<TrendingUp className="h-5 w-5" />} label="Conversion Rate" value={`${statusCounts.conversionRate}%`} color="success" />
       </div>
 
