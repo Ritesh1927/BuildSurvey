@@ -118,7 +118,13 @@ export default function ClientsPage() {
   const totalPages = Math.ceil(filteredClients.length / pageSize)
   const paginatedClients = filteredClients.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
-  const totalProjectsAcrossClients = clients.reduce((sum, c) => sum + c.totalProjects, 0)
+  // A client has totalLeads > 0 only if it was reached via lead conversion
+  // (clientId on a Lead is exclusively set by that action - see
+  // POST/PATCH /api/leads). Projects under clients with no converted lead
+  // are the "direct" ones - added straight to Clients, never a Lead.
+  const directClientProjects = clients
+    .filter((c) => c.totalLeads === 0)
+    .reduce((sum, c) => sum + c.totalProjects, 0)
 
   const handleDelete = async (client: ClientRow) => {
     if (!confirm(`Delete client "${client.companyName}"? This cannot be undone from here.`)) return
@@ -159,7 +165,7 @@ export default function ClientsPage() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <StatCard icon={<Building2 className="h-6 w-6" />} label="Total Clients" value={clients.length} color="info" />
-        <StatCard icon={<FolderOpen className="h-6 w-6" />} label="Total Projects" value={totalProjectsAcrossClients} color="success" />
+        <StatCard icon={<FolderOpen className="h-6 w-6" />} label="Direct Client Projects" value={directClientProjects} color="success" />
         <StatCard icon={<Users className="h-6 w-6" />} label="Converted Leads" value={clients.reduce((sum, c) => sum + c.totalLeads, 0)} color="default" />
       </div>
 
