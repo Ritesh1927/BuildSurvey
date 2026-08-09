@@ -452,6 +452,11 @@ export default function BOQPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">BOQ by Project</CardTitle>
+          {!loading && projectGroups.length > 0 && (
+            <p className="text-sm text-muted-foreground">
+              {projectGroups.length} project{projectGroups.length === 1 ? '' : 's'} · {items.length} line item{items.length === 1 ? '' : 's'} total
+            </p>
+          )}
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -596,18 +601,20 @@ export default function BOQPage() {
           )}
 
           {!loading && items.length > 0 && (
-            <div className="mt-6 border-t pt-4 space-y-2">
-              <div className="flex justify-between px-4">
-                <span className="font-medium">Total Amount</span>
-                <span className="font-semibold">{formatCurrency(grandTotal)}</span>
-              </div>
-              <div className="flex justify-between px-4">
-                <span className="font-medium">GST @ {gstRatePercent}%</span>
-                <span className="font-semibold">{formatCurrency(gstAmount)}</span>
-              </div>
-              <div className="flex justify-between px-4 py-3 bg-primary/5 rounded-lg border-t-2 border-primary">
-                <span className="font-bold text-lg">Grand Total (incl. GST)</span>
-                <span className="font-bold text-lg">{formatCurrency(netTotal)}</span>
+            <div className="mt-6 border-t pt-6">
+              <div className="space-y-2 rounded-xl border bg-muted/30 p-4 sm:ml-auto sm:max-w-xs">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Total Amount</span>
+                  <span className="font-medium">{formatCurrency(grandTotal)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">GST @ {gstRatePercent}%</span>
+                  <span className="font-medium">{formatCurrency(gstAmount)}</span>
+                </div>
+                <div className="flex justify-between border-t border-primary/20 pt-2">
+                  <span className="font-bold">Grand Total</span>
+                  <span className="font-bold text-primary">{formatCurrency(netTotal)}</span>
+                </div>
               </div>
             </div>
           )}
