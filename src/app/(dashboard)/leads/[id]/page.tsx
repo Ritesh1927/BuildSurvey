@@ -136,7 +136,18 @@ export default function LeadDetailPage() {
   // Live against the in-progress form, not the loaded lead, so the client
   // fields appear the instant Status is switched to Won during editing.
   const willConvertOnSave = form.status === 'WON' && !lead?.clientId
-  const convertBlocked = willConvertOnSave && (!form.email.trim() || !form.phone.trim())
+  // Same required set as the standalone "New Client" form (company/contact/
+  // email/phone/city/state) — company/contact/name always exist on a lead
+  // already, so only email, phone, city, and state can actually be missing.
+  const missingConvertFields = willConvertOnSave
+    ? [
+        !form.email.trim() && 'email',
+        !form.phone.trim() && 'phone',
+        !convertForm.city.trim() && 'city',
+        !convertForm.state && 'state',
+      ].filter((v): v is string => !!v)
+    : []
+  const convertBlocked = missingConvertFields.length > 0
 
   const fetchLead = useCallback(async () => {
     setLoading(true)
@@ -310,7 +321,7 @@ export default function LeadDetailPage() {
                   <X className="mr-1 h-4 w-4" />
                   Cancel
                 </Button>
-                <Button onClick={handleSave} disabled={saving || convertBlocked} title={convertBlocked ? 'Add an email and phone above before saving a Won lead' : undefined}>
+                <Button onClick={handleSave} disabled={saving || convertBlocked} title={convertBlocked ? `Add ${missingConvertFields.join(', ')} before saving a Won lead` : undefined}>
                   <Save className="mr-1 h-4 w-4" />
                   {saving ? (willConvertOnSave ? 'Converting...' : 'Saving...') : willConvertOnSave ? 'Save & Convert' : 'Save'}
                 </Button>
@@ -441,7 +452,7 @@ export default function LeadDetailPage() {
                       </p>
                       {convertBlocked && (
                         <p className="mt-2 text-xs font-medium text-destructive">
-                          Add an email and phone above — a client record requires both.
+                          Missing {missingConvertFields.join(', ')} — required for a client record.
                         </p>
                       )}
                     </div>
@@ -469,17 +480,19 @@ export default function LeadDetailPage() {
 
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <Label>City</Label>
+                        <Label>City <span className="text-destructive">*</span></Label>
                         <Input placeholder="e.g., Mumbai" value={convertForm.city} onChange={(e) => setConvertForm((f) => ({ ...f, city: e.target.value }))} />
+                        {!convertForm.city.trim() && <p className="text-xs text-destructive">City is required</p>}
                       </div>
                       <div className="space-y-2">
-                        <Label>State</Label>
+                        <Label>State <span className="text-destructive">*</span></Label>
                         <Select value={convertForm.state} onValueChange={(v) => setConvertForm((f) => ({ ...f, state: v }))}>
                           <SelectTrigger><SelectValue placeholder="Select state" /></SelectTrigger>
                           <SelectContent>
                             {indianStates.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                           </SelectContent>
                         </Select>
+                        {!convertForm.state && <p className="text-xs text-destructive">State is required</p>}
                       </div>
                     </div>
 
