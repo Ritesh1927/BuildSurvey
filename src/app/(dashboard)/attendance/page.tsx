@@ -322,20 +322,27 @@ export default function AttendancePage() {
 
         {canViewTeam && (
           <TabsContent value="team" className="space-y-6">
-            <div className="flex flex-wrap items-center gap-3">
-              <Input
-                type="date"
-                value={teamDate}
-                max={todayKey()}
-                onChange={(e) => setTeamDate(e.target.value)}
-                className="w-[180px]"
-              />
-              <SearchInput
-                placeholder="Search by name or role..."
-                className="w-full sm:w-[250px]"
-                onSearch={setTeamSearchQuery}
-              />
-            </div>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center">
+                  <Input
+                    type="date"
+                    value={teamDate}
+                    max={todayKey()}
+                    onChange={(e) => setTeamDate(e.target.value)}
+                    className="w-full sm:w-[180px]"
+                  />
+                  <SearchInput
+                    placeholder="Search by name or role..."
+                    className="w-full max-w-sm"
+                    value={teamSearchQuery}
+                    onSearch={setTeamSearchQuery}
+                  />
+                  <div className="flex-1" />
+                  <div className="text-sm text-muted-foreground">{filteredTeamEmployees.length} of {teamEmployees.length} employees</div>
+                </div>
+              </CardContent>
+            </Card>
 
             <div className="grid gap-4 sm:grid-cols-3">
               <StatCard

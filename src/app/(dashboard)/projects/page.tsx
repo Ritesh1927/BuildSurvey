@@ -12,13 +12,14 @@ import {
   PauseCircle,
   Plus,
   TrendingUp,
+  X,
   XCircle,
 } from "lucide-react"
 
 import { cn, formatCurrency } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { StatCard } from "@/components/ui/stat-card"
 import {
   DropdownMenu,
@@ -146,6 +147,14 @@ export default function ProjectsPage() {
     cancelled: projects.filter((p) => p.status === 'CANCELLED').length,
   }
 
+  const hasActiveFilters = !!searchQuery || typeFilter !== "all" || statusFilter !== "all" || managerFilter !== "all"
+  const clearFilters = () => {
+    setSearchQuery("")
+    setTypeFilter("all")
+    setStatusFilter("all")
+    setManagerFilter("all")
+  }
+
   const totalPages = Math.ceil(filteredProjects.length / pageSize)
   const paginatedProjects = filteredProjects.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
@@ -195,42 +204,49 @@ export default function ProjectsPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-wrap items-center gap-3">
-              <SearchInput placeholder="Search projects..." className="w-[250px]" onSearch={setSearchQuery} />
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-[160px]"><SelectValue placeholder="All Types" /></SelectTrigger>
+        <CardContent className="p-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            <SearchInput placeholder="Search projects..." className="w-full max-w-sm" value={searchQuery} onSearch={setSearchQuery} />
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger className="w-full sm:w-[160px]"><SelectValue placeholder="All Types" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                {Object.entries(TYPE_META).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[150px]"><SelectValue placeholder="All Status" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                {Object.entries(STATUS_META).map(([value, meta]) => (
+                  <SelectItem key={value} value={value}>{meta.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {managers.length > 0 && (
+              <Select value={managerFilter} onValueChange={setManagerFilter}>
+                <SelectTrigger className="w-full sm:w-[170px]"><SelectValue placeholder="All Managers" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  {Object.entries(TYPE_META).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                  <SelectItem value="all">All Managers</SelectItem>
+                  {managers.map((manager) => (
+                    <SelectItem key={manager} value={manager}>{manager}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[150px]"><SelectValue placeholder="All Status" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  {Object.entries(STATUS_META).map(([value, meta]) => (
-                    <SelectItem key={value} value={value}>{meta.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {managers.length > 0 && (
-                <Select value={managerFilter} onValueChange={setManagerFilter}>
-                  <SelectTrigger className="w-[170px]"><SelectValue placeholder="All Managers" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Managers</SelectItem>
-                    {managers.map((manager) => (
-                      <SelectItem key={manager} value={manager}>{manager}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
+            )}
+            <div className="flex-1" />
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters}>
+                <X className="mr-1 h-4 w-4" />Clear Filters
+              </Button>
+            )}
           </div>
-        </CardHeader>
+        </CardContent>
+      </Card>
+
+      <Card>
         <CardContent>
           {loading ? (
             <div className="py-12 text-center text-sm text-muted-foreground">Loading projects...</div>

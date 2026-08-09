@@ -14,6 +14,7 @@ import {
   Plus,
   FolderOpen,
   Users,
+  X,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -22,8 +23,6 @@ import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card"
 import {
   DropdownMenu,
@@ -115,6 +114,12 @@ export default function ClientsPage() {
     return clients.filter((client) => cityFilter === "all" || client.city === cityFilter)
   }, [clients, cityFilter])
 
+  const hasActiveFilters = !!searchQuery || cityFilter !== "all"
+  const clearFilters = () => {
+    setSearchQuery("")
+    setCityFilter("all")
+  }
+
   const totalPages = Math.ceil(filteredClients.length / pageSize)
   const paginatedClients = filteredClients.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
@@ -168,29 +173,36 @@ export default function ClientsPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="text-lg">Clients</CardTitle>
-            <div className="flex flex-wrap items-center gap-3">
-              <SearchInput
-                placeholder="Search clients..."
-                className="w-[250px]"
-                onSearch={setSearchQuery}
-              />
-              <Select value={cityFilter} onValueChange={setCityFilter}>
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="All Cities" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Cities</SelectItem>
-                  {cities.map((city) => (
-                    <SelectItem key={city} value={city}>{city}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+        <CardContent className="p-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            <SearchInput
+              placeholder="Search clients..."
+              className="w-full max-w-sm"
+              value={searchQuery}
+              onSearch={setSearchQuery}
+            />
+            <Select value={cityFilter} onValueChange={setCityFilter}>
+              <SelectTrigger className="w-full sm:w-[150px]">
+                <SelectValue placeholder="All Cities" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Cities</SelectItem>
+                {cities.map((city) => (
+                  <SelectItem key={city} value={city}>{city}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="flex-1" />
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters}>
+                <X className="mr-1 h-4 w-4" />Clear Filters
+              </Button>
+            )}
           </div>
-        </CardHeader>
+        </CardContent>
+      </Card>
+
+      <Card>
         <CardContent>
           {loading ? (
             <div className="py-12 text-center text-sm text-muted-foreground">Loading clients...</div>

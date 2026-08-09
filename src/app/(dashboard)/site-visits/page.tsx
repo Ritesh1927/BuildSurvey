@@ -15,7 +15,7 @@ import { formatDate } from "@/lib/utils"
 import { PageHeader } from "@/components/ui/page-header"
 import { StatCard } from "@/components/ui/stat-card"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { SearchInput } from "@/components/ui/search-input"
 import {
   Table,
@@ -110,9 +110,21 @@ export default function SiteVisitsPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <SearchInput placeholder="Search by project, code, client, or engineer..." className="w-full sm:w-[300px]" onSearch={setSearchQuery} />
-        </CardHeader>
+        <CardContent className="p-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            <SearchInput
+              placeholder="Search by project, code, client, or engineer..."
+              className="w-full max-w-sm"
+              value={searchQuery}
+              onSearch={setSearchQuery}
+            />
+            <div className="flex-1" />
+            <div className="text-sm text-muted-foreground">{filteredProjects.length} of {projects.length} projects</div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
         <CardContent className="p-0">
           {loading ? (
             <div className="py-12 text-center text-sm text-muted-foreground">Loading site visits...</div>

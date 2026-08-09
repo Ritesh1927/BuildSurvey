@@ -14,12 +14,13 @@ import {
   Trash2,
   KeyRound,
   UserMinus,
+  X,
 } from 'lucide-react'
 
 import { showSuccess, showError } from '@/components/ui/toast'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -133,6 +134,13 @@ export default function UsersPage() {
 
   const totalPages = Math.ceil(total / pageSize)
 
+  const hasActiveFilters = !!searchQuery || roleFilter !== 'all' || statusFilter !== 'all'
+  const clearFilters = () => {
+    setSearchQuery('')
+    setRoleFilter('all')
+    setStatusFilter('all')
+  }
+
   const handleExportSelected = () => {
     const rows = users.filter((u) => selectedUsers.includes(u.id))
     const headers = ["First Name", "Last Name", "Email", "Phone", "Role", "Status", "Created"]
@@ -215,50 +223,58 @@ export default function UsersPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="text-lg">Employees</CardTitle>
-            <div className="flex flex-wrap items-center gap-3">
-              <SearchInput
-                placeholder="Search users..."
-                className="w-full sm:w-[250px]"
-                onSearch={setSearchQuery}
-              />
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-full sm:w-[160px]">
-                  <SelectValue placeholder="All Roles" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  {Object.entries(roleDisplayNames).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>{label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-[140px]">
-                  <SelectValue placeholder="All Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+        <CardContent className="p-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            <SearchInput
+              placeholder="Search users..."
+              className="w-full max-w-sm"
+              value={searchQuery}
+              onSearch={setSearchQuery}
+            />
+            <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <SelectTrigger className="w-full sm:w-[160px]">
+                <SelectValue placeholder="All Roles" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Roles</SelectItem>
+                {Object.entries(roleDisplayNames).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[140px]">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="flex-1" />
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters}>
+                <X className="mr-1 h-4 w-4" />Clear Filters
+              </Button>
+            )}
           </div>
-          {selectedUsers.length > 0 && (
-            <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
-              <span className="text-sm text-muted-foreground">{selectedUsers.length} selected</span>
-              <Button variant="outline" size="sm" onClick={handleExportSelected}>
-                <Download className="mr-2 h-3.5 w-3.5" />Export
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleBulkDeactivate} disabled={bulkWorking}>
-                <UserMinus className="mr-2 h-3.5 w-3.5" />{bulkWorking ? 'Deactivating...' : 'Deactivate'}
-              </Button>
-            </div>
-          )}
-        </CardHeader>
+        </CardContent>
+      </Card>
+
+      {selectedUsers.length > 0 && (
+        <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
+          <span className="text-sm text-muted-foreground">{selectedUsers.length} selected</span>
+          <Button variant="outline" size="sm" onClick={handleExportSelected}>
+            <Download className="mr-2 h-3.5 w-3.5" />Export
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleBulkDeactivate} disabled={bulkWorking}>
+            <UserMinus className="mr-2 h-3.5 w-3.5" />{bulkWorking ? 'Deactivating...' : 'Deactivate'}
+          </Button>
+        </div>
+      )}
+
+      <Card>
         <CardContent>
           {loading ? (
             <div className="flex items-center justify-center py-12">
