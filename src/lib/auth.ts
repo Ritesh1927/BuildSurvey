@@ -17,6 +17,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         const user = await db.user.findUnique({
           where: { email: credentials.email as string, isDeleted: false },
+          include: {
+            roleRef: { include: { permissions: { include: { permission: true } } } },
+            secondaryRoleRef: { include: { permissions: { include: { permission: true } } } },
+          },
         })
 
         if (!user || !user.isActive) return null
@@ -33,6 +37,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           data: { lastLoginAt: new Date() },
         })
 
+        // Resolved permission set for the new dynamic RBAC system - union
+        // of the primary and secondary Role's permissions. Empty until a
+        // user's roleId is backfilled (see scripts/seed-roles-permissions.ts);
+        // harmless today since nothing checks `permissions` yet.
+        const permissionKeys = new Set<string>()
+        for (const rp of user.roleRef?.permissions ?? []) permissionKeys.add(rp.permission.key)
+        for (const rp of user.secondaryRoleRef?.permissions ?? []) permissionKeys.add(rp.permission.key)
+
         return {
           id: user.id,
           name: `${user.firstName} ${user.lastName}`,
@@ -41,6 +53,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           secondaryRole: user.secondaryRole,
           clientId: user.clientId,
           image: user.avatar,
+          permissions: Array.from(permissionKeys),
         }
       },
     }),
@@ -56,6 +69,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.secondaryRole = user.secondaryRole
         token.id = user.id
         token.clientId = user.clientId
+        token.permissions = user.permissions
       }
       return token
     },
@@ -65,6 +79,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.secondaryRole = token.secondaryRole
         session.user.id = token.id as string
         session.user.clientId = token.clientId
+        session.user.permissions = token.permissions
       }
       return session
     },

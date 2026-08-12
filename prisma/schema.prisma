@@ -204,10 +204,84 @@ model User {
   clientId String?
   client   Client? @relation("ClientUsers", fields: [clientId], references: [id])
 
+  // New dynamic RBAC system (see Role/Permission below) - nullable and
+  // additive alongside `role`/`secondaryRole` above, which remain the
+  // source of truth every existing permission check reads until routes
+  // are migrated over. Backfilled from role/secondaryRole by
+  // scripts/seed-roles-permissions.ts once this lands. Kept as a
+  // separate roleRef/secondaryRoleRef relation name (not `role`) so
+  // this change touches zero existing call sites.
+  roleId           String?
+  roleRef          Role?   @relation("UserPrimaryRole", fields: [roleId], references: [id])
+  secondaryRoleId  String?
+  secondaryRoleRef Role?   @relation("UserSecondaryRole", fields: [secondaryRoleId], references: [id])
+
   @@index([email])
   @@index([role])
   @@index([isActive])
   @@index([clientId])
+  @@index([roleId])
+}
+
+// --- DYNAMIC RBAC (Role / Permission) ---
+//
+// Permission rows are a fixed catalog seeded by
+// scripts/seed-roles-permissions.ts, each corresponding to an actual
+// requirePermission() check somewhere in the app - you can't grant access
+// to something no code checks for. Role rows are fully dynamic: the 7
+// pre-existing roles (SUPER_ADMIN, ADMIN, ...) are seeded as isSystem
+// rows with the exact permission set that reproduces their current
+// access, and an admin can create additional custom Role rows (or edit
+// any existing role's permissions, system or custom) via the Roles &
+// Permissions panel.
+
+model Role {
+  id          String   @id @default(uuid())
+  // Stable identifier, uppercase-snake for the 7 seeded system roles
+  // (matches the legacy UserRole enum values) or slugified from `name`
+  // for custom roles. Nothing outside this table's own seed data keys
+  // off this - renaming `name` never breaks a permission check.
+  key         String   @unique
+  name        String
+  description String?
+  // System roles can have their permissions edited but not their key,
+  // and can't be deleted - enforced in /api/roles, not here.
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+
+  permissions    RolePermission[]
+  primaryUsers   User[]           @relation("UserPrimaryRole")
+  secondaryUsers User[]           @relation("UserSecondaryRole")
+
+  @@index([key])
+}
+
+model Permission {
+  id       String @id @default(uuid())
+  // e.g. "leads:read", "projects:write:own" - see the seed script for
+  // the full catalog and which requirePermission() call each one gates.
+  key      String @unique
+  resource String
+  action   String
+  label    String
+  category String
+
+  roles RolePermission[]
+
+  @@index([resource])
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
 }
 
 model Client {
