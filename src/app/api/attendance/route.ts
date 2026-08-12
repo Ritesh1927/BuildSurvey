@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
+import { requireAuth, requirePermission } from '@/lib/api-auth'
 import { uploadPhotoDataUrl } from '@/lib/photo-upload'
 import { getOfficeLocation } from '@/lib/office-location'
 import { siteStatus, OFFICE_RADIUS_METERS } from '@/lib/geo'
 import { formatDistance } from '@/lib/utils'
 import { getWeeklyHolidayDays, isWeeklyHoliday, getHolidaysInRange } from '@/lib/holidays'
 import { todayDateOnly } from '@/lib/attendance'
-
-// Every internal role marks their own attendance - a Client isn't office
-// staff and has no reason to be on this page at all.
-const MARK_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'ACCOUNTANT'] as const
-const TEAM_VIEW_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth()
@@ -27,8 +22,8 @@ export async function GET(request: NextRequest) {
     const scope = searchParams.get('scope') || 'self'
 
     if (scope === 'team') {
-      const roleError = await requireRole([...TEAM_VIEW_ROLES])
-      if (roleError) return roleError
+      const permError = await requirePermission('attendance:read_team')
+      if (permError) return permError
 
       const dateParam = searchParams.get('date')
       const targetDate = dateParam ? new Date(`${dateParam}T00:00:00.000Z`) : todayDateOnly()
@@ -79,8 +74,8 @@ export async function GET(request: NextRequest) {
     if (scope === 'calendar') {
       const targetUserId = searchParams.get('userId') || userId
       if (targetUserId !== userId) {
-        const roleError = await requireRole([...TEAM_VIEW_ROLES])
-        if (roleError) return roleError
+        const permError = await requirePermission('attendance:read_team')
+        if (permError) return permError
       }
 
       const now = new Date()
@@ -186,8 +181,8 @@ export async function POST(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...MARK_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('attendance:mark')
+  if (permError) return permError
 
   try {
     const session = await auth()

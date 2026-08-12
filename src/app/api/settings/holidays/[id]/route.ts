@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { requireAuth, requireRole } from '@/lib/api-auth'
-
-const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const
+import { requireAuth, requirePermission } from '@/lib/api-auth'
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...WRITE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('holidays:write')
+  if (permError) return permError
 
   try {
     const { id } = await params

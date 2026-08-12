@@ -1,20 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
-
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER'] as const
+import { requireAuth, requirePermission, hasPermission, hasRole } from '@/lib/api-auth'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...READ_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('site_visits:read:all', 'site_visits:read:own')
+  if (permError) return permError
 
   try {
     const session = await auth()
-    const role = session!.user!.role
     const userId = session!.user!.id
 
     const { id: projectId } = await params
@@ -24,10 +21,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
     }
 
-    // Engineer can only see this if they're the project's lead - everyone
-    // else in READ_ROLES sees any project's visits (oversight).
-    if (role === 'ENGINEER' && project.leadUserId !== userId) {
-      return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
+    // Scoped to own led project unless holding full access - everyone
+    // with read:all sees any project's visits (oversight).
+    if (!hasPermission(session!.user!, 'site_visits:read:all')) {
+      if (!hasRole(session!.user!, 'ENGINEER') || project.leadUserId !== userId) {
+        return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
+      }
     }
 
     const visits = await db.siteVisit.findMany({

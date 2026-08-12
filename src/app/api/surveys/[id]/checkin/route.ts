@@ -1,24 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
+import { requireAuth, requirePermission } from '@/lib/api-auth'
 import { uploadPhotoDataUrl } from '@/lib/photo-upload'
 import { siteStatus } from '@/lib/geo'
 import { formatDistance } from '@/lib/utils'
 import { markFieldAttendance } from '@/lib/attendance'
 
-// Deliberately narrower than the survey WRITE_ROLES tier: check-in is a
-// self-attested proof-of-presence action. Letting Admin/Manager perform it
-// "on someone's behalf" would defeat the entire point — only the person
-// physically assigned to the survey can check themselves in.
-const CHECKIN_ROLES = ['ENGINEER', 'SURVEYOR'] as const
-
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...CHECKIN_ROLES])
-  if (roleError) return roleError
+  // Deliberately narrower than the survey write tier: check-in is a
+  // self-attested proof-of-presence action. Letting Admin/Manager perform
+  // it "on someone's behalf" would defeat the entire point — only the
+  // person physically assigned to the survey can check themselves in.
+  const permError = await requirePermission('surveys:checkin')
+  if (permError) return permError
 
   try {
     const session = await auth()

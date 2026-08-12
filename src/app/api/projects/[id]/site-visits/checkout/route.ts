@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
+import { requireAuth, requirePermission } from '@/lib/api-auth'
 import { uploadPhotoDataUrl } from '@/lib/photo-upload'
 import { siteStatus } from '@/lib/geo'
 import { formatDistance, formatDate } from '@/lib/utils'
 import { todayDateOnly } from '@/lib/attendance'
 
-const CHECKOUT_ROLES = ['ENGINEER'] as const
-
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...CHECKOUT_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('site_visits:checkout')
+  if (permError) return permError
 
   try {
     const session = await auth()

@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole, hasRole } from '@/lib/api-auth'
+import { requireAuth, requirePermission, hasPermission, hasRole } from '@/lib/api-auth'
 import { todayDateOnly } from '@/lib/attendance'
 import { countEligibleDays } from '@/lib/site-visit-days'
 import { getWeeklyHolidayDays, isWeeklyHoliday, getHolidaysInRange } from '@/lib/holidays'
-
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER'] as const
 
 // A project counts as "site-visit eligible" once it has an assigned lead
 // engineer and a start/end date - those three fields define the whole
@@ -16,28 +14,35 @@ export async function GET(req: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...READ_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('site_visits:read:all', 'site_visits:read:own')
+  if (permError) return permError
 
   try {
     const session = await auth()
-    const role = session!.user!.role
     const userId = session!.user!.id
 
-    // Scoped by *primary* role - Super Admin/Admin/Manager see every
-    // eligible project regardless of any secondaryRole; everyone else who
-    // reaches here only does so via ENGINEER capability (primary or
-    // secondaryRole) and is scoped to projects they lead.
-    const isUnrestrictedRole = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'].includes(role)
+    const hasFullAccess = hasPermission(session!.user!, 'site_visits:read:all')
+
+    const where: any = {
+      isDeleted: false,
+      leadUserId: { not: null },
+      startDate: { not: null },
+      endDate: { not: null },
+    }
+    if (!hasFullAccess) {
+      if (hasRole(session!.user!, 'ENGINEER')) {
+        where.leadUserId = userId
+      } else {
+        // Fail closed to no results if scoped access is held but the
+        // identity doesn't map to a recognized "own" concept (e.g. a
+        // future custom role without ENGINEER capability), rather than
+        // falling through unscoped.
+        where.id = '__none__'
+      }
+    }
 
     const projects = await db.project.findMany({
-      where: {
-        isDeleted: false,
-        leadUserId: { not: null },
-        startDate: { not: null },
-        endDate: { not: null },
-        ...(!isUnrestrictedRole && hasRole(session!.user!, 'ENGINEER') ? { leadUserId: userId } : {}),
-      },
+      where,
       select: {
         id: true, name: true, code: true, startDate: true, endDate: true,
         leadUser: { select: { id: true, firstName: true, lastName: true } },

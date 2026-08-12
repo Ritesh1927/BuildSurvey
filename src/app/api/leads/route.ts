@@ -1,19 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
+import { requireAuth, requirePermission, hasPermission } from '@/lib/api-auth'
 import { LeadStatus, Priority } from '@/generated/prisma/enums'
-
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
-const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
-const BACKFILL_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...READ_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('leads:read')
+  if (permError) return permError
 
   try {
     const { searchParams } = new URL(request.url)
@@ -75,12 +71,11 @@ export async function POST(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...WRITE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('leads:write')
+  if (permError) return permError
 
   try {
     const session = await auth()
-    const role = session!.user!.role
 
     const body = await request.json()
     const {
@@ -148,7 +143,7 @@ export async function POST(request: NextRequest) {
     // honored for SUPER_ADMIN/ADMIN as an explicit backfill/migration
     // exception — Managers always create leads as NEW.
     const initialStatus =
-      status && (BACKFILL_ROLES as readonly string[]).includes(role) ? status : 'NEW'
+      status && hasPermission(session!.user!, 'leads:set_initial_status') ? status : 'NEW'
 
     const lead = await db.lead.create({
       data: {

@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole, canManageRole } from '@/lib/api-auth'
+import { requireAuth, requirePermission, canManageRole } from '@/lib/api-auth'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole(['SUPER_ADMIN', 'ADMIN', 'MANAGER'])
-  if (roleError) return roleError
+  const permError = await requirePermission('users:read')
+  if (permError) return permError
 
   try {
     const { id } = await params
@@ -44,8 +44,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole(['SUPER_ADMIN', 'ADMIN'])
-  if (roleError) return roleError
+  const permError = await requirePermission('users:write')
+  if (permError) return permError
 
   try {
     const { id } = await params
@@ -159,6 +159,21 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       updateData.password = await bcrypt.hash(password, 12)
     }
 
+    // Keep roleId/secondaryRoleId (the new RBAC system's source of truth
+    // for a session's resolved permissions) in sync whenever the legacy
+    // role/secondaryRole enum fields above changed - without this, a
+    // role change here wouldn't actually change what the user can do.
+    if (updateData.role) {
+      const roleRecord = await db.role.findUnique({ where: { key: updateData.role } })
+      updateData.roleId = roleRecord?.id ?? null
+    }
+    if (updateData.secondaryRole !== undefined) {
+      const secondaryRoleRecord = updateData.secondaryRole
+        ? await db.role.findUnique({ where: { key: updateData.secondaryRole } })
+        : null
+      updateData.secondaryRoleId = secondaryRoleRecord?.id ?? null
+    }
+
     const user = await db.user.update({
       where: { id },
       data: updateData,
@@ -179,8 +194,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole(['SUPER_ADMIN', 'ADMIN'])
-  if (roleError) return roleError
+  const permError = await requirePermission('users:delete')
+  if (permError) return permError
 
   try {
     const { id } = await params

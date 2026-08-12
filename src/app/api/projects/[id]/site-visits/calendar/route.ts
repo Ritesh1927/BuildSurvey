@@ -1,22 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
+import { requireAuth, requirePermission, hasPermission, hasRole } from '@/lib/api-auth'
 import { getWeeklyHolidayDays, isWeeklyHoliday, getHolidaysInRange } from '@/lib/holidays'
 import { todayDateOnly } from '@/lib/attendance'
-
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER'] as const
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...READ_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('site_visits:read:all', 'site_visits:read:own')
+  if (permError) return permError
 
   try {
     const session = await auth()
-    const role = session!.user!.role
     const userId = session!.user!.id
 
     const { id: projectId } = await params
@@ -31,8 +28,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     if (!project.leadUserId || !project.leadUser) {
       return NextResponse.json({ success: false, error: 'This project has no assigned engineer' }, { status: 404 })
     }
-    if (role === 'ENGINEER' && project.leadUserId !== userId) {
-      return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
+    if (!hasPermission(session!.user!, 'site_visits:read:all')) {
+      if (!hasRole(session!.user!, 'ENGINEER') || project.leadUserId !== userId) {
+        return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
+      }
     }
     if (!project.startDate || !project.endDate) {
       return NextResponse.json({ success: false, error: 'This project has no start/end date set' }, { status: 400 })

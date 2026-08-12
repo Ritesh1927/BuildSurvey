@@ -1,17 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
-
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT'] as const
-const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const
+import { requireAuth, requirePermission } from '@/lib/api-auth'
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...READ_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('clients:read:all')
+  if (permError) return permError
 
   try {
     const session = await auth()
@@ -87,8 +84,8 @@ export async function POST(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...CREATE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('clients:create')
+  if (permError) return permError
 
   try {
     const session = await auth()

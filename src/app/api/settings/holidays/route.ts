@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
-
-// Mirrors /api/settings' own tiers exactly - ad-hoc holidays are just
-// another piece of org-wide configuration.
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
-const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const
+import { requireAuth, requirePermission } from '@/lib/api-auth'
 
 function dateOnly(value: string): Date {
   return new Date(`${value}T00:00:00.000Z`)
@@ -16,8 +11,8 @@ export async function GET(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...READ_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('holidays:read')
+  if (permError) return permError
 
   try {
     const { searchParams } = new URL(request.url)
@@ -42,8 +37,8 @@ export async function POST(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...WRITE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('holidays:write')
+  if (permError) return permError
 
   try {
     const session = await auth()

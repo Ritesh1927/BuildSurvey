@@ -1,18 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole, hasRole } from '@/lib/api-auth'
+import { requireAuth, requirePermission, hasPermission, hasRole } from '@/lib/api-auth'
 import { ProjectType } from '@/generated/prisma/enums'
-
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'ACCOUNTANT', 'CLIENT'] as const
-const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...READ_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('projects:read:all', 'projects:read:own')
+  if (permError) return permError
 
   try {
     const session = await auth()
@@ -49,19 +46,27 @@ export async function GET(request: NextRequest) {
     // Engineer sees only projects they lead; Surveyor only projects they
     // have an assigned survey on - a dual-capability user (secondaryRole)
     // sees the union of both. Client only their own company's projects.
-    // None of these can be widened by query params. Scoped by *primary*
-    // role only - a stray secondaryRole on an Admin/Manager/Accountant
-    // must never narrow their normally-unrestricted visibility.
-    if (role === 'CLIENT') {
-      where.clientId = session!.user!.clientId || '__no_client__'
-    } else if (role === 'ENGINEER' || role === 'SURVEYOR') {
-      const scopeConditions: any[] = []
-      if (hasRole(session!.user!, 'ENGINEER')) scopeConditions.push({ leadUserId: userId })
-      if (hasRole(session!.user!, 'SURVEYOR')) scopeConditions.push({ surveys: { some: { engineerId: userId, isDeleted: false } } })
-      if (scopeConditions.length === 1) {
-        Object.assign(where, scopeConditions[0])
-      } else if (scopeConditions.length > 1) {
-        andConditions.push({ OR: scopeConditions })
+    // None of these can be widened by query params. Gated on holding
+    // read:own rather than a hardcoded role list, so a future custom role
+    // granted read:own (without read:all) is scoped the same way.
+    if (!hasPermission(session!.user!, 'projects:read:all')) {
+      if (role === 'CLIENT') {
+        where.clientId = session!.user!.clientId || '__no_client__'
+      } else {
+        const scopeConditions: any[] = []
+        if (hasRole(session!.user!, 'ENGINEER')) scopeConditions.push({ leadUserId: userId })
+        if (hasRole(session!.user!, 'SURVEYOR')) scopeConditions.push({ surveys: { some: { engineerId: userId, isDeleted: false } } })
+        if (scopeConditions.length === 1) {
+          Object.assign(where, scopeConditions[0])
+        } else if (scopeConditions.length > 1) {
+          andConditions.push({ OR: scopeConditions })
+        } else {
+          // Holds read:own but isn't a recognized own-scoping identity
+          // (Client/Engineer/Surveyor) - e.g. a new custom role. Fail
+          // closed to no results rather than falling through unscoped,
+          // which would grant de facto read:all.
+          where.id = '__none__'
+        }
       }
     }
 
@@ -137,8 +142,8 @@ export async function POST(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...CREATE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('projects:create')
+  if (permError) return permError
 
   try {
     const session = await auth()

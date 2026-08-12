@@ -1,20 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
+import { requireAuth, requirePermission, hasPermission } from '@/lib/api-auth'
 import { PaymentStatus, QuotationStatus } from '@/generated/prisma/enums'
-
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT', 'CLIENT'] as const
-const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT'] as const
-const APPROVE_ROLES = ['SUPER_ADMIN', 'ACCOUNTANT']
-const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...READ_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('quotations:read:all', 'quotations:read:own')
+  if (permError) return permError
 
   try {
     const session = await auth()
@@ -38,7 +33,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ success: false, error: 'Invoice not found' }, { status: 404 })
     }
 
-    if (role === 'CLIENT' && quotation.project.clientId !== session!.user!.clientId) {
+    // NOTE: Engineer holds quotations:read:own but isn't scoped here,
+    // matching pre-existing behavior - see the list route for detail.
+    if (!hasPermission(session!.user!, 'quotations:read:all') && role === 'CLIENT' && quotation.project.clientId !== session!.user!.clientId) {
       return NextResponse.json({ success: false, error: 'Invoice not found' }, { status: 404 })
     }
 
@@ -53,12 +50,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...WRITE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('quotations:write')
+  if (permError) return permError
 
   try {
     const session = await auth()
-    const role = session!.user!.role
     const userId = session!.user!.id
 
     const { id } = await params
@@ -74,7 +70,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       if (!Object.values(PaymentStatus).includes(status)) {
         return NextResponse.json({ success: false, error: 'Invalid status value' }, { status: 400 })
       }
-      if (!APPROVE_ROLES.includes(role)) {
+      if (!hasPermission(session!.user!, 'quotations:approve_payment')) {
         return NextResponse.json(
           { success: false, error: 'Only a Super Admin or Accountant can change payment status' },
           { status: 403 }
@@ -127,8 +123,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...DELETE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('quotations:delete')
+  if (permError) return permError
 
   try {
     const { id } = await params

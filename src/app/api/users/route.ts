@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole, canManageRole } from '@/lib/api-auth'
+import { requireAuth, requirePermission, canManageRole } from '@/lib/api-auth'
 
 export async function GET(req: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole(['SUPER_ADMIN', 'ADMIN', 'MANAGER'])
-  if (roleError) return roleError
+  const permError = await requirePermission('users:read')
+  if (permError) return permError
 
   try {
     const { searchParams } = new URL(req.url)
@@ -78,8 +78,8 @@ export async function POST(req: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole(['SUPER_ADMIN', 'ADMIN'])
-  if (roleError) return roleError
+  const permError = await requirePermission('users:create')
+  if (permError) return permError
 
   try {
     const body = await req.json()
@@ -156,6 +156,17 @@ export async function POST(req: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(initialPassword, 12)
 
+    // Keep roleId/secondaryRoleId (the new RBAC system's source of truth
+    // for a session's resolved permissions) in sync with the legacy
+    // role/secondaryRole enum fields set below - without this, a newly
+    // created user would log in with an empty permission set.
+    const resolvedRole = role || 'ENGINEER'
+    const resolvedSecondaryRole = resolvedRole === 'CLIENT' ? null : (secondaryRole || null)
+    const [roleRecord, secondaryRoleRecord] = await Promise.all([
+      db.role.findUnique({ where: { key: resolvedRole } }),
+      resolvedSecondaryRole ? db.role.findUnique({ where: { key: resolvedSecondaryRole } }) : null,
+    ])
+
     const user = await db.user.create({
       data: {
         firstName,
@@ -163,8 +174,10 @@ export async function POST(req: NextRequest) {
         email,
         phone: phone || null,
         password: hashedPassword,
-        role: role || 'ENGINEER',
-        secondaryRole: role === 'CLIENT' ? null : (secondaryRole || null),
+        role: resolvedRole,
+        secondaryRole: resolvedSecondaryRole,
+        roleId: roleRecord?.id ?? null,
+        secondaryRoleId: secondaryRoleRecord?.id ?? null,
         isActive: isActive !== false,
         clientId: role === 'CLIENT' ? clientId : null,
       },

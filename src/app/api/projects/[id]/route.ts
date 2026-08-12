@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole, hasRole } from '@/lib/api-auth'
+import { requireAuth, requirePermission, hasPermission, hasRole } from '@/lib/api-auth'
 import { ProjectStatus, ProjectType } from '@/generated/prisma/enums'
 
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'ACCOUNTANT', 'CLIENT'] as const
-const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER'] as const
-const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const
 // Allowlist, not a blocklist - an Engineer, even one leading the project,
 // can only touch these day-to-day operational fields. Everything else
 // (reassignment, budget, location, timeline, name/type) is staffing/
@@ -18,8 +15,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...READ_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('projects:read:all', 'projects:read:own')
+  if (permError) return permError
 
   try {
     const session = await auth()
@@ -42,19 +39,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
     }
 
-    // Scoped by *primary* role - a stray secondaryRole on an Admin/Manager/
-    // Accountant must never narrow their normally-unrestricted visibility.
-    // A dual-capability Engineer/Surveyor passes if *either* path matches.
-    if (role === 'ENGINEER' || role === 'SURVEYOR') {
-      const engineerOk = hasRole(session!.user!, 'ENGINEER') && project.leadUserId === userId
-      const surveyorOk = hasRole(session!.user!, 'SURVEYOR') && project.surveys.some((s: any) => s.engineerId === userId)
-      if (!engineerOk && !surveyorOk) {
-        return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
+    // Gated on holding read:own rather than a hardcoded role list, so a
+    // future custom role granted read:own is scoped the same way. A
+    // dual-capability Engineer/Surveyor passes if *either* path matches.
+    if (!hasPermission(session!.user!, 'projects:read:all')) {
+      if (role === 'CLIENT') {
+        if (project.clientId !== session!.user!.clientId) {
+          return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
+        }
+      } else {
+        const engineerOk = hasRole(session!.user!, 'ENGINEER') && project.leadUserId === userId
+        const surveyorOk = hasRole(session!.user!, 'SURVEYOR') && project.surveys.some((s: any) => s.engineerId === userId)
+        if (!engineerOk && !surveyorOk) {
+          return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
+        }
       }
-    }
-
-    if (role === 'CLIENT' && project.clientId !== session!.user!.clientId) {
-      return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
     }
 
     return NextResponse.json({ success: true, data: project })
@@ -68,12 +67,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...WRITE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('projects:write:all', 'projects:write:own')
+  if (permError) return permError
 
   try {
     const session = await auth()
-    const role = session!.user!.role
     const userId = session!.user!.id
 
     const { id } = await params
@@ -84,12 +82,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
     }
 
-    // Super Admin/Admin/Manager have unrestricted authority regardless of
-    // any secondaryRole. Everyone else who reaches here only does so
-    // because they're the project's own lead engineer - whether that's
-    // their primary role or a secondaryRole=ENGINEER grant - and is
-    // restricted to ENGINEER_ALLOWED_FIELDS either way.
-    const isUnrestrictedRole = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'].includes(role)
+    // Full write access has unrestricted authority. Everyone else who
+    // reaches here only does so because they're the project's own lead
+    // engineer, and is restricted to ENGINEER_ALLOWED_FIELDS either way.
+    const isUnrestrictedRole = hasPermission(session!.user!, 'projects:write:all')
     if (!isUnrestrictedRole) {
       if (existing.leadUserId !== userId) {
         return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
@@ -153,8 +149,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...DELETE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('projects:delete')
+  if (permError) return permError
 
   try {
     const { id } = await params

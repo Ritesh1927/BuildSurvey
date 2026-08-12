@@ -1,19 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
+import { requireAuth, requirePermission, hasPermission } from '@/lib/api-auth'
 import { QuotationStatus } from '@/generated/prisma/enums'
 import { getGstRate } from '@/lib/gst'
-
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT', 'CLIENT'] as const
-const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT'] as const
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...READ_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('quotations:read:all', 'quotations:read:own')
+  if (permError) return permError
 
   try {
     const session = await auth()
@@ -43,7 +40,11 @@ export async function GET(request: NextRequest) {
 
     // Client only sees quotations for their own company's projects —
     // Quotation has no direct clientId, so scope through the project.
-    if (role === 'CLIENT') {
+    // NOTE: Engineer also holds quotations:read:own but isn't scoped
+    // here - falls through unrestricted, matching pre-existing behavior
+    // (this route never scoped Engineer, only Client - preserved as-is
+    // during migration rather than silently narrowing it here).
+    if (!hasPermission(session!.user!, 'quotations:read:all') && role === 'CLIENT') {
       where.project = { clientId: session!.user!.clientId || '__no_client__' }
     }
 
@@ -79,8 +80,8 @@ export async function POST(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...CREATE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('quotations:create')
+  if (permError) return permError
 
   try {
     const session = await auth()

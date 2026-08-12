@@ -1,17 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
-
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'ACCOUNTANT', 'CLIENT'] as const
-const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT'] as const
+import { requireAuth, requirePermission, hasPermission } from '@/lib/api-auth'
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...READ_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('boq:read:all', 'boq:read:own')
+  if (permError) return permError
 
   try {
     const session = await auth()
@@ -41,15 +38,20 @@ export async function GET(request: NextRequest) {
     // BOQ line items carry pricing — Engineer/Surveyor only see items
     // for projects they're actually attached to, same scoping as the
     // Projects module itself.
-    if (role === 'ENGINEER') {
-      where.project = { leadUserId: userId }
-    } else if (role === 'SURVEYOR') {
-      where.project = { surveys: { some: { engineerId: userId, isDeleted: false } } }
-    } else if (role === 'CLIENT') {
-      // Sharing the BOQ with the client it belongs to is standard
-      // practice for most construction contracts — defaulting to allow,
-      // flagged as a judgment call worth confirming.
-      where.project = { clientId: session!.user!.clientId || '__no_client__' }
+    if (!hasPermission(session!.user!, 'boq:read:all')) {
+      if (role === 'ENGINEER') {
+        where.project = { leadUserId: userId }
+      } else if (role === 'SURVEYOR') {
+        where.project = { surveys: { some: { engineerId: userId, isDeleted: false } } }
+      } else if (role === 'CLIENT') {
+        // Sharing the BOQ with the client it belongs to is standard
+        // practice for most construction contracts — defaulting to
+        // allow, flagged as a judgment call worth confirming.
+        where.project = { clientId: session!.user!.clientId || '__no_client__' }
+      } else {
+        // Holds read:own but isn't a recognized own-scoping identity.
+        where.id = '__none__'
+      }
     }
 
     const [items, total] = await Promise.all([
@@ -81,8 +83,8 @@ export async function POST(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...CREATE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('boq:create')
+  if (permError) return permError
 
   try {
     const session = await auth()

@@ -1,22 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
-
-const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR'] as const
-const OVERRIDE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
-const SCOPED_ROLES = ['ENGINEER', 'SURVEYOR']
+import { requireAuth, requirePermission, hasPermission } from '@/lib/api-auth'
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string; itemId: string }> }) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...WRITE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('surveys:checklist_write:own', 'surveys:checklist_override')
+  if (permError) return permError
 
   try {
     const session = await auth()
-    const role = session!.user!.role
     const userId = session!.user!.id
 
     const { id, itemId } = await params
@@ -33,7 +28,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ success: false, error: 'Checklist item not found' }, { status: 404 })
     }
 
-    if (SCOPED_ROLES.includes(role)) {
+    if (!hasPermission(session!.user!, 'surveys:checklist_override')) {
       if (survey.engineerId !== userId) {
         return NextResponse.json({ success: false, error: 'Survey not found' }, { status: 404 })
       }
@@ -47,8 +42,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           { status: 400 }
         )
       }
-    } else if (!OVERRIDE_ROLES.includes(role)) {
-      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
     }
 
     const updateData: any = { updatedBy: userId }

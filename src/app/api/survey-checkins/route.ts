@@ -1,18 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { requireAuth, requireRole } from '@/lib/api-auth'
+import { requireAuth, requirePermission } from '@/lib/api-auth'
 import { siteStatus } from '@/lib/geo'
-
-// Manager/Admin oversight only — engineers/surveyors already see their own
-// check-in/check-out on the survey detail page.
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
 
 export async function GET(req: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...READ_ROLES])
-  if (roleError) return roleError
+  // Manager/Admin oversight only — engineers/surveyors already see their
+  // own check-in/check-out on the survey detail page.
+  const permError = await requirePermission('survey_checkins:read')
+  if (permError) return permError
 
   try {
     const recentSurveys = await db.survey.findMany({

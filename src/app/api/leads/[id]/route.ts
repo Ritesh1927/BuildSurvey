@@ -1,19 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
+import { requireAuth, requirePermission } from '@/lib/api-auth'
 import { LeadStatus, Priority } from '@/generated/prisma/enums'
-
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
-const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
-const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...READ_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('leads:read')
+  if (permError) return permError
 
   try {
     const { id } = await params
@@ -40,8 +36,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...WRITE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('leads:write')
+  if (permError) return permError
 
   try {
     const session = await auth()
@@ -125,8 +121,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...DELETE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('leads:delete')
+  if (permError) return permError
 
   try {
     const { id } = await params

@@ -1,20 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
-
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
-// Widened from Super Admin-only: there's no Super Admin account in active
-// use on this deployment, which made every setting (including office
-// location for attendance) effectively unwritable by anyone.
-const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const
+import { requireAuth, requirePermission } from '@/lib/api-auth'
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...READ_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('settings:read')
+  if (permError) return permError
 
   try {
     const settings = await db.setting.findMany({
@@ -43,8 +37,8 @@ export async function POST(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...WRITE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('settings:write')
+  if (permError) return permError
 
   try {
     const session = await auth()

@@ -1,23 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
+import { requireAuth, requirePermission, hasPermission } from '@/lib/api-auth'
 import { RiskLevel } from '@/generated/prisma/enums'
-
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR'] as const
-const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR'] as const
-const SCOPED_ROLES = ['ENGINEER', 'SURVEYOR']
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...READ_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('risks:read:all', 'risks:read:own')
+  if (permError) return permError
 
   try {
     const session = await auth()
-    const role = session!.user!.role
     const userId = session!.user!.id
 
     const { searchParams } = new URL(request.url)
@@ -40,7 +35,7 @@ export async function GET(request: NextRequest) {
     if (surveyId) where.surveyId = surveyId
     if (level) where.level = level
 
-    if (SCOPED_ROLES.includes(role)) {
+    if (!hasPermission(session!.user!, 'risks:read:all')) {
       where.identifiedById = userId
     }
 
@@ -76,12 +71,11 @@ export async function POST(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...CREATE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('risks:create')
+  if (permError) return permError
 
   try {
     const session = await auth()
-    const role = session!.user!.role
     const userId = session!.user!.id
 
     const body = await request.json()
@@ -112,14 +106,14 @@ export async function POST(request: NextRequest) {
     // Engineer/Surveyor always identify the risk themselves; only the
     // Assign tier can attribute a risk to someone else — reject an
     // explicit mismatch rather than silently overriding it.
-    if (SCOPED_ROLES.includes(role) && identifiedById && identifiedById !== userId) {
+    const canAssign = hasPermission(session!.user!, 'risks:assign')
+    if (!canAssign && identifiedById && identifiedById !== userId) {
       return NextResponse.json(
         { success: false, error: 'You can only identify a risk as yourself' },
         { status: 403 }
       )
     }
-    const resolvedIdentifiedById =
-      SCOPED_ROLES.includes(role) ? userId : (identifiedById || userId)
+    const resolvedIdentifiedById = canAssign ? (identifiedById || userId) : userId
 
     const risk = await db.riskAssessment.create({
       data: {

@@ -1,22 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
+import { requireAuth, requirePermission } from '@/lib/api-auth'
 import { uploadPhotoDataUrl } from '@/lib/photo-upload'
 import { siteStatus } from '@/lib/geo'
 import { formatDistance, formatDate } from '@/lib/utils'
 import { todayDateOnly, markFieldAttendance } from '@/lib/attendance'
 
-// Self-attested proof-of-presence, same reasoning as survey check-in - only
-// the project's own lead engineer can check themselves in, nobody else.
-const CHECKIN_ROLES = ['ENGINEER'] as const
-
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...CHECKIN_ROLES])
-  if (roleError) return roleError
+  // Self-attested proof-of-presence, same reasoning as survey check-in -
+  // only the project's own lead engineer can check themselves in.
+  const permError = await requirePermission('site_visits:checkin')
+  if (permError) return permError
 
   try {
     const session = await auth()

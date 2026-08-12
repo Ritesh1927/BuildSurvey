@@ -1,19 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
+import { requireAuth, requirePermission, hasPermission } from '@/lib/api-auth'
 import { SurveyType } from '@/generated/prisma/enums'
-
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'CLIENT'] as const
-const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR'] as const
-const SCOPED_ROLES = ['ENGINEER', 'SURVEYOR']
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...READ_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('surveys:read:all', 'surveys:read:own')
+  if (permError) return permError
 
   try {
     const session = await auth()
@@ -44,10 +40,12 @@ export async function GET(request: NextRequest) {
 
     // Engineer/Surveyor only ever see surveys assigned to themselves;
     // Client only surveys on their own company's projects.
-    if (SCOPED_ROLES.includes(role)) {
-      where.engineerId = userId
-    } else if (role === 'CLIENT') {
-      where.project = { clientId: session!.user!.clientId || '__no_client__' }
+    if (!hasPermission(session!.user!, 'surveys:read:all')) {
+      if (role === 'CLIENT') {
+        where.project = { clientId: session!.user!.clientId || '__no_client__' }
+      } else {
+        where.engineerId = userId
+      }
     }
 
     const [surveys, total] = await Promise.all([
@@ -119,8 +117,8 @@ export async function POST(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...CREATE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('surveys:create')
+  if (permError) return permError
 
   try {
     const session = await auth()
@@ -181,14 +179,14 @@ export async function POST(request: NextRequest) {
     // themselves; explicitly assigning it to someone else is an
     // Assign-tier action, so reject rather than silently overriding —
     // silently ignoring their choice would be worse than an error.
-    if (SCOPED_ROLES.includes(role) && engineerId && engineerId !== userId) {
+    const canAssign = hasPermission(session!.user!, 'surveys:assign')
+    if (!canAssign && engineerId && engineerId !== userId) {
       return NextResponse.json(
         { success: false, error: 'You can only assign a survey to yourself' },
         { status: 403 }
       )
     }
-    const resolvedEngineerId =
-      SCOPED_ROLES.includes(role) ? userId : (engineerId || null)
+    const resolvedEngineerId = canAssign ? (engineerId || null) : userId
 
     const survey = await db.survey.create({
       data: {

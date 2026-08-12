@@ -1,18 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
-
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT', 'CLIENT'] as const
-const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
-const DELETE_ROLES = ['SUPER_ADMIN'] as const
+import { requireAuth, requirePermission, hasPermission } from '@/lib/api-auth'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...READ_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('clients:read:all', 'clients:read:own')
+  if (permError) return permError
 
   try {
     const session = await auth()
@@ -24,7 +20,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     // excluded from what they can see even for themselves (pre-relationship
     // sales data: internal notes, priority, source), same reasoning as the
     // Leads module's own CLIENT denial.
-    if (role === 'CLIENT' && id !== session!.user!.clientId) {
+    if (!hasPermission(session!.user!, 'clients:read:all') && id !== session!.user!.clientId) {
       return NextResponse.json({ success: false, error: 'Client not found' }, { status: 404 })
     }
 
@@ -57,8 +53,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...WRITE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('clients:write')
+  if (permError) return permError
 
   try {
     const session = await auth()
@@ -127,8 +123,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...DELETE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('clients:delete')
+  if (permError) return permError
 
   try {
     const { id } = await params

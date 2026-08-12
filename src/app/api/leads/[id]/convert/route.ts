@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
-
-const CONVERT_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] as const
+import { requireAuth, requirePermission } from '@/lib/api-auth'
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...CONVERT_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('leads:convert')
+  if (permError) return permError
 
   try {
     const session = await auth()

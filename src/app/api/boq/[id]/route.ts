@@ -1,18 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requireRole } from '@/lib/api-auth'
-
-const READ_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'ACCOUNTANT', 'CLIENT'] as const
-const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT'] as const
-const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN'] as const
+import { requireAuth, requirePermission, hasPermission } from '@/lib/api-auth'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...READ_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('boq:read:all', 'boq:read:own')
+  if (permError) return permError
 
   try {
     const session = await auth()
@@ -36,14 +32,19 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ success: false, error: 'BOQ item not found' }, { status: 404 })
     }
 
-    if (role === 'ENGINEER' && item.project.leadUserId !== userId) {
-      return NextResponse.json({ success: false, error: 'BOQ item not found' }, { status: 404 })
-    }
-    if (role === 'SURVEYOR' && !item.project.surveys.some((s: any) => s.engineerId === userId)) {
-      return NextResponse.json({ success: false, error: 'BOQ item not found' }, { status: 404 })
-    }
-    if (role === 'CLIENT' && item.project.clientId !== session!.user!.clientId) {
-      return NextResponse.json({ success: false, error: 'BOQ item not found' }, { status: 404 })
+    if (!hasPermission(session!.user!, 'boq:read:all')) {
+      if (role === 'ENGINEER' && item.project.leadUserId !== userId) {
+        return NextResponse.json({ success: false, error: 'BOQ item not found' }, { status: 404 })
+      }
+      if (role === 'SURVEYOR' && !item.project.surveys.some((s: any) => s.engineerId === userId)) {
+        return NextResponse.json({ success: false, error: 'BOQ item not found' }, { status: 404 })
+      }
+      if (role === 'CLIENT' && item.project.clientId !== session!.user!.clientId) {
+        return NextResponse.json({ success: false, error: 'BOQ item not found' }, { status: 404 })
+      }
+      if (role !== 'ENGINEER' && role !== 'SURVEYOR' && role !== 'CLIENT') {
+        return NextResponse.json({ success: false, error: 'BOQ item not found' }, { status: 404 })
+      }
     }
 
     return NextResponse.json({ success: true, data: item })
@@ -57,8 +58,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...WRITE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('boq:write')
+  if (permError) return permError
 
   try {
     const session = await auth()
@@ -127,8 +128,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const authError = await requireAuth()
   if (authError) return authError
 
-  const roleError = await requireRole([...DELETE_ROLES])
-  if (roleError) return roleError
+  const permError = await requirePermission('boq:delete')
+  if (permError) return permError
 
   try {
     const { id } = await params
