@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 
 import { formatDate } from "@/lib/utils"
+import { hasPermission } from "@/lib/permissions"
 import { PageHeader } from "@/components/ui/page-header"
 import { StatCard } from "@/components/ui/stat-card"
 import { Badge } from "@/components/ui/badge"
@@ -54,8 +55,7 @@ const TODAY_STATUS_META: Record<TodayStatus, { label: string; variant: "success"
 
 export default function SiteVisitsPage() {
   const { data: session } = useSession()
-  const role = session?.user?.role
-  const isOwnView = role === 'ENGINEER'
+  const isOwnView = !hasPermission(session?.user, 'site_visits:read:all')
 
   const [projects, setProjects] = useState<EligibleProject[]>([])
   const [loading, setLoading] = useState(true)

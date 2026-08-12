@@ -17,6 +17,12 @@ enum UserRole {
   SURVEYOR
   CLIENT
   ACCOUNTANT
+  // Legacy-column placeholder for a user on a genuinely custom (non-system)
+  // Role - see users/route.ts. Deliberately not ENGINEER/SURVEYOR/etc, so
+  // it never spuriously matches an identity check (role === 'ENGINEER',
+  // hasRole(user, 'ENGINEER')) that a real Engineer-flavored user would
+  // pass. roleId is the actual source of truth for a custom-role user.
+  CUSTOM
 }
 
 enum LeadStatus {

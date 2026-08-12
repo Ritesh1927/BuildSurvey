@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/select'
 import { showSuccess, showError } from '@/components/ui/toast'
 import { cn, formatCurrency, formatDate, getInitials } from '@/lib/utils'
+import { hasPermission } from '@/lib/permissions'
 
 const indianStates = [
   'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana',
@@ -104,15 +105,11 @@ const PRIORITY_META: Record<string, { label: string; color: string }> = {
 // shown separately rather than forced into this sequence.
 const PIPELINE = ['NEW', 'CONTACTED', 'QUALIFIED', 'PROPOSAL', 'NEGOTIATION', 'WON']
 
-const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
-const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN']
-
 export default function LeadDetailPage() {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
   const { data: session } = useSession()
-  const role = session?.user?.role
   const leadId = params.id as string
 
   const [lead, setLead] = useState<LeadDetail | null>(null)
@@ -130,8 +127,8 @@ export default function LeadDetailPage() {
     gstNumber: '', panNumber: '', website: '', clientType: '',
   })
 
-  const canWrite = !!role && WRITE_ROLES.includes(role)
-  const canDelete = !!role && DELETE_ROLES.includes(role)
+  const canWrite = hasPermission(session?.user, 'leads:write')
+  const canDelete = hasPermission(session?.user, 'leads:delete')
   const canConvert = canWrite && lead?.status === 'WON' && !lead?.clientId
   // Live against the in-progress form, not the loaded lead, so the client
   // fields appear the instant Status is switched to Won during editing.

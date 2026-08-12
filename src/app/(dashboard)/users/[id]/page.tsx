@@ -18,6 +18,7 @@ import {
 } from "lucide-react"
 
 import { formatDate, formatDateTime } from "@/lib/utils"
+import { hasPermission } from "@/lib/permissions"
 import { showSuccess, showError } from "@/components/ui/toast"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -50,6 +51,10 @@ interface UserDetail {
   phone: string | null
   role: string
   secondaryRole: string | null
+  roleKey: string
+  roleName: string
+  secondaryRoleKey: string | null
+  secondaryRoleName: string | null
   isActive: boolean
   avatar: string | null
   createdAt: string
@@ -57,17 +62,19 @@ interface UserDetail {
   counts?: { ledProjects: number; managedProjects: number; assignedSurveys: number }
 }
 
-const ROLE_META: Record<string, { label: string; variant: "success" | "warning" | "info" | "destructive" | "secondary" | "default" }> = {
-  SUPER_ADMIN: { label: "Super Admin", variant: "destructive" },
-  ADMIN: { label: "Admin", variant: "info" },
-  MANAGER: { label: "Manager", variant: "warning" },
-  ENGINEER: { label: "Engineer", variant: "success" },
-  SURVEYOR: { label: "Surveyor", variant: "secondary" },
-  ACCOUNTANT: { label: "Accountant", variant: "default" },
-  CLIENT: { label: "Client", variant: "secondary" },
-}
+interface RoleOption { id: string; key: string; name: string; isSystem: boolean }
 
-const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN']
+// Only the 7 built-in roles get a distinct badge color - a custom role
+// falls back to "secondary" rather than needing its own entry here.
+const ROLE_VARIANT_MAP: Record<string, "success" | "warning" | "info" | "destructive" | "secondary" | "default"> = {
+  SUPER_ADMIN: "destructive",
+  ADMIN: "info",
+  MANAGER: "warning",
+  ENGINEER: "success",
+  SURVEYOR: "secondary",
+  ACCOUNTANT: "default",
+  CLIENT: "secondary",
+}
 
 export default function UserDetailPage() {
   const params = useParams()
@@ -84,11 +91,21 @@ export default function UserDetailPage() {
   const [isEditing, setIsEditing] = useState(searchParams.get('edit') === 'true')
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', role: 'ENGINEER', secondaryRole: '', isActive: true })
+  const [roleOptions, setRoleOptions] = useState<RoleOption[]>([])
 
   const [resetOpen, setResetOpen] = useState(false)
 
-  const canWrite = !!actingRole && WRITE_ROLES.includes(actingRole)
+  const canWrite = hasPermission(session?.user, 'users:write')
   const isSelf = actingUserId === userId
+
+  useEffect(() => {
+    fetch('/api/roles/assignable')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data)) setRoleOptions(data.data)
+      })
+      .catch(() => {})
+  }, [])
 
   const fetchUser = useCallback(async () => {
     setLoading(true)
@@ -106,8 +123,8 @@ export default function UserDetailPage() {
         lastName: data.user.lastName || '',
         email: data.user.email || '',
         phone: data.user.phone || '',
-        role: data.user.role,
-        secondaryRole: data.user.secondaryRole || '',
+        role: data.user.roleKey,
+        secondaryRole: data.user.secondaryRoleKey || '',
         isActive: data.user.isActive,
       })
     } catch {
@@ -167,7 +184,7 @@ export default function UserDetailPage() {
     )
   }
 
-  const roleMeta = ROLE_META[user.role] || { label: user.role, variant: 'secondary' as const }
+  const roleVariant = ROLE_VARIANT_MAP[user.roleKey] || 'secondary'
   const fullName = `${user.firstName} ${user.lastName}`
 
   return (
@@ -201,9 +218,9 @@ export default function UserDetailPage() {
             <div className="flex-1 space-y-2">
               <div className="flex flex-wrap items-center gap-3">
                 <h2 className="text-2xl font-bold">{fullName}</h2>
-                <Badge variant={roleMeta.variant}>{roleMeta.label}</Badge>
-                {user.secondaryRole && (
-                  <Badge variant="outline">+ {ROLE_META[user.secondaryRole]?.label || user.secondaryRole}</Badge>
+                <Badge variant={roleVariant}>{user.roleName}</Badge>
+                {user.secondaryRoleName && (
+                  <Badge variant="outline">+ {user.secondaryRoleName}</Badge>
                 )}
                 <Badge variant={user.isActive ? "success" : "secondary"}>
                   {user.isActive ? "Active" : "Inactive"}
@@ -236,9 +253,9 @@ export default function UserDetailPage() {
                 >
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {Object.entries(ROLE_META).map(([value, meta]) => (
-                      <SelectItem key={value} value={value} disabled={value === 'SUPER_ADMIN' && actingRole !== 'SUPER_ADMIN'}>
-                        {meta.label}{value === 'SUPER_ADMIN' && actingRole !== 'SUPER_ADMIN' ? ' (Super Admin only)' : ''}
+                    {roleOptions.map((r) => (
+                      <SelectItem key={r.key} value={r.key} disabled={r.key === 'SUPER_ADMIN' && actingRole !== 'SUPER_ADMIN'}>
+                        {r.name}{!r.isSystem && ' (Custom)'}{r.key === 'SUPER_ADMIN' && actingRole !== 'SUPER_ADMIN' ? ' (Super Admin only)' : ''}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -256,7 +273,7 @@ export default function UserDetailPage() {
                   <SelectContent>
                     <SelectItem value="__none">None</SelectItem>
                     {(['ENGINEER', 'SURVEYOR'] as const).filter((r) => r !== form.role).map((r) => (
-                      <SelectItem key={r} value={r}>{ROLE_META[r].label}</SelectItem>
+                      <SelectItem key={r} value={r}>{roleOptions.find((ro) => ro.key === r)?.name ?? r}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -271,7 +288,7 @@ export default function UserDetailPage() {
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => { setIsEditing(false); router.replace(`/users/${userId}`); setForm({ firstName: user.firstName, lastName: user.lastName, email: user.email, phone: user.phone || '', role: user.role, secondaryRole: user.secondaryRole || '', isActive: user.isActive }) }} disabled={saving}>
+              <Button variant="outline" onClick={() => { setIsEditing(false); router.replace(`/users/${userId}`); setForm({ firstName: user.firstName, lastName: user.lastName, email: user.email, phone: user.phone || '', role: user.roleKey, secondaryRole: user.secondaryRoleKey || '', isActive: user.isActive }) }} disabled={saving}>
                 <X className="mr-2 h-4 w-4" />Cancel
               </Button>
               <Button onClick={handleSave} disabled={saving}>
@@ -309,9 +326,9 @@ export default function UserDetailPage() {
             <Card>
               <CardHeader><CardTitle>Account Information</CardTitle></CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex justify-between"><span className="text-sm text-muted-foreground">Role</span><span className="text-sm font-medium">{roleMeta.label}</span></div>
-                {user.secondaryRole && (
-                  <div className="flex justify-between"><span className="text-sm text-muted-foreground">Secondary Role</span><span className="text-sm font-medium">{ROLE_META[user.secondaryRole]?.label || user.secondaryRole}</span></div>
+                <div className="flex justify-between"><span className="text-sm text-muted-foreground">Role</span><span className="text-sm font-medium">{user.roleName}</span></div>
+                {user.secondaryRoleName && (
+                  <div className="flex justify-between"><span className="text-sm text-muted-foreground">Secondary Role</span><span className="text-sm font-medium">{user.secondaryRoleName}</span></div>
                 )}
                 <div className="flex justify-between"><span className="text-sm text-muted-foreground">Status</span><span className="text-sm font-medium">{user.isActive ? 'Active' : 'Inactive'}</span></div>
                 <div className="flex justify-between"><span className="text-sm text-muted-foreground">Member Since</span><span className="text-sm font-medium">{formatDate(user.createdAt)}</span></div>

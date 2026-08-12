@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 
 import { formatCurrency } from "@/lib/utils"
+import { hasPermission } from "@/lib/permissions"
 import { showSuccess, showError } from "@/components/ui/toast"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -69,12 +70,8 @@ const STATUS_META: Record<string, { label: string; variant: "success" | "warning
 // invoice that already carries one of those statuses from before Sent became final.
 const FILTERABLE_STATUSES = ['DRAFT', 'SENT']
 
-const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT']
-const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN']
-
 export default function QuotationsPage() {
   const { data: session } = useSession()
-  const role = session?.user?.role
 
   const [quotations, setQuotations] = useState<QuotationRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -169,7 +166,7 @@ export default function QuotationsPage() {
               <Download className="mr-2 h-4 w-4" />
               Export
             </Button>
-            {role && CREATE_ROLES.includes(role) && (
+            {hasPermission(session?.user, 'quotations:create') && (
               <Link href="/quotations/new">
                 <Button><Plus className="mr-2 h-4 w-4" />New Invoice</Button>
               </Link>
@@ -258,7 +255,7 @@ export default function QuotationsPage() {
                               <DropdownMenuItem asChild>
                                 <Link href={`/quotations/${quotation.id}`}><Eye className="mr-2 h-4 w-4" />View Details</Link>
                               </DropdownMenuItem>
-                              {role && DELETE_ROLES.includes(role) && (
+                              {hasPermission(session?.user, 'quotations:delete') && (
                                 <>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(quotation)}>

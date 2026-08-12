@@ -33,6 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
+import { hasPermission } from '@/lib/permissions'
 
 interface StepConfig {
   id: number
@@ -84,7 +85,6 @@ interface UserOption {
   role: string
 }
 
-const BACKFILL_ROLES = ['SUPER_ADMIN', 'ADMIN']
 // Only a Manager owns a lead through its lifecycle (status changes,
 // eventual conversion to a client) - matches the assignedToId check in
 // POST/PATCH /api/leads, not just hidden here in the picker.
@@ -93,7 +93,7 @@ const LEAD_ASSIGNABLE_ROLES = ['MANAGER']
 export default function NewLeadPage() {
   const router = useRouter()
   const { data: session } = useSession()
-  const canSetInitialStatus = !!session?.user?.role && BACKFILL_ROLES.includes(session.user.role)
+  const canSetInitialStatus = hasPermission(session?.user, 'leads:set_initial_status')
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState<FormData>(initialFormData)
   const [errors, setErrors] = useState<FormErrors>({})

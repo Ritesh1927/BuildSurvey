@@ -18,6 +18,7 @@ import {
 } from "lucide-react"
 
 import { cn, formatCurrency } from "@/lib/utils"
+import { hasPermission } from "@/lib/permissions"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -94,9 +95,6 @@ const categories = [
   "Miscellaneous",
 ]
 const emptyDraft: BOQDraft = { description: "", category: "", unit: "", quantity: "", unitRate: "" }
-const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT']
-const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT']
-const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN']
 
 // Cycled by index across project clusters purely for visual variety - not
 // tied to any status/meaning, just so a page full of clusters doesn't read
@@ -113,10 +111,9 @@ const CLUSTER_PALETTE = [
 export default function BOQPage() {
   const { data: session } = useSession()
   const router = useRouter()
-  const role = session?.user?.role
-  const canCreate = !!role && CREATE_ROLES.includes(role)
-  const canWrite = !!role && WRITE_ROLES.includes(role)
-  const canDelete = !!role && DELETE_ROLES.includes(role)
+  const canCreate = hasPermission(session?.user, 'boq:create')
+  const canWrite = hasPermission(session?.user, 'boq:write')
+  const canDelete = hasPermission(session?.user, 'boq:delete')
 
   const [expandedProjects, setExpandedProjects] = useState<Record<string, boolean>>({})
   const [showAddModal, setShowAddModal] = useState(false)

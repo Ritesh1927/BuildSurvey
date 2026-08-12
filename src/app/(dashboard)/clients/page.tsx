@@ -18,6 +18,7 @@ import {
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { hasPermission } from "@/lib/permissions"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -66,13 +67,8 @@ interface ClientRow {
   totalLeads: number
 }
 
-const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN']
-const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
-const DELETE_ROLES = ['SUPER_ADMIN']
-
 export default function ClientsPage() {
   const { data: session } = useSession()
-  const role = session?.user?.role
 
   const [clients, setClients] = useState<ClientRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -155,7 +151,7 @@ export default function ClientsPage() {
           { label: "Clients" },
         ]}
         actions={
-          role && CREATE_ROLES.includes(role) ? (
+          hasPermission(session?.user, 'clients:create') ? (
             <Link href="/clients/new">
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
@@ -276,7 +272,7 @@ export default function ClientsPage() {
                                 View Details
                               </Link>
                             </DropdownMenuItem>
-                            {role && WRITE_ROLES.includes(role) && (
+                            {hasPermission(session?.user, 'clients:write') && (
                               <DropdownMenuItem asChild>
                                 <Link href={`/clients/${client.id}?edit=true`}>
                                   <Pencil className="mr-2 h-4 w-4" />
@@ -296,7 +292,7 @@ export default function ClientsPage() {
                                 Call
                               </a>
                             </DropdownMenuItem>
-                            {role && DELETE_ROLES.includes(role) && (
+                            {hasPermission(session?.user, 'clients:delete') && (
                               <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(client)}>

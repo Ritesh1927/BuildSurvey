@@ -38,12 +38,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         })
 
         // Resolved permission set for the new dynamic RBAC system - union
-        // of the primary and secondary Role's permissions. Empty until a
-        // user's roleId is backfilled (see scripts/seed-roles-permissions.ts);
-        // harmless today since nothing checks `permissions` yet.
+        // of the primary and secondary Role's permissions.
         const permissionKeys = new Set<string>()
         for (const rp of user.roleRef?.permissions ?? []) permissionKeys.add(rp.permission.key)
         for (const rp of user.secondaryRoleRef?.permissions ?? []) permissionKeys.add(rp.permission.key)
+
+        // Display name for the primary role - pulled from the Role record
+        // rather than the legacy `role` enum, since a custom (non-system)
+        // role's enum column holds a placeholder value that would show the
+        // wrong label (see users/route.ts for why that placeholder exists).
+        const roleName = user.roleRef?.name ?? user.role
 
         return {
           id: user.id,
@@ -51,6 +55,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email,
           role: user.role,
           secondaryRole: user.secondaryRole,
+          roleName,
           clientId: user.clientId,
           image: user.avatar,
           permissions: Array.from(permissionKeys),
@@ -67,6 +72,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.role = user.role
         token.secondaryRole = user.secondaryRole
+        token.roleName = user.roleName
         token.id = user.id
         token.clientId = user.clientId
         token.permissions = user.permissions
@@ -77,6 +83,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         session.user.role = token.role
         session.user.secondaryRole = token.secondaryRole
+        session.user.roleName = token.roleName
         session.user.id = token.id as string
         session.user.clientId = token.clientId
         session.user.permissions = token.permissions

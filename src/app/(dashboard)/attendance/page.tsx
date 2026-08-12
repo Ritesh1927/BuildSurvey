@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 
 import { formatDate, formatDateTime, formatDistance } from "@/lib/utils"
+import { hasPermission } from "@/lib/permissions"
 import { compressImage, getCurrentPosition } from "@/lib/image-compress"
 import { showSuccess, showError } from "@/components/ui/toast"
 import { PageHeader } from "@/components/ui/page-header"
@@ -57,16 +58,13 @@ interface TeamEmployee {
   monthCount: number
 }
 
-const TEAM_VIEW_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
-
 function todayKey() {
   return new Date().toISOString().slice(0, 10)
 }
 
 export default function AttendancePage() {
   const { data: session } = useSession()
-  const role = session?.user?.role
-  const canViewTeam = !!role && TEAM_VIEW_ROLES.includes(role)
+  const canViewTeam = hasPermission(session?.user, 'attendance:read_team')
 
   const [officeLocation, setOfficeLocation] = useState<{ latitude: number | null; longitude: number | null }>({ latitude: null, longitude: null })
   const [history, setHistory] = useState<AttendanceRecord[]>([])

@@ -26,17 +26,8 @@ import { Switch } from "@/components/ui/switch"
 import { PageHeader } from "@/components/ui/page-header"
 import { PhoneInput } from "@/components/ui/phone-input"
 
-const roles = [
-  { value: "SUPER_ADMIN", label: "Super Admin" },
-  { value: "ADMIN", label: "Admin" },
-  { value: "MANAGER", label: "Manager" },
-  { value: "ENGINEER", label: "Engineer" },
-  { value: "SURVEYOR", label: "Surveyor" },
-  { value: "CLIENT", label: "Client" },
-  { value: "ACCOUNTANT", label: "Accountant" },
-]
-
 interface ClientOption { id: string; companyName: string }
+interface RoleOption { id: string; key: string; name: string; isSystem: boolean }
 
 export default function NewUserPage() {
   const router = useRouter()
@@ -45,6 +36,8 @@ export default function NewUserPage() {
   const [showSuccess, setShowSuccess] = useState(false)
   const [clientList, setClientList] = useState<ClientOption[]>([])
   const [clientsLoading, setClientsLoading] = useState(true)
+  const [roleOptions, setRoleOptions] = useState<RoleOption[]>([])
+  const [rolesLoading, setRolesLoading] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
@@ -71,6 +64,14 @@ export default function NewUserPage() {
       })
       .catch(() => {})
       .finally(() => setClientsLoading(false))
+
+    fetch('/api/roles/assignable')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data)) setRoleOptions(data.data)
+      })
+      .catch(() => {})
+      .finally(() => setRolesLoading(false))
   }, [])
 
   const validate = () => {
@@ -273,12 +274,12 @@ export default function NewUserPage() {
                     onValueChange={(value) => updateField("role", value)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select role" />
+                      <SelectValue placeholder={rolesLoading ? "Loading roles..." : "Select role"} />
                     </SelectTrigger>
                     <SelectContent>
-                      {roles.map((role) => (
-                        <SelectItem key={role.value} value={role.value}>
-                          {role.label}
+                      {roleOptions.map((role) => (
+                        <SelectItem key={role.key} value={role.key}>
+                          {role.name}{!role.isSystem && " (Custom)"}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -299,7 +300,7 @@ export default function NewUserPage() {
                       <SelectContent>
                         <SelectItem value="__none">None</SelectItem>
                         {["ENGINEER", "SURVEYOR"].filter((r) => r !== form.role).map((r) => (
-                          <SelectItem key={r} value={r}>{roles.find((ro) => ro.value === r)?.label}</SelectItem>
+                          <SelectItem key={r} value={r}>{roleOptions.find((ro) => ro.key === r)?.name ?? r}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>

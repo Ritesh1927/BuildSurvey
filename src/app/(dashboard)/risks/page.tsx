@@ -14,6 +14,7 @@ import {
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { hasPermission } from "@/lib/permissions"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -75,14 +76,10 @@ interface Survey {
   projectName: string
 }
 
-const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR']
-const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN']
-
 export default function RisksPage() {
   const { data: session } = useSession()
-  const role = session?.user?.role
-  const canCreate = !!role && CREATE_ROLES.includes(role)
-  const canDelete = !!role && DELETE_ROLES.includes(role)
+  const canCreate = hasPermission(session?.user, 'risks:create')
+  const canDelete = hasPermission(session?.user, 'risks:delete')
 
   const [levelFilter, setLevelFilter] = useState("all")
   const [risks, setRisks] = useState<Risk[]>([])

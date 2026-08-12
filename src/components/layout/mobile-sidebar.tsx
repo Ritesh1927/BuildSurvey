@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { APP_NAME, SIDEBAR_NAV_ITEMS } from '@/lib/constants'
+import { hasPermission } from '@/lib/permissions'
 import { useUIStore } from '@/stores/ui-store'
 import { getIcon } from '@/components/layout/icon-map'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -64,8 +65,7 @@ function MobileNavItem({
 export default function MobileSidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
-  const userRole = session?.user?.role
-  const userSecondaryRole = session?.user?.secondaryRole
+  const userRoleName = session?.user?.roleName
   const userName = session?.user?.name ?? 'Guest User'
   const userInitials = userName.split(' ').map((n) => n[0]).filter(Boolean).join('').toUpperCase() || '?'
   const { sidebarOpen, setSidebarOpen } = useUIStore()
@@ -151,9 +151,8 @@ export default function MobileSidebar() {
           <nav className="space-y-1 px-3">
             {SIDEBAR_NAV_ITEMS.map((group) => {
               const visibleItems = group.items.filter((item) => {
-                if (!item.roles) return true
-                if (!userRole) return false
-                return item.roles.includes(userRole) || (!!userSecondaryRole && item.roles.includes(userSecondaryRole))
+                if (!item.permissions) return true
+                return hasPermission(session?.user, ...item.permissions)
               })
               if (visibleItems.length === 0) return null
               return (
@@ -196,7 +195,7 @@ export default function MobileSidebar() {
                 {userName}
               </span>
               <span className="truncate text-[11px] text-slate-400">
-                {userRole?.replace(/_/g, ' ') ?? 'Viewer'}
+                {userRoleName ?? 'Viewer'}
               </span>
             </div>
             <button

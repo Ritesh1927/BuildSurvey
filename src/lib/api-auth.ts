@@ -17,21 +17,13 @@ export function hasRole(user: { role: UserRole; secondaryRole?: UserRole | null 
   return user.role === role || user.secondaryRole === role
 }
 
-export async function requireRole(allowedRoles: UserRole[]) {
-  const session = await auth()
-  if (!session?.user) {
-    return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
-  }
-  const allowed = allowedRoles.includes(session.user.role)
-    || (!!session.user.secondaryRole && allowedRoles.includes(session.user.secondaryRole))
-  if (!allowed) {
-    return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
-  }
-  return null
-}
-
-/** Only a Super Admin may grant, hold, or be acted upon for the Super Admin role. */
-export function canManageRole(actingRole: UserRole, subjectRole: UserRole): boolean {
+/**
+ * Only a Super Admin may grant, hold, or be acted upon for the Super Admin
+ * role. `subjectRole` is a plain string (a Role.key) rather than UserRole
+ * since it now also has to accept custom role keys, not just the 7
+ * original enum values - only the 'SUPER_ADMIN' comparison matters here.
+ */
+export function canManageRole(actingRole: UserRole, subjectRole: string): boolean {
   return subjectRole !== 'SUPER_ADMIN' || actingRole === 'SUPER_ADMIN'
 }
 

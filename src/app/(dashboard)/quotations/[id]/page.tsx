@@ -14,6 +14,7 @@ import {
 } from "lucide-react"
 
 import { formatCurrency, formatDate } from "@/lib/utils"
+import { hasPermission } from "@/lib/permissions"
 import { generateInvoicePdf, downloadPdf } from "@/lib/pdf-generator"
 import { showSuccess, showError } from "@/components/ui/toast"
 import { Badge } from "@/components/ui/badge"
@@ -64,15 +65,11 @@ const STATUS_META: Record<string, { label: string; variant: "success" | "warning
   CANCELLED: { label: "Cancelled", variant: "destructive" },
 }
 
-const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT']
-const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN']
-
 export default function QuotationDetailPage() {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
   const { data: session } = useSession()
-  const role = session?.user?.role
   const quotationId = params.id as string
 
   const [q, setQ] = useState<QuotationDetail | null>(null)
@@ -82,8 +79,8 @@ export default function QuotationDetailPage() {
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ title: '', validUntil: '', terms: '', notes: '', discountAmount: '' })
 
-  const canWrite = !!role && WRITE_ROLES.includes(role)
-  const canDelete = !!role && DELETE_ROLES.includes(role)
+  const canWrite = hasPermission(session?.user, 'quotations:write')
+  const canDelete = hasPermission(session?.user, 'quotations:delete')
 
   const fetchQuotation = useCallback(async () => {
     setLoading(true)

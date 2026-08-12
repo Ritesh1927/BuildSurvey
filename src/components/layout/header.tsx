@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { useUIStore } from '@/stores/ui-store'
 import { useTheme } from '@/components/layout/providers'
+import { hasPermission } from '@/lib/permissions'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -23,11 +24,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import Breadcrumbs from '@/components/layout/breadcrumbs'
-
-// Matches the Settings nav item's roles in src/lib/constants.ts - the
-// sidebar already hides it from everyone else, this shortcut shouldn't
-// be a back door around that.
-const SETTINGS_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
 
 export default function Header() {
   const router = useRouter()
@@ -41,9 +37,12 @@ export default function Header() {
   const sessionUser = session?.user
   const userName = sessionUser?.name || 'Guest'
   const userEmail = sessionUser?.email || ''
-  const userRole = sessionUser?.role?.replace(/_/g, ' ') || 'Viewer'
+  const userRole = sessionUser?.roleName || 'Viewer'
   const userInitials = userName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
-  const canViewSettings = !!sessionUser?.role && SETTINGS_ROLES.includes(sessionUser.role)
+  // Matches the Settings nav item's permission in src/lib/constants.ts -
+  // the sidebar already hides it from everyone else, this shortcut
+  // shouldn't be a back door around that.
+  const canViewSettings = hasPermission(sessionUser, 'settings:read')
 
   const handleLogout = useCallback(() => {
     signOut({ callbackUrl: '/login' })

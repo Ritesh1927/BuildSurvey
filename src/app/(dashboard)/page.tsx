@@ -18,6 +18,7 @@ import { StatCard } from '@/components/ui/stat-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn, formatCurrency, formatDate } from '@/lib/utils'
+import { hasPermission } from '@/lib/permissions'
 
 interface ProjectRow {
   id: string
@@ -45,12 +46,6 @@ const STATUS_ICON_BG: Record<string, string> = {
   CANCELLED: "bg-red-500/10 text-red-600 dark:text-red-400",
 }
 
-// Mirrors each API's own CREATE_ROLES exactly - a quick-action button for
-// something the caller isn't allowed to do isn't a shortcut, it's a dead
-// end that fails at the API with a 403.
-const SURVEY_CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR']
-const PROJECT_CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
-const INVOICE_CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ACCOUNTANT']
 
 // Fetches just the `total` count from an already-secured list endpoint —
 // each one naturally respects the caller's real role/ownership scoping,
@@ -99,11 +94,10 @@ export default function DashboardPage() {
   )
 
   const firstName = session?.user?.name?.split(' ')[0] || 'there'
-  const role = session?.user?.role
-  const roleLabel = role?.replace(/_/g, ' ')
-  const canCreateSurvey = !!role && SURVEY_CREATE_ROLES.includes(role)
-  const canCreateProject = !!role && PROJECT_CREATE_ROLES.includes(role)
-  const canCreateInvoice = !!role && INVOICE_CREATE_ROLES.includes(role)
+  const roleLabel = session?.user?.roleName
+  const canCreateSurvey = hasPermission(session?.user, 'surveys:create')
+  const canCreateProject = hasPermission(session?.user, 'projects:create')
+  const canCreateInvoice = hasPermission(session?.user, 'quotations:create')
 
   return (
     <div className="space-y-6">

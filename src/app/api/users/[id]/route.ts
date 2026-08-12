@@ -18,6 +18,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       select: {
         id: true, firstName: true, lastName: true, email: true, phone: true,
         role: true, secondaryRole: true, isActive: true, avatar: true, createdAt: true, lastLoginAt: true,
+        roleRef: { select: { key: true, name: true } },
+        secondaryRoleRef: { select: { key: true, name: true } },
         _count: {
           select: {
             ledProjects: { where: { isDeleted: false } },
@@ -32,8 +34,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const { _count, ...rest } = user
-    return NextResponse.json({ user: { ...rest, counts: _count } })
+    // roleRef/secondaryRoleRef hold the TRUE current role - the legacy
+    // role/secondaryRole enum fields are a placeholder for anyone on a
+    // custom (non-system) role. roleKey/secondaryRoleKey below are what
+    // the UI should actually display and pre-select for editing.
+    const { _count, roleRef, secondaryRoleRef, ...rest } = user
+    return NextResponse.json({
+      user: {
+        ...rest,
+        roleKey: roleRef?.key ?? user.role,
+        roleName: roleRef?.name ?? user.role,
+        secondaryRoleKey: secondaryRoleRef?.key ?? user.secondaryRole,
+        secondaryRoleName: secondaryRoleRef?.name ?? user.secondaryRole,
+        counts: _count,
+      },
+    })
   } catch (error) {
     console.error('GET /api/users/[id] error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -52,7 +67,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const body = await req.json()
     const { firstName, lastName, email, phone, role, secondaryRole, isActive, password, clientId } = body
 
-    const existing = await db.user.findUnique({ where: { id } })
+    const existing = await db.user.findUnique({ where: { id }, include: { roleRef: { select: { key: true } } } })
     if (!existing) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
@@ -78,30 +93,44 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       )
     }
 
-    if (!canManageRole(actingRole, existing.role)) {
+    // `role` is now any Role.key, not just the 7 UserRole enum values -
+    // resolve and validate it up front. The user's TRUE current role key
+    // comes from roleRef, not the legacy `role` enum column, since that
+    // column holds a placeholder for anyone currently on a custom role
+    // (see the create route for why).
+    const existingRoleKey = existing.roleRef?.key ?? existing.role
+    let roleRecord: { id: string; key: string; isSystem: boolean } | null = null
+    if (role) {
+      roleRecord = await db.role.findUnique({ where: { key: role }, select: { id: true, key: true, isSystem: true } })
+      if (!roleRecord) {
+        return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
+      }
+    }
+
+    if (!canManageRole(actingRole, existingRoleKey)) {
       return NextResponse.json(
         { error: 'Only a Super Admin can modify a Super Admin user' },
         { status: 403 }
       )
     }
 
-    if (role && !canManageRole(actingRole, role)) {
+    if (roleRecord && !canManageRole(actingRole, roleRecord.key)) {
       return NextResponse.json(
         { error: 'Only a Super Admin can assign the Super Admin role' },
         { status: 403 }
       )
     }
 
-    const effectiveRole = role || existing.role
+    const effectiveRoleKey = roleRecord?.key ?? existingRoleKey
 
-    if (secondaryRole && secondaryRole === effectiveRole) {
+    if (secondaryRole && secondaryRole === effectiveRoleKey) {
       return NextResponse.json(
         { error: 'Secondary role cannot be the same as the primary role' },
         { status: 400 }
       )
     }
 
-    if (effectiveRole === 'CLIENT') {
+    if (effectiveRoleKey === 'CLIENT') {
       const resolvedClientId = clientId !== undefined ? clientId : existing.clientId
       if (!resolvedClientId) {
         return NextResponse.json(
@@ -136,18 +165,29 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       updateData.email = email
     }
     if (phone !== undefined) updateData.phone = phone
-    if (role) updateData.role = role
-    if (effectiveRole === 'CLIENT') {
+    if (roleRecord) {
+      // See the create route for why the legacy enum column gets the
+      // CUSTOM sentinel for a custom (non-system) role - roleId is the
+      // real source of truth for access control from here on.
+      updateData.role = roleRecord.isSystem ? roleRecord.key : 'CUSTOM'
+      updateData.roleId = roleRecord.id
+    }
+    if (effectiveRoleKey === 'CLIENT') {
       // A Client login has no business holding field-staff capability -
       // force-clear regardless of what was sent, mirroring clientId below.
       updateData.secondaryRole = null
+      updateData.secondaryRoleId = null
     } else if (secondaryRole !== undefined) {
       updateData.secondaryRole = secondaryRole || null
+      const secondaryRoleRecord = secondaryRole
+        ? await db.role.findUnique({ where: { key: secondaryRole }, select: { id: true } })
+        : null
+      updateData.secondaryRoleId = secondaryRoleRecord?.id ?? null
     }
     if (isActive !== undefined) updateData.isActive = isActive
-    if (effectiveRole === 'CLIENT') {
+    if (effectiveRoleKey === 'CLIENT') {
       if (clientId !== undefined) updateData.clientId = clientId
-    } else if (effectiveRole !== existing.role) {
+    } else if (effectiveRoleKey !== existingRoleKey) {
       // Role is changing away from CLIENT — clear the now-meaningless link.
       updateData.clientId = null
     }
@@ -157,21 +197,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
       }
       updateData.password = await bcrypt.hash(password, 12)
-    }
-
-    // Keep roleId/secondaryRoleId (the new RBAC system's source of truth
-    // for a session's resolved permissions) in sync whenever the legacy
-    // role/secondaryRole enum fields above changed - without this, a
-    // role change here wouldn't actually change what the user can do.
-    if (updateData.role) {
-      const roleRecord = await db.role.findUnique({ where: { key: updateData.role } })
-      updateData.roleId = roleRecord?.id ?? null
-    }
-    if (updateData.secondaryRole !== undefined) {
-      const secondaryRoleRecord = updateData.secondaryRole
-        ? await db.role.findUnique({ where: { key: updateData.secondaryRole } })
-        : null
-      updateData.secondaryRoleId = secondaryRoleRecord?.id ?? null
     }
 
     const user = await db.user.update({

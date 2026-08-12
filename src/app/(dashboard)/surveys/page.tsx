@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select"
 import { EmptyState } from "@/components/ui/empty-state"
 import { showSuccess, showError } from "@/components/ui/toast"
+import { hasPermission } from "@/lib/permissions"
 
 interface SurveyRow {
   id: string
@@ -63,12 +64,9 @@ const TYPE_COLORS: Record<string, string> = {
 }
 
 const ITEMS_PER_PAGE_OPTIONS = [10, 15, 20, 25]
-const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR']
-const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN']
 
 export default function SurveysPage() {
   const { data: session } = useSession()
-  const role = session?.user?.role
 
   const [surveys, setSurveys] = useState<SurveyRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -146,7 +144,7 @@ export default function SurveysPage() {
           { label: "Surveys" },
         ]}
         actions={
-          role && CREATE_ROLES.includes(role) ? (
+          hasPermission(session?.user, 'surveys:create') ? (
             <Link href="/surveys/new">
               <Button><Plus className="h-4 w-4 mr-2" />New Survey</Button>
             </Link>
@@ -277,7 +275,7 @@ export default function SurveysPage() {
                               <DropdownMenuItem asChild>
                                 <Link href={`/surveys/${survey.id}`}><Eye className="h-4 w-4 mr-2" />View Details</Link>
                               </DropdownMenuItem>
-                              {role && DELETE_ROLES.includes(role) && (
+                              {hasPermission(session?.user, 'surveys:delete') && (
                                 <>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(survey)}>

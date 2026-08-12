@@ -22,6 +22,7 @@ import {
 } from "lucide-react"
 
 import { cn, formatCurrency, formatDate } from "@/lib/utils"
+import { hasPermission, hasRole } from "@/lib/permissions"
 import { INDIAN_STATES } from "@/lib/constants"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -105,15 +106,11 @@ const SURVEY_STATUS_VARIANT: Record<string, "success" | "info" | "warning" | "de
   REJECTED: "destructive", ASSIGNED: "secondary",
 }
 
-const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER']
-const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN']
-
 export default function ProjectDetailPage() {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
   const { data: session } = useSession()
-  const role = session?.user?.role
   const projectId = params.id as string
 
   const [project, setProject] = useState<ProjectDetail | null>(null)
@@ -128,13 +125,13 @@ export default function ProjectDetailPage() {
     budget: '', startDate: '', endDate: '', managerId: '', leadUserId: '',
   })
 
-  const canWrite = !!role && WRITE_ROLES.includes(role)
-  const canDelete = !!role && DELETE_ROLES.includes(role)
-  // Matches the backend's ENGINEER_RESTRICTED_FIELDS — staffing/budget calls
+  const canWrite = hasPermission(session?.user, 'projects:write:all', 'projects:write:own')
+  const canDelete = hasPermission(session?.user, 'projects:delete')
+  // Matches the backend's ENGINEER_ALLOWED_FIELDS — staffing/budget calls
   // aren't an Engineer's to make even on a project they lead.
-  const canEditRestricted = !!role && role !== 'ENGINEER'
-  const isLeadEngineer = role === 'ENGINEER' && !!session?.user?.id && project?.leadUserId === session.user.id
-  const canViewSiteVisits = isLeadEngineer || (!!role && ['SUPER_ADMIN', 'ADMIN', 'MANAGER'].includes(role))
+  const canEditRestricted = hasPermission(session?.user, 'projects:write:all')
+  const isLeadEngineer = hasRole(session?.user, 'ENGINEER') && !!session?.user?.id && project?.leadUserId === session.user.id
+  const canViewSiteVisits = isLeadEngineer || hasPermission(session?.user, 'site_visits:read:all')
 
   const fetchProject = useCallback(async () => {
     setLoading(true)
@@ -586,7 +583,7 @@ export default function ProjectDetailPage() {
               <SiteVisitTab
                 projectId={project.id}
                 isLeadEngineer={isLeadEngineer}
-                canViewAll={!!role && ['SUPER_ADMIN', 'ADMIN', 'MANAGER'].includes(role)}
+                canViewAll={hasPermission(session?.user, 'site_visits:read:all')}
                 projectLatitude={project.latitude}
                 projectLongitude={project.longitude}
                 projectStartDate={project.startDate}

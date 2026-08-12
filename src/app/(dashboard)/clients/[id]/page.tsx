@@ -22,6 +22,7 @@ import {
 } from "lucide-react"
 
 import { cn, formatDate } from "@/lib/utils"
+import { hasPermission } from "@/lib/permissions"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -68,15 +69,11 @@ const statusVariantMap: Record<string, "success" | "info" | "warning" | "destruc
   CANCELLED: "destructive",
 }
 
-const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
-const DELETE_ROLES = ['SUPER_ADMIN']
-
 export default function ClientDetailPage() {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
   const { data: session } = useSession()
-  const role = session?.user?.role
   const clientId = params.id as string
 
   const [client, setClient] = useState<ClientDetail | null>(null)
@@ -90,8 +87,8 @@ export default function ClientDetailPage() {
     website: '', clientType: '', notes: '',
   })
 
-  const canWrite = !!role && WRITE_ROLES.includes(role)
-  const canDelete = !!role && DELETE_ROLES.includes(role)
+  const canWrite = hasPermission(session?.user, 'clients:write')
+  const canDelete = hasPermission(session?.user, 'clients:delete')
 
   const fetchClient = useCallback(async () => {
     setLoading(true)

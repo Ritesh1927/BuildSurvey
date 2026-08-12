@@ -26,6 +26,7 @@ import {
 import { showSuccess, showError } from "@/components/ui/toast"
 import { differenceInCalendarDays } from "date-fns"
 import { formatDate, formatDistance } from "@/lib/utils"
+import { hasPermission } from "@/lib/permissions"
 import { siteStatus } from "@/lib/geo"
 import { compressImage, getCurrentPosition } from "@/lib/image-compress"
 
@@ -102,16 +103,11 @@ const RISK_LEVEL_META: Record<string, { variant: "success" | "warning" | "destru
   CRITICAL: { variant: "destructive", icon: AlertTriangle },
 }
 
-const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR']
-const APPROVE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
-const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN']
-
 export default function SurveyDetailPage() {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
   const { data: session } = useSession()
-  const role = session?.user?.role
   const surveyId = params.id as string
 
   const [survey, setSurvey] = useState<SurveyDetail | null>(null)
@@ -123,11 +119,11 @@ export default function SurveyDetailPage() {
   const [approving, setApproving] = useState(false)
   const [form, setForm] = useState({ title: '', description: '', status: 'ASSIGNED', scheduledDate: '' })
 
-  const canWrite = !!role && WRITE_ROLES.includes(role)
-  const canDelete = !!role && DELETE_ROLES.includes(role)
-  const canApprove = !!role && APPROVE_ROLES.includes(role)
+  const canWrite = hasPermission(session?.user, 'surveys:write:all', 'surveys:write:own')
+  const canDelete = hasPermission(session?.user, 'surveys:delete')
+  const canApprove = hasPermission(session?.user, 'surveys:approve')
   const isAssignedToMe = !!session?.user?.id && survey?.engineerId === session.user.id
-  const canCheckInOut = (role === 'ENGINEER' || role === 'SURVEYOR') && isAssignedToMe
+  const canCheckInOut = hasPermission(session?.user, 'surveys:checkin', 'surveys:checkout') && isAssignedToMe
 
   const [checkInPhoto, setCheckInPhoto] = useState<string | null>(null)
   const [checkingIn, setCheckingIn] = useState(false)
@@ -144,8 +140,8 @@ export default function SurveyDetailPage() {
   // Manager can always correct entries after the fact.
   const isOnSiteWindow = !!survey?.checkedInAt && !survey?.checkedOutAt
   const canEditChecklist =
-    (isAssignedToMe && (role === 'ENGINEER' || role === 'SURVEYOR') && isOnSiteWindow) ||
-    (!!role && ['SUPER_ADMIN', 'ADMIN', 'MANAGER'].includes(role))
+    (isAssignedToMe && hasPermission(session?.user, 'surveys:checklist_write:own') && isOnSiteWindow) ||
+    hasPermission(session?.user, 'surveys:checklist_override')
 
   const fetchSurvey = useCallback(async (showLoading = true) => {
     // showLoading=false is used for in-place refreshes (checklist toggle,

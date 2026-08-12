@@ -47,6 +47,7 @@ import { DataTable } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { showSuccess, showError } from '@/components/ui/toast'
 import { cn, formatCurrency, formatDate, getInitials } from '@/lib/utils'
+import { hasPermission } from '@/lib/permissions'
 import { generateLeadsReport, downloadPdf } from '@/lib/pdf-generator'
 
 interface LeadData {
@@ -81,16 +82,9 @@ const PRIORITY_META: Record<string, { label: string; color: string }> = {
   CRITICAL: { label: 'Critical', color: 'text-red-700 border-red-400' },
 }
 
-// Roles allowed to write via the API — matches src/app/api/leads route
-// gates. Kept in sync manually since there's no shared source of truth
-// for role tiers between frontend and backend yet.
-const WRITE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
-const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN']
-
 export default function LeadsPage() {
   const { data: session } = useSession()
   const router = useRouter()
-  const role = session?.user?.role
 
   const [leads, setLeads] = useState<LeadData[]>([])
   const [loading, setLoading] = useState(true)
@@ -282,8 +276,8 @@ export default function LeadsPage() {
       header: '',
       cell: ({ row }) => {
         const lead = row.original
-        const canWrite = role && WRITE_ROLES.includes(role)
-        const canDelete = role && DELETE_ROLES.includes(role)
+        const canWrite = hasPermission(session?.user, 'leads:write')
+        const canDelete = hasPermission(session?.user, 'leads:delete')
         const canConvert = canWrite && lead.status === 'WON' && !lead.clientId
 
         if (!canWrite && !canDelete) {
@@ -353,7 +347,7 @@ export default function LeadsPage() {
           { label: 'Leads' },
         ]}
         actions={
-          role && WRITE_ROLES.includes(role) ? (
+          hasPermission(session?.user, 'leads:write') ? (
             <Button asChild>
               <Link href="/leads/new">
                 <Plus className="mr-1 h-4 w-4" />
@@ -434,7 +428,7 @@ export default function LeadsPage() {
           title="No leads found"
           description="No leads match your current filters. Try adjusting the filters or add a new lead."
           action={
-            role && WRITE_ROLES.includes(role)
+            hasPermission(session?.user, 'leads:write')
               ? { label: 'Add Lead', onClick: () => (window.location.href = '/leads/new') }
               : undefined
           }

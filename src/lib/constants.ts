@@ -1,5 +1,3 @@
-import type { UserRole } from '@/generated/prisma/enums'
-
 export const APP_NAME = 'BuildSurvey Pro'
 export const APP_VERSION = '1.0.0'
 
@@ -41,13 +39,16 @@ export const PRIORITIES = [
   { value: 'CRITICAL', label: 'Critical', color: 'bg-red-100 text-red-700 border-red-300' },
 ] as const
 
+// `permissions` is an any-of list - a nav item is visible if the session
+// holds at least one of them (see hasPermission in src/lib/permissions.ts).
+// Items with no `permissions` are visible to any authenticated user.
 export const SIDEBAR_NAV_ITEMS: readonly {
   group: string
   items: readonly {
     label: string
     href: string
     icon: string
-    roles?: readonly UserRole[]
+    permissions?: readonly string[]
   }[]
 }[] = [
   {
@@ -59,8 +60,8 @@ export const SIDEBAR_NAV_ITEMS: readonly {
   {
     group: 'CRM',
     items: [
-      { label: 'Leads', href: '/leads', icon: 'Users', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
-      { label: 'Clients', href: '/clients', icon: 'Building2', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT'] },
+      { label: 'Leads', href: '/leads', icon: 'Users', permissions: ['leads:read'] },
+      { label: 'Clients', href: '/clients', icon: 'Building2', permissions: ['clients:read:all'] },
     ],
   },
   {
@@ -72,31 +73,31 @@ export const SIDEBAR_NAV_ITEMS: readonly {
   {
     group: 'Survey & Field',
     items: [
-      { label: 'Surveys', href: '/surveys', icon: 'ClipboardList', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'CLIENT'] },
-      { label: 'Survey Check-ins', href: '/surveys/gps', icon: 'MapPin', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
-      { label: 'Site Visits', href: '/site-visits', icon: 'Navigation', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER'] },
+      { label: 'Surveys', href: '/surveys', icon: 'ClipboardList', permissions: ['surveys:read:all', 'surveys:read:own'] },
+      { label: 'Survey Check-ins', href: '/surveys/gps', icon: 'MapPin', permissions: ['survey_checkins:read'] },
+      { label: 'Site Visits', href: '/site-visits', icon: 'Navigation', permissions: ['site_visits:read:all', 'site_visits:read:own'] },
     ],
   },
   {
     group: 'Risk & Finance',
     items: [
-      { label: 'Risk Assessment', href: '/risks', icon: 'ShieldAlert', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR'] },
+      { label: 'Risk Assessment', href: '/risks', icon: 'ShieldAlert', permissions: ['risks:read:all', 'risks:read:own'] },
       { label: 'BOQ', href: '/boq', icon: 'Calculator' },
-      { label: 'Invoices', href: '/quotations', icon: 'FileText', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'ACCOUNTANT', 'CLIENT'] },
+      { label: 'Invoices', href: '/quotations', icon: 'FileText', permissions: ['quotations:read:all', 'quotations:read:own'] },
     ],
   },
   {
     group: 'Workforce',
     items: [
-      { label: 'Attendance', href: '/attendance', icon: 'UserCheck', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ENGINEER', 'SURVEYOR', 'ACCOUNTANT'] },
-      { label: 'Employees', href: '/users', icon: 'Users', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
+      { label: 'Attendance', href: '/attendance', icon: 'UserCheck', permissions: ['attendance:mark'] },
+      { label: 'Employees', href: '/users', icon: 'Users', permissions: ['users:read'] },
     ],
   },
   {
     group: 'Administration',
     items: [
-      { label: 'Settings', href: '/settings', icon: 'Settings', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
-      { label: 'Roles & Permissions', href: '/roles', icon: 'Lock', roles: ['SUPER_ADMIN'] },
+      { label: 'Settings', href: '/settings', icon: 'Settings', permissions: ['settings:read'] },
+      { label: 'Roles & Permissions', href: '/roles', icon: 'Lock', permissions: ['roles:manage'] },
     ],
   },
   {

@@ -59,22 +59,20 @@ interface DbUser {
   phone: string | null
   role: string
   secondaryRole: string | null
+  roleKey: string
+  roleName: string
+  secondaryRoleKey: string | null
+  secondaryRoleName: string | null
   isActive: boolean
   avatar: string | null
   createdAt: string
   lastLoginAt: string | null
 }
 
-const roleDisplayNames: Record<string, string> = {
-  SUPER_ADMIN: 'Super Admin',
-  ADMIN: 'Admin',
-  MANAGER: 'Manager',
-  ENGINEER: 'Engineer',
-  SURVEYOR: 'Surveyor',
-  CLIENT: 'Client',
-  ACCOUNTANT: 'Accountant',
-}
+interface RoleOption { id: string; key: string; name: string; isSystem: boolean }
 
+// Only the 7 built-in roles get a distinct color - a custom role falls
+// back to the default badge style rather than needing its own entry here.
 const roleColorMap: Record<string, 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info'> = {
   SUPER_ADMIN: 'destructive',
   ADMIN: 'info',
@@ -98,7 +96,17 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true)
   const [bulkWorking, setBulkWorking] = useState(false)
   const [resetTarget, setResetTarget] = useState<DbUser | null>(null)
+  const [roleOptions, setRoleOptions] = useState<RoleOption[]>([])
   const pageSize = 25
+
+  useEffect(() => {
+    fetch('/api/roles/assignable')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data)) setRoleOptions(data.data)
+      })
+      .catch(() => {})
+  }, [])
 
   const fetchUsers = useCallback(async () => {
     setLoading(true)
@@ -146,7 +154,7 @@ export default function UsersPage() {
     const headers = ["First Name", "Last Name", "Email", "Phone", "Role", "Status", "Created"]
     const csv = [
       headers,
-      ...rows.map((u) => [u.firstName, u.lastName, u.email, u.phone || '', roleDisplayNames[u.role] || u.role, u.isActive ? 'Active' : 'Inactive', u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-IN') : '']),
+      ...rows.map((u) => [u.firstName, u.lastName, u.email, u.phone || '', u.roleName, u.isActive ? 'Active' : 'Inactive', u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-IN') : '']),
     ].map((r) => r.map((c) => `"${c}"`).join(",")).join("\n")
     const blob = new Blob([csv], { type: "text/csv" })
     const url = URL.createObjectURL(blob)
@@ -237,8 +245,8 @@ export default function UsersPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Roles</SelectItem>
-                {Object.entries(roleDisplayNames).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>{label}</SelectItem>
+                {roleOptions.map((r) => (
+                  <SelectItem key={r.key} value={r.key}>{r.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -340,11 +348,11 @@ export default function UsersPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1.5">
-                            <Badge variant={roleColorMap[user.role] || 'default'}>
-                              {roleDisplayNames[user.role] || user.role}
+                            <Badge variant={roleColorMap[user.roleKey] || 'default'}>
+                              {user.roleName}
                             </Badge>
-                            {user.secondaryRole && (
-                              <Badge variant="outline" className="text-[10px]">+ {roleDisplayNames[user.secondaryRole] || user.secondaryRole}</Badge>
+                            {user.secondaryRoleName && (
+                              <Badge variant="outline" className="text-[10px]">+ {user.secondaryRoleName}</Badge>
                             )}
                           </div>
                         </TableCell>

@@ -17,6 +17,7 @@ import {
 } from "lucide-react"
 
 import { cn, formatCurrency } from "@/lib/utils"
+import { hasPermission } from "@/lib/permissions"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -84,12 +85,8 @@ const TYPE_META: Record<string, string> = {
   RENOVATION: "Renovation",
 }
 
-const CREATE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
-const DELETE_ROLES = ['SUPER_ADMIN', 'ADMIN']
-
 export default function ProjectsPage() {
   const { data: session } = useSession()
-  const role = session?.user?.role
 
   const [projects, setProjects] = useState<ProjectRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -185,7 +182,7 @@ export default function ProjectsPage() {
         ]}
         actions={
           <div className="flex items-center gap-2">
-            {role && CREATE_ROLES.includes(role) && (
+            {hasPermission(session?.user, 'projects:create') && (
               <Link href="/projects/new">
                 <Button><Plus className="mr-2 h-4 w-4" />New Project</Button>
               </Link>
@@ -300,7 +297,7 @@ export default function ProjectsPage() {
                               <DropdownMenuItem asChild>
                                 <Link href={`/projects/${project.id}`}>View Details</Link>
                               </DropdownMenuItem>
-                              {role && DELETE_ROLES.includes(role) && (
+                              {hasPermission(session?.user, 'projects:delete') && (
                                 <>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(project)}>
