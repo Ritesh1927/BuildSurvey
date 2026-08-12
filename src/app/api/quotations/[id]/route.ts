@@ -14,6 +14,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   try {
     const session = await auth()
     const role = session!.user!.role
+    const userId = session!.user!.id
 
     const { id } = await params
     const quotation = await db.quotation.findUnique({
@@ -22,7 +23,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         items: { where: { isDeleted: false } },
         project: {
           select: {
-            id: true, name: true, code: true, clientId: true,
+            id: true, name: true, code: true, clientId: true, leadUserId: true,
             client: { select: { companyName: true, contactPerson: true } },
           },
         },
@@ -33,10 +34,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ success: false, error: 'Invoice not found' }, { status: 404 })
     }
 
-    // NOTE: Engineer holds quotations:read:own but isn't scoped here,
-    // matching pre-existing behavior - see the list route for detail.
-    if (!hasPermission(session!.user!, 'quotations:read:all') && role === 'CLIENT' && quotation.project.clientId !== session!.user!.clientId) {
-      return NextResponse.json({ success: false, error: 'Invoice not found' }, { status: 404 })
+    if (!hasPermission(session!.user!, 'quotations:read:all')) {
+      if (role === 'CLIENT') {
+        if (quotation.project.clientId !== session!.user!.clientId) {
+          return NextResponse.json({ success: false, error: 'Invoice not found' }, { status: 404 })
+        }
+      } else if (role === 'ENGINEER') {
+        if (quotation.project.leadUserId !== userId) {
+          return NextResponse.json({ success: false, error: 'Invoice not found' }, { status: 404 })
+        }
+      } else {
+        return NextResponse.json({ success: false, error: 'Invoice not found' }, { status: 404 })
+      }
     }
 
     return NextResponse.json({ success: true, data: quotation })

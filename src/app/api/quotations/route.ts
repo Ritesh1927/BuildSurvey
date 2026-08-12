@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await auth()
     const role = session!.user!.role
+    const userId = session!.user!.id
 
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search') || ''
@@ -38,14 +39,18 @@ export async function GET(request: NextRequest) {
     if (status) where.status = status
     if (quotationStatus) where.quotationStatus = quotationStatus
 
-    // Client only sees quotations for their own company's projects —
-    // Quotation has no direct clientId, so scope through the project.
-    // NOTE: Engineer also holds quotations:read:own but isn't scoped
-    // here - falls through unrestricted, matching pre-existing behavior
-    // (this route never scoped Engineer, only Client - preserved as-is
-    // during migration rather than silently narrowing it here).
-    if (!hasPermission(session!.user!, 'quotations:read:all') && role === 'CLIENT') {
-      where.project = { clientId: session!.user!.clientId || '__no_client__' }
+    // Client only sees quotations for their own company's projects;
+    // Engineer only for projects they lead — Quotation has no direct
+    // clientId/leadUserId, so scope through the project in both cases.
+    if (!hasPermission(session!.user!, 'quotations:read:all')) {
+      if (role === 'CLIENT') {
+        where.project = { clientId: session!.user!.clientId || '__no_client__' }
+      } else if (role === 'ENGINEER') {
+        where.project = { leadUserId: userId }
+      } else {
+        // Holds read:own but isn't a recognized own-scoping identity.
+        where.id = '__none__'
+      }
     }
 
     const [quotations, total] = await Promise.all([
