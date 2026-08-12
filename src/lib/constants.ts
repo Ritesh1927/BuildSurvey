@@ -96,6 +96,7 @@ export const SIDEBAR_NAV_ITEMS: readonly {
     group: 'Administration',
     items: [
       { label: 'Settings', href: '/settings', icon: 'Settings', roles: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
+      { label: 'Roles & Permissions', href: '/roles', icon: 'Lock', roles: ['SUPER_ADMIN'] },
     ],
   },
   {
