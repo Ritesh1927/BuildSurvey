@@ -56,7 +56,7 @@ function StatCard({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 space-y-1">
             <p className="truncate text-sm font-medium text-muted-foreground">{label}</p>
-            <p className={cn("truncate font-bold tracking-tight", valueTextSize(value))}>{value}</p>
+            <p className={cn("font-bold leading-tight tracking-tight", valueTextSize(value))}>{value}</p>
           </div>
           {icon && (
             <div
