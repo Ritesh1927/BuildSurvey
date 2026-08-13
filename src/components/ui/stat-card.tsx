@@ -35,7 +35,9 @@ function valueTextSize(value: string | number) {
   if (length <= 8) return "text-2xl sm:text-3xl"
   if (length <= 11) return "text-xl sm:text-2xl"
   if (length <= 14) return "text-lg sm:text-xl"
-  return "text-base sm:text-lg"
+  if (length <= 17) return "text-base sm:text-lg"
+  if (length <= 20) return "text-sm sm:text-base"
+  return "text-xs sm:text-sm"
 }
 
 function StatCard({
@@ -56,7 +58,7 @@ function StatCard({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 space-y-1">
             <p className="truncate text-sm font-medium text-muted-foreground">{label}</p>
-            <p className={cn("font-bold leading-tight tracking-tight", valueTextSize(value))}>{value}</p>
+            <p className={cn("truncate font-bold tracking-tight", valueTextSize(value))}>{value}</p>
           </div>
           {icon && (
             <div
