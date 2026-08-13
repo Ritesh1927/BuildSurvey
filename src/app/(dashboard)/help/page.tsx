@@ -14,13 +14,10 @@ const sections = [
   { id: 'surveys', title: 'Step 4: Surveys', icon: '5' },
   { id: 'boq', title: 'Step 5: BOQ', icon: '6' },
   { id: 'quotations', title: 'Step 6: Invoices', icon: '7' },
-  { id: 'risk-materials', title: 'Step 7: Risk & Materials', icon: '8' },
-  { id: 'media', title: 'Step 8: Media & Docs', icon: '9' },
-  { id: 'workflow', title: 'Step 9: Workflow', icon: '10' },
-  { id: 'reports', title: 'Step 10: Reports', icon: '11' },
-  { id: 'comm', title: 'Communication', icon: '12' },
-  { id: 'admin', title: 'Administration', icon: '13' },
-  { id: 'ai', title: 'AI Features', icon: '14' },
+  { id: 'risks', title: 'Step 7: Risk Assessment', icon: '8' },
+  { id: 'site-visits', title: 'Step 8: Site Visits', icon: '9' },
+  { id: 'attendance', title: 'Attendance', icon: '10' },
+  { id: 'admin', title: 'Roles & Permissions', icon: '11' },
   { id: 'flow', title: 'Flow Diagram', icon: '→' },
 ]
 
@@ -86,7 +83,7 @@ export default function HelpPage() {
             <p className="text-sm text-muted-foreground">Read this once — you will know how to run your entire business</p>
           </div>
         </div>
-        <Badge variant="info" className="w-fit">15 sections · Deep Guide</Badge>
+        <Badge variant="info" className="w-fit">12 sections · Deep Guide</Badge>
       </div>
 
       <div className="flex gap-6">
@@ -150,17 +147,17 @@ export default function HelpPage() {
                   <div>
                     <h2 className="text-xl font-bold text-foreground mb-2">The Big Picture</h2>
                     <p className="text-muted-foreground">
-                      This app manages the <strong className="text-foreground">entire life of a construction project</strong> — from the moment someone shows interest to project completion.
+                      This app manages the <strong className="text-foreground">entire life of a construction project</strong> — from the moment someone shows interest, through the survey and costing, to ongoing site supervision after work begins.
                     </p>
                   </div>
 
                   <div className="rounded-lg bg-muted p-4">
                     <p className="text-sm font-semibold text-foreground mb-2">The Business Flow (Memorize This):</p>
                     <div className="flex flex-wrap items-center gap-1 text-sm">
-                      {['LEAD', 'CLIENT', 'PROJECT', 'SURVEY', 'BOQ', 'INVOICE', 'WORK', 'REPORT'].map((s, i) => (
+                      {['LEAD', 'CLIENT', 'PROJECT', 'SURVEY', 'BOQ', 'INVOICE', 'SITE VISITS'].map((s, i) => (
                         <span key={s} className="flex items-center gap-1">
                           <Badge variant="info">{s}</Badge>
-                          {i < 7 && <ChevronRight className="h-3 w-3 text-muted-foreground" />}
+                          {i < 6 && <ChevronRight className="h-3 w-3 text-muted-foreground" />}
                         </span>
                       ))}
                     </div>
@@ -170,26 +167,31 @@ export default function HelpPage() {
                     <h3 className="text-lg font-semibold text-foreground mb-2">In Simple Words:</h3>
                     <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
                       <li><strong className="text-foreground">Someone calls you</strong> → That&apos;s a <strong className="text-foreground">Lead</strong></li>
-                      <li><strong className="text-foreground">You sign them up</strong> → That becomes a <strong className="text-foreground">Client</strong></li>
-                      <li><strong className="text-foreground">You create a Project</strong> → That&apos;s a <strong className="text-foreground">Project</strong></li>
-                      <li><strong className="text-foreground">Engineer visits the site</strong> → That&apos;s a <strong className="text-foreground">Survey</strong></li>
+                      <li><strong className="text-foreground">You mark the lead Won</strong> → It converts to a <strong className="text-foreground">Client</strong> in the same step</li>
+                      <li><strong className="text-foreground">You create a Project</strong> for that client</li>
+                      <li><strong className="text-foreground">Engineer or Surveyor visits the site</strong> → That&apos;s a <strong className="text-foreground">Survey</strong></li>
                       <li><strong className="text-foreground">You calculate costs</strong> → That&apos;s a <strong className="text-foreground">BOQ</strong></li>
-                      <li><strong className="text-foreground">You send them a price</strong> → That&apos;s an <strong className="text-foreground">Invoice</strong></li>
-                      <li><strong className="text-foreground">Work happens</strong> → Track risks, materials, documents</li>
-                      <li><strong className="text-foreground">Reports & sign-offs</strong> → Project complete</li>
+                      <li><strong className="text-foreground">You send them a price</strong> → That&apos;s an <strong className="text-foreground">Invoice</strong>, built straight from the BOQ</li>
+                      <li><strong className="text-foreground">Work begins</strong> → the assigned Engineer logs recurring <strong className="text-foreground">Site Visits</strong> until the project is complete</li>
                     </ol>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Everyone also marks their own <strong className="text-foreground">Attendance</strong> daily — that runs in parallel to all of the above, it isn&apos;t part of the project flow itself.
+                    </p>
                   </div>
 
                   <div>
                     <h3 className="text-lg font-semibold text-foreground mb-2">Who Uses What?</h3>
+                    <p className="mb-2 text-xs text-muted-foreground">
+                      These 7 roles ship by default, each with a sensible starting set of permissions. An Admin can edit any of them, or create entirely new custom roles — see <strong className="text-foreground">Roles & Permissions</strong> below.
+                    </p>
                     <div className="grid gap-2 sm:grid-cols-2">
                       {[
-                        { role: 'Sales/BD Team', modules: 'Leads, Clients, Invoices' },
-                        { role: 'Project Manager', modules: 'Projects, Surveys, Workflows, Reports' },
-                        { role: 'Site Engineer', modules: 'Surveys (field), Measurements, Photos, GPS' },
-                        { role: 'Surveyor', modules: 'Survey execution, Checklists, Media capture' },
-                        { role: 'Accountant', modules: 'BOQ, Invoices, Cost Estimation' },
-                        { role: 'Admin', modules: 'Users, Roles, Settings, Masters' },
+                        { role: 'Manager', modules: 'Leads, Clients, Projects, Surveys, Site Visits, BOQ, Invoices' },
+                        { role: 'Engineer', modules: 'Projects they lead, Surveys, Site Visits, BOQ (view), Attendance' },
+                        { role: 'Surveyor', modules: 'Assigned Surveys, Risk Assessments, Attendance' },
+                        { role: 'Accountant', modules: 'BOQ, Invoices, payment status' },
+                        { role: 'Client', modules: 'Read-only view of their own projects, surveys and invoices' },
+                        { role: 'Admin / Super Admin', modules: 'Everything, plus Employees and Roles & Permissions' },
                       ].map((r) => (
                         <div key={r.role} className="flex items-center justify-between rounded-lg border border-border p-2">
                           <span className="text-sm font-medium text-foreground">{r.role}</span>
@@ -219,55 +221,49 @@ export default function HelpPage() {
                     <p className="mt-1 font-medium text-blue-600 dark:text-blue-400">That phone call = ONE LEAD</p>
                   </div>
 
-                  <div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">When to Create a Lead?</h3>
-                    <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-                      <li>Someone calls or emails asking about services</li>
-                      <li>You get a business card at an event</li>
-                      <li>Someone fills the &quot;Contact Us&quot; form on your website</li>
-                      <li>An existing client refers someone</li>
-                    </ul>
-                  </div>
-
                   <StepCard step={1} title="Contact Information">
                     <FieldTable rows={[
                       ['Full Name', 'Contact person name', 'Rajesh Mehta', 'Who you will talk to'],
-                      ['Email', 'Their email', 'rajesh@sunrisebuilders.com', 'For sending invoices'],
-                      ['Phone', 'Mobile (min 10 digits)', '9876543210', 'Calls and WhatsApp'],
+                      ['Email Address', 'Their email', 'rajesh@sunrisebuilders.com', 'For sending invoices'],
+                      ['Phone Number', 'Mobile (min 10 digits)', '9876543210', 'Calls and follow-up'],
                       ['Company', 'Company name', 'Sunrise Builders Pvt. Ltd.', 'Identifies organization'],
-                      ['Website', 'Company website', 'https://sunrisebuilders.com', 'Research the company'],
                     ]} />
                   </StepCard>
 
                   <StepCard step={2} title="Lead Details">
                     <FieldTable rows={[
-                      ['Lead Source', 'How did they find you?', 'Referral', 'Which marketing channel works'],
-                      ['Status', 'Current deal stage', 'NEW / CONTACTED / QUALIFIED', 'Tracks sales pipeline'],
-                      ['Priority', 'How urgent?', 'HIGH', 'Focus on important deals'],
-                      ['Estimated Value', 'Expected deal value in ₹', '500000', 'Revenue forecasting'],
-                      ['Notes', 'Extra info', 'Needs survey in 2 weeks', 'Context for team'],
+                      ['Lead Source', 'How did they find you?', 'Referral', 'Which channel works — options: Website, Referral, LinkedIn, Cold Call, Exhibition / Trade Show, Partner, Social Media, Other'],
+                      ['Status', 'Only shown if you have permission to backfill status', 'New', 'Everyone else\'s leads start at New automatically'],
+                      ['Priority', 'How urgent?', 'High', 'Low / Medium / High / Critical'],
+                      ['Estimated Value (INR)', 'Expected deal value', '500000', 'Revenue forecasting'],
+                      ['Notes', 'Extra info', 'Needs survey in 2 weeks', 'Context for the team'],
                     ]} />
                   </StepCard>
 
-                  <StepCard step={3} title="Assignment & Follow-up">
+                  <StepCard step={3} title="Assignment">
                     <FieldTable rows={[
-                      ['Assign To', 'Team member handling this', 'Priya Sharma', 'Someone must own this lead'],
-                      ['Next Follow-up Date', 'When to contact next', '2026-07-15', 'No lead forgotten'],
+                      ['Assign To', 'A Manager to own this lead', 'Priya Sharma', 'Only Managers can be assigned — leave blank to keep it in the general pool'],
                     ]} />
                   </StepCard>
 
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Lead Status Workflow</h3>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Lead Status Pipeline</h3>
                     <div className="flex flex-wrap items-center gap-1 text-sm">
-                      {['NEW', 'CONTACTED', 'QUALIFIED', 'PROPOSAL_SENT', 'NEGOTIATION', 'WON'].map((s, i) => (
+                      {['NEW', 'CONTACTED', 'QUALIFIED', 'PROPOSAL', 'NEGOTIATION', 'WON'].map((s, i) => (
                         <span key={s} className="flex items-center gap-1">
                           <Badge variant={s === 'WON' ? 'success' : 'info'}>{s}</Badge>
                           {i < 5 && <ChevronRight className="h-3 w-3 text-muted-foreground" />}
                         </span>
                       ))}
+                      <span className="ml-2 text-muted-foreground">(or LOST, at any point)</span>
                     </div>
-                    <div className="mt-3 rounded-lg bg-muted p-3 text-sm text-muted-foreground">
-                      <p><strong className="text-foreground">WON?</strong> → Click &quot;Convert to Client&quot; on the lead detail page</p>
+                    <div className="mt-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 p-3 text-sm">
+                      <p className="font-medium text-foreground">Won = Converted, in one step.</p>
+                      <p className="mt-1 text-muted-foreground">
+                        Open the lead, click Edit, and set <strong className="text-foreground">Status</strong> to <strong className="text-foreground">Won</strong>. A box appears asking for whatever a client record needs that a lead never captured —
+                        <strong className="text-foreground"> City</strong> and <strong className="text-foreground">State</strong> are required, while Client Type, Website, Address, PIN Code, GST Number and PAN Number are optional. Name, company, email and phone carry over automatically.
+                        Hit <strong className="text-foreground">Save &amp; Convert</strong> and the lead becomes a Client immediately — there is no separate &quot;Convert&quot; step or dialog anymore.
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -279,19 +275,19 @@ export default function HelpPage() {
               <Card>
                 <CardContent className="p-6 space-y-6">
                   <div>
-                    <h2 className="text-xl font-bold text-foreground mb-1">Step 2: Convert Lead to Client</h2>
-                    <p className="text-sm text-muted-foreground">A <strong className="text-foreground">Client</strong> is a confirmed customer with a business relationship.</p>
+                    <h2 className="text-xl font-bold text-foreground mb-1">Step 2: Clients</h2>
+                    <p className="text-sm text-muted-foreground">A <strong className="text-foreground">Client</strong> is a confirmed customer — reached either by converting a Won lead, or added directly for repeat/existing business.</p>
                   </div>
 
                   <FieldTable rows={[
-                    ['Company Name', 'Legal company name', 'Sunrise Builders Pvt. Ltd.', 'Used on invoices, contracts'],
-                    ['Client Type', 'What kind of company', 'Real Estate Developer', 'Categorize clients'],
-                    ['Contact Person', 'Primary contact', 'Rajesh Mehta', 'Main point of contact'],
-                    ['Email', 'Business email', 'rajesh@sunrisebuilders.com', 'Official communication'],
-                    ['Phone', 'Business phone', '9876543210', 'Communication'],
-                    ['GST Number', '15-char GSTIN', '27AABCS1234F1Z5', 'CRITICAL for invoicing'],
-                    ['PAN Number', '10-char PAN', 'AABCS1234F', 'CRITICAL for taxation'],
-                    ['State', 'Indian state', 'Maharashtra', 'State regulations'],
+                    ['Company Name', 'Legal company name (required)', 'Sunrise Builders Pvt. Ltd.', 'Used on invoices'],
+                    ['Contact Person', 'Primary contact (required)', 'Rajesh Mehta', 'Main point of contact'],
+                    ['Email Address', 'Business email (required)', 'rajesh@sunrisebuilders.com', 'Official communication'],
+                    ['Phone Number', 'Business phone (required)', '9876543210', 'Communication'],
+                    ['City / State', 'Required', 'Mumbai / Maharashtra', 'Location and regulations'],
+                    ['Client Type', 'Optional', 'Real Estate Developer', 'Categorize clients'],
+                    ['GST Number', 'Optional — 15 characters', '27AABCS1234F1Z5', 'Needed for GST-compliant invoicing'],
+                    ['PAN Number', 'Optional — 10 characters', 'AABCS1234F', 'Taxation'],
                   ]} />
 
                   <div>
@@ -326,39 +322,36 @@ export default function HelpPage() {
                     <p className="text-sm text-muted-foreground">A <strong className="text-foreground">Project</strong> is the actual work you do for a client.</p>
                   </div>
 
-                  <StepCard step={1} title="Basic Information">
+                  <StepCard step={1} title="Basic Info">
                     <FieldTable rows={[
                       ['Project Name', 'Descriptive name', 'Sunrise Enclave - Structural Survey', 'Unique identifier'],
+                      ['Project Code', 'Auto-generated, cannot be edited', 'PRJ-2026-042', 'Permanent reference number'],
                       ['Description', 'What is this project?', 'Complete structural survey for 3 tower project', 'Context for everyone'],
-                      ['Project Type', 'Kind of project', 'Residential Tower', 'Categorization'],
+                      ['Project Type', 'Kind of project', 'Residential', 'Categorization'],
                       ['Client', 'Which client?', 'Sunrise Builders Pvt. Ltd.', 'Links project to client'],
                     ]} />
                   </StepCard>
 
                   <StepCard step={2} title="Location">
                     <FieldTable rows={[
-                      ['Site Address', 'Full site address', 'Plot No. 15, Powai Lake Road', 'Field team needs to reach'],
-                      ['City', 'City name', 'Mumbai', 'Location tracking'],
-                      ['State', 'Indian state', 'Maharashtra', 'State regulations'],
-                      ['GPS Coordinates', 'Lat/Long', '19.0760, 72.8777', 'Exact site on map'],
-                      ['Total Area', 'Site area in sq.ft', '50000', 'For estimation'],
-                      ['Floors', 'Building floors', '20', 'Scope estimation'],
+                      ['Site Address / City / State', 'Where the site is', 'Powai, Mumbai, Maharashtra', 'Field team needs to reach'],
+                      ['Latitude / Longitude', 'Exact GPS coordinates', '19.0760, 72.8777', 'Used to verify on-site check-ins later'],
+                      ['Total Area (sq.ft)', 'Site area', '50000', 'For estimation'],
+                      ['Number of Floors', 'Building floors', '20', 'Scope estimation'],
                     ]} />
                   </StepCard>
 
                   <StepCard step={3} title="Financial">
                     <FieldTable rows={[
-                      ['Project Budget', 'Total budget in ₹', '5000000', 'Budget tracking'],
-                      ['Estimated Cost', 'Expected cost in ₹', '4500000', 'Profit margin calc'],
-                      ['Start Date', 'Work begins', '2026-07-15', 'Timeline tracking'],
-                      ['End Date', 'Work ends', '2026-12-31', 'Deadline management'],
+                      ['Project Budget (INR)', 'Total budget', '5000000', 'Budget tracking'],
+                      ['Start Date / End Date', 'Timeline', '2026-07-15 to 2026-12-31', 'Also defines the Site Visits window later'],
                     ]} />
                   </StepCard>
 
                   <StepCard step={4} title="Assignment">
                     <FieldTable rows={[
-                      ['Project Manager', 'Who manages?', 'Priya Sharma', 'Accountability'],
-                      ['Team Members', 'Who works on it?', 'Raj Mehta, Neha Gupta', 'Resource allocation'],
+                      ['Project Manager', 'Optional — filtered to Managers', 'Priya Sharma', 'Can be assigned later'],
+                      ['Lead Engineer', 'Optional — filtered to Engineers', 'Raj Mehta', 'Required before Site Visits can start'],
                     ]} />
                   </StepCard>
 
@@ -381,97 +374,75 @@ export default function HelpPage() {
                   <div>
                     <h2 className="text-xl font-bold text-foreground mb-1">Step 4: Do a Site Survey</h2>
                     <p className="text-sm text-muted-foreground">
-                      A <strong className="text-foreground">Survey</strong> is a detailed on-site inspection. <strong className="text-foreground text-red-600 dark:text-red-400">This is the CORE of your business.</strong>
+                      A <strong className="text-foreground">Survey</strong> is a one-time, structured on-site inspection — different from the recurring Site Visits that happen later once work is underway.
                     </p>
                   </div>
 
-                  <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 p-4 text-sm">
-                    <p className="font-medium text-foreground">When to Survey:</p>
-                    <ul className="list-disc list-inside text-muted-foreground mt-1 space-y-0.5">
-                      <li>Before construction — understand site conditions</li>
-                      <li>During construction — check quality</li>
-                      <li>Before handover — verify everything is done right</li>
-                      <li>When problems arise — investigate issues</li>
-                    </ul>
-                  </div>
-
-                  <StepCard step={1} title="Project Selection">
+                  <StepCard step={1} title="Project & Type">
                     <FieldTable rows={[
                       ['Project', 'Which project?', 'Sunrise Enclave', 'Links survey to project'],
-                      ['Survey Type', 'Why doing this?', 'Initial Survey', 'Defines scope'],
-                      ['Survey Title', 'Descriptive title', 'Foundation Inspection - Phase 1', 'Identifies this survey'],
-                      ['Description', 'What will you check?', 'Foundation depth, soil, rebar', 'Clarity for engineer'],
+                      ['Survey Type', 'Why doing this?', 'Initial', 'Initial / Detailed / Follow-up / Final / As-Built'],
+                      ['Survey Title / Description', 'What will you check?', 'Foundation Inspection - Phase 1', 'Identifies this survey'],
                     ]} />
-                    <div className="rounded-lg border border-border p-3 text-sm">
-                      <p className="font-medium text-foreground mb-1">Survey Types:</p>
-                      <div className="space-y-1 text-muted-foreground">
-                        <p><Badge variant="info" className="mr-1">Initial</Badge> First visit — baseline data collection</p>
-                        <p><Badge variant="info" className="mr-1">Detailed</Badge> Deep inspection of specific area</p>
-                        <p><Badge variant="info" className="mr-1">Follow-up</Badge> Revisit to check progress</p>
-                        <p><Badge variant="info" className="mr-1">Final</Badge> Pre-handover comprehensive check</p>
-                        <p><Badge variant="info" className="mr-1">As-Built</Badge> Document actual built conditions</p>
-                      </div>
-                    </div>
                   </StepCard>
 
                   <StepCard step={2} title="Schedule & Assignment">
                     <FieldTable rows={[
-                      ['Scheduled Date', 'When?', '2026-07-16', 'Scheduling'],
-                      ['Duration', 'How long?', '4 hours', 'Time allocation'],
-                      ['Assign Engineer', 'Who does it?', 'Raj Mehta', 'Responsibility'],
-                      ['Priority', 'How urgent?', 'HIGH', 'Priority handling'],
+                      ['Scheduled Date', 'Cannot be in the past', '2026-07-16', 'Scheduling'],
+                      ['Assign Surveyor / Engineer', 'Who does it?', 'Raj Mehta', 'Picked from Engineers and Surveyors'],
                     ]} />
                   </StepCard>
 
-                  <StepCard step={3} title="Site Information">
+                  <StepCard step={3} title="Site Details">
                     <FieldTable rows={[
-                      ['GPS Location', 'Get or enter', 'Lat 19.0760, Long 72.8777', 'Exact site location'],
-                      ['Weather', 'Current weather', 'Clear Sky', 'Affects survey quality'],
-                      ['Site Condition', 'Accessibility', 'Accessible', 'Team access planning'],
-                      ['Building Type', 'Kind of building', 'Residential', 'What you check'],
-                      ['Construction Stage', 'Building stage', 'Foundation', 'Relevant inspections'],
+                      ['Weather Condition', 'Free text', 'Clear Sky', 'Shown on the survey overview'],
+                      ['Site Condition', 'Free text', 'Accessible', 'Shown on the survey overview'],
+                      ['Access Details', 'Notes for the field team', 'Gate code 4521, ask for site guard', 'Practical access info'],
                     ]} />
                   </StepCard>
 
-                  <StepCard step={4} title="Infrastructure">
+                  <StepCard step={4} title="Checklist">
                     <div className="text-sm text-muted-foreground space-y-2">
-                      <p><strong className="text-foreground">Electricity:</strong> Available? → Connection Type (3-Phase/1-Phase/HT) → Load (kVA)</p>
-                      <p><strong className="text-foreground">Water:</strong> Available? → Source (Municipal/Borewell/Tanker)</p>
-                      <p><strong className="text-foreground">Drainage:</strong> Connected? → Type (Storm/Sewage/Both)</p>
-                      <p><strong className="text-foreground">Fire Safety:</strong> Available? → Extinguishers, Sprinklers, Alarm type</p>
-                      <p><strong className="text-foreground">Structure Rating:</strong> ⭐ to ⭐⭐⭐⭐⭐ (1=Poor to 5=Excellent)</p>
+                      <p>Every new survey starts pre-loaded with <strong className="text-foreground">9 default items under &quot;Quality Check&quot;</strong> (all checked by default) — add more items under <strong className="text-foreground">Structural, Electrical, Plumbing, Safety</strong> or <strong className="text-foreground">Environmental</strong> as needed.</p>
+                      <p>Only the items you leave checked are saved with the survey.</p>
                     </div>
                   </StepCard>
 
-                  <StepCard step={5} title="Checklist">
-                    <div className="text-sm text-muted-foreground space-y-2">
-                      <p>Check off items as you inspect them. Add notes for issues.</p>
-                      <p><strong className="text-foreground">Categories:</strong> Structural (5 items), Electrical (4), Plumbing (3), Safety (3), Environmental (3)</p>
-                      <p><strong className="text-foreground">Add custom items:</strong> Click &quot;Add Item&quot; for anything not in the default list</p>
-                    </div>
-                  </StepCard>
-
-                  <StepCard step={6} title="Media & Documentation">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead><tr className="border-b border-border"><th className="pb-2 text-left font-medium text-foreground">Type</th><th className="pb-2 text-left font-medium text-foreground">Formats</th><th className="pb-2 text-left font-medium text-foreground">Max</th></tr></thead>
-                        <tbody className="text-muted-foreground">
-                          <tr className="border-b border-border/50"><td className="font-medium text-foreground">Photos</td><td>JPEG, PNG, WebP</td><td>50 MB</td></tr>
-                          <tr className="border-b border-border/50"><td className="font-medium text-foreground">Videos</td><td>MP4, AVI, WebM</td><td>50 MB</td></tr>
-                          <tr className="border-b border-border/50"><td className="font-medium text-foreground">Voice Notes</td><td>Built-in recorder</td><td>—</td></tr>
-                          <tr><td className="font-medium text-foreground">Documents</td><td>PDF, DOC, XLS</td><td>50 MB</td></tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </StepCard>
-
-                  <StepCard step={7} title="Review & Submit">
+                  <StepCard step={5} title="Review & Submit">
                     <div className="text-sm text-muted-foreground">
-                      <p>1. Review all info from Steps 1–6</p>
-                      <p>2. Draw your <strong className="text-foreground">Digital Signature</strong></p>
-                      <p>3. Choose: <strong className="text-foreground">Save Draft</strong> (edit later) or <strong className="text-foreground">Create &amp; Submit</strong> (send for approval)</p>
+                      <p>Review everything from Steps 1–4, then create the survey — it starts in <strong className="text-foreground">Assigned</strong> status.</p>
                     </div>
                   </StepCard>
+
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">On the Survey Detail Page</h3>
+                    <p className="text-sm text-muted-foreground mb-2">Tabs: Overview, Site Visit, Measurements, Materials, Risks, Media &amp; Attachments.</p>
+                    <div className="space-y-2 text-sm">
+                      <div className="rounded-lg border border-border p-3">
+                        <p className="font-medium text-foreground">Check-in</p>
+                        <p className="text-muted-foreground">Requires a photo and your GPS location. If you&apos;re off-site it&apos;s flagged with a badge (not blocked) — you can resubmit once you&apos;re actually there.</p>
+                      </div>
+                      <div className="rounded-lg border border-border p-3">
+                        <p className="font-medium text-foreground">Check-out</p>
+                        <p className="text-muted-foreground">Also needs a photo + GPS. Add any <strong className="text-foreground">Measurements</strong> and <strong className="text-foreground">Material Requirements</strong> you recorded before submitting. Blocked until check-in is confirmed on-site.</p>
+                      </div>
+                      <div className="rounded-lg border border-border p-3">
+                        <p className="font-medium text-foreground">Checklist window</p>
+                        <p className="text-muted-foreground">The assigned surveyor can only tick items while checked in on-site (between check-in and check-out). Admins/Managers can edit it anytime as an override.</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-xs text-muted-foreground">Only photos are functional in Media &amp; Attachments today — videos, voice notes and sketches aren&apos;t wired up yet.</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Survey Status</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {['ASSIGNED', 'IN_PROGRESS', 'SUBMITTED', 'APPROVED', 'REJECTED'].map((s) => (
+                        <Badge key={s} variant={s === 'APPROVED' ? 'success' : s === 'REJECTED' ? 'destructive' : 'info'}>{s}</Badge>
+                      ))}
+                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground">Only a Super Admin, Admin or Manager can approve or reject a submitted survey.</p>
+                  </div>
                 </CardContent>
               </Card>
             )}
@@ -481,39 +452,33 @@ export default function HelpPage() {
               <Card>
                 <CardContent className="p-6 space-y-6">
                   <div>
-                    <h2 className="text-xl font-bold text-foreground mb-1">Step 5: Create BOQ</h2>
+                    <h2 className="text-xl font-bold text-foreground mb-1">Step 5: Build the BOQ</h2>
                     <p className="text-sm text-muted-foreground">
-                      <strong className="text-foreground">BOQ = Bill of Quantities.</strong> A detailed list of ALL construction items with quantities and rates. Think of it as a <strong className="text-foreground">grocery bill for construction</strong>.
+                      <strong className="text-foreground">BOQ = Bill of Quantities.</strong> A detailed list of every item you&apos;ll charge for, with quantities and rates — the basis for the invoice that follows.
                     </p>
                   </div>
 
                   <FieldTable rows={[
                     ['Description', 'What is this item?', 'Earthwork excavation in trenches', 'What you charge for'],
-                    ['Category', 'Type of work', 'Earthwork', 'Grouping and subtotals'],
-                    ['Unit', 'Measurement unit', 'Cum (cubic meter)', 'Standard unit'],
-                    ['Quantity', 'How much?', '450', 'From survey measurements'],
-                    ['Rate (INR)', 'Price per unit', '350', 'Your rate'],
-                    ['Amount', 'Auto-calc', '₹1,57,500', 'Qty × Rate'],
+                    ['Category', 'Type of work', 'Earthwork', 'Grouping and totals'],
+                    ['Unit', 'Measurement unit', 'Cum', 'Cum, Sqm, Rmt, Nos, Set or Mtr'],
+                    ['Qty', 'How much?', '450', 'From survey measurements'],
+                    ['Rate (₹)', 'Price per unit', '350', 'Your rate — Amount = Qty × Rate'],
                   ]} />
 
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Units Explained</h3>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {[
-                        { unit: 'Cum', full: 'Cubic Meter', use: 'Concrete, earthwork' },
-                        { unit: 'Sqm', full: 'Square Meter', use: 'Plastering, painting' },
-                        { unit: 'Rmt', full: 'Running Meter', use: 'Pipes, cables' },
-                        { unit: 'Nos', full: 'Numbers', use: 'Doors, windows' },
-                        { unit: 'Set', full: 'Set', use: 'Elevator, complete assembly' },
-                        { unit: 'Bags', full: 'Bags', use: 'Cement' },
-                        { unit: 'Tonnes', full: 'Tonnes', use: 'Steel, heavy materials' },
-                      ].map((u) => (
-                        <div key={u.unit} className="rounded-lg border border-border p-2">
-                          <p className="text-sm font-medium text-foreground">{u.unit} = {u.full}</p>
-                          <p className="text-xs text-muted-foreground">Use for: {u.use}</p>
-                        </div>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Categories</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {['Earthwork', 'Concrete Work', 'Masonry', 'Reinforcement & Steel', 'Formwork & Shuttering', 'Flooring & Tiling', 'Plastering', 'Waterproofing', 'Painting & Finishing', 'Doors & Windows', 'Electrical Work', 'Plumbing & Sanitary', 'HVAC', 'Roofing', 'Miscellaneous'].map((c) => (
+                        <Badge key={c} variant="outline">{c}</Badge>
                       ))}
                     </div>
+                  </div>
+
+                  <div className="rounded-lg bg-muted p-4 text-sm">
+                    <p className="text-muted-foreground">
+                      GST is pulled from <strong className="text-foreground">Settings → General → Default GST Rate</strong> to show the Grand Total on this page. Once the BOQ for a project is ready, use the project&apos;s <strong className="text-foreground">Generate Invoice</strong> action to turn it straight into an invoice — no retyping.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -524,222 +489,181 @@ export default function HelpPage() {
               <Card>
                 <CardContent className="p-6 space-y-6">
                   <div>
-                    <h2 className="text-xl font-bold text-foreground mb-1">Step 6: Send Invoice</h2>
-                    <p className="text-sm text-muted-foreground">An <strong className="text-foreground">Invoice</strong> is a formal price document sent to the client.</p>
+                    <h2 className="text-xl font-bold text-foreground mb-1">Step 6: Send an Invoice</h2>
+                    <p className="text-sm text-muted-foreground">An <strong className="text-foreground">Invoice</strong> is a formal price document sent to the client, built from a project&apos;s real BOQ items.</p>
                   </div>
 
                   <StepCard step={1} title="Project & Details">
                     <FieldTable rows={[
-                      ['Select Project', 'Which project?', 'Sunrise Enclave', 'Links to project'],
-                      ['Title', 'Descriptive title', 'Site Survey Invoice', 'Identifies this quote'],
+                      ['Select Project', 'Which project?', 'Sunrise Enclave', 'Pulls that project\'s BOQ items'],
+                      ['Invoice Title', 'Descriptive title', 'Site Survey Invoice', 'Identifies this invoice'],
                       ['Description', 'What work?', 'Structural survey with GPS mapping', 'Scope clarity'],
                     ]} />
                   </StepCard>
 
                   <StepCard step={2} title="Line Items">
                     <div className="text-sm text-muted-foreground space-y-1">
-                      <p>Add each work item separately:</p>
-                      <p>1. Initial Site Survey — Set × 1 × ₹75,000 = ₹75,000</p>
-                      <p>2. Soil Testing — Nos × 5 × ₹8,000 = ₹40,000</p>
-                      <p>3. Structural Report — Set × 1 × ₹25,000 = ₹25,000</p>
-                      <p className="font-medium text-foreground">Subtotal = ₹1,40,000</p>
+                      <p>Loaded automatically from the project&apos;s BOQ — edit quantities/rates, remove items, or add new blank rows here without changing the BOQ itself.</p>
                     </div>
                   </StepCard>
 
                   <StepCard step={3} title="Tax & Terms">
                     <FieldTable rows={[
-                      ['GST %', 'Which rate?', '18%', 'Government tax'],
-                      ['Discount %', 'Any discount?', '5%', 'Client relationship'],
-                      ['Terms', 'Legal terms', 'Pre-filled 8 terms', 'Protection'],
+                      ['GST %', 'Which rate?', '18%', '5 / 12 / 18 / 28'],
+                      ['Discount %', 'Any discount?', '5%', 'Applied to the subtotal before GST'],
+                      ['Terms & Conditions', 'Pre-filled, editable', '8-point default terms', 'Validity, payment schedule, jurisdiction'],
                     ]} />
                     <div className="rounded-lg bg-muted p-3 text-sm text-muted-foreground">
-                      <p>Subtotal: ₹1,40,000 → Discount (5%): -₹7,000 → After Discount: ₹1,33,000 → GST (18%): ₹23,940 → <strong className="text-foreground">Grand Total: ₹1,56,940</strong></p>
+                      <p>Subtotal ₹1,40,000 → Discount (5%) −₹7,000 → After Discount ₹1,33,000 → GST is applied on the discounted amount (18%) +₹23,940 → <strong className="text-foreground">Grand Total ₹1,56,940</strong></p>
                     </div>
                   </StepCard>
 
                   <StepCard step={4} title="Review & Send">
                     <div className="text-sm text-muted-foreground">
-                      <p>Preview the invoice with company header. Check all amounts. Then <strong className="text-foreground">Send Invoice</strong> (emails to client) or <strong className="text-foreground">Save as Draft</strong>.</p>
+                      <p>Preview the full invoice, then <strong className="text-foreground">Save as Draft</strong> or <strong className="text-foreground">Send Invoice</strong>.</p>
                     </div>
                   </StepCard>
-                </CardContent>
-              </Card>
-            )}
 
-            {/* RISK & MATERIALS */}
-            {activeSection === 'risk-materials' && (
-              <Card>
-                <CardContent className="p-6 space-y-6">
                   <div>
-                    <h2 className="text-xl font-bold text-foreground mb-1">Step 7: Track Risks & Materials</h2>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Risk Assessment</h3>
-                    <FieldTable rows={[
-                      ['Title', 'Risk name', 'Foundation settlement risk', 'Quick identifier'],
-                      ['Description', 'Details', 'Soil test shows loose soil at B-2', 'Full explanation'],
-                      ['Severity', 'How serious?', 'High', 'Priority for action'],
-                      ['Mitigation', 'How to fix?', 'Increase depth, more soil tests', 'Action plan'],
-                    ]} />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Materials</h3>
-                    <FieldTable rows={[
-                      ['Material Name', 'What material?', 'Portland Cement OPC 43', 'Identification'],
-                      ['Specification', 'Technical specs', 'IS 269-1989', 'Quality standard'],
-                      ['Quantity', 'How much?', '500 Bags', 'Procurement'],
-                      ['Estimated Cost', 'Expected cost', '₹2,50,000', 'Budget planning'],
-                    ]} />
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* MEDIA */}
-            {activeSection === 'media' && (
-              <Card>
-                <CardContent className="p-6 space-y-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-foreground mb-1">Step 8: Media & Documents</h2>
-                    <p className="text-sm text-muted-foreground">Central hub for all photos, videos, voice notes, and documents across projects.</p>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead><tr className="border-b border-border"><th className="pb-2 text-left font-medium text-foreground">Sub-page</th><th className="pb-2 text-left font-medium text-foreground">Purpose</th></tr></thead>
-                      <tbody className="text-muted-foreground">
-                        <tr className="border-b border-border/50"><td className="font-medium text-foreground">Photos</td><td>Site photos gallery</td></tr>
-                        <tr className="border-b border-border/50"><td className="font-medium text-foreground">Videos</td><td>Recorded walkthroughs</td></tr>
-                        <tr className="border-b border-border/50"><td className="font-medium text-foreground">Voice Notes</td><td>Audio observations</td></tr>
-                        <tr className="border-b border-border/50"><td className="font-medium text-foreground">Sketches</td><td>Hand-drawn diagrams</td></tr>
-                        <tr><td className="font-medium text-foreground">Drawings</td><td>Technical drawings</td></tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* WORKFLOW */}
-            {activeSection === 'workflow' && (
-              <Card>
-                <CardContent className="p-6 space-y-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-foreground mb-1">Step 9: Workflow & Approvals</h2>
-                    <p className="text-sm text-muted-foreground">A <strong className="text-foreground">Workflow</strong> is an approval chain: Engineer submits → Manager reviews → Client approves → Done</p>
-                  </div>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {[
-                      { type: 'Approval', desc: 'Someone must approve to proceed', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' },
-                      { type: 'Review', desc: 'Examine and give feedback', color: 'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-400' },
-                      { type: 'Notification', desc: 'Send alert to stakeholders', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400' },
-                      { type: 'Condition', desc: 'Different path based on criteria', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400' },
-                      { type: 'Parallel', desc: 'Multiple people review at once', color: 'bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-400' },
-                    ].map((s) => (
-                      <div key={s.type} className="flex items-center gap-2 rounded-lg border border-border p-3">
-                        <span className={cn('rounded-md px-2 py-0.5 text-xs font-medium', s.color)}>{s.type}</span>
-                        <span className="text-xs text-muted-foreground">{s.desc}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* REPORTS */}
-            {activeSection === 'reports' && (
-              <Card>
-                <CardContent className="p-6 space-y-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-foreground mb-1">Step 10: Reports & Signatures</h2>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Report Types</h3>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Invoice Status</h3>
                     <div className="flex flex-wrap gap-2">
-                      {['Survey Report', 'Project Report', 'BOQ Report', 'Financial Report', 'Daily Report'].map((t) => (
-                        <Badge key={t} variant="outline">{t}</Badge>
+                      {['DRAFT', 'SENT', 'ACCEPTED', 'REJECTED', 'CANCELLED'].map((s) => (
+                        <Badge key={s} variant="info">{s}</Badge>
                       ))}
                     </div>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Customizable Sections</h3>
-                    <div className="grid gap-1 sm:grid-cols-2 text-sm text-muted-foreground">
-                      <p>✓ Report Header</p><p>✓ Project Details</p>
-                      <p>✓ GPS Location</p><p>✓ Measurements Table</p>
-                      <p>✓ Checklist Summary</p><p>✓ Photo Documentation</p>
-                      <p>✓ Risk Assessment</p><p>✓ Remarks & Notes</p>
-                      <p>✓ Digital Signatures</p>
-                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Payment status (Pending / Partial / Paid / Overdue / Cancelled) tracks collection separately, once accepted — only a Super Admin or Accountant can change it.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            {/* COMMUNICATION */}
-            {activeSection === 'comm' && (
+            {/* RISK ASSESSMENT */}
+            {activeSection === 'risks' && (
               <Card>
                 <CardContent className="p-6 space-y-6">
-                  <h2 className="text-xl font-bold text-foreground">Communication Hub</h2>
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Notification Types</h3>
-                    <div className="flex gap-2">
-                      <Badge variant="info">INFO</Badge>
-                      <Badge variant="success">SUCCESS</Badge>
-                      <Badge variant="warning">WARNING</Badge>
-                      <Badge variant="destructive">ERROR</Badge>
-                    </div>
+                    <h2 className="text-xl font-bold text-foreground mb-1">Step 7: Log a Risk</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Risk Assessments are logged from the Risks page itself, via a <strong className="text-foreground">New Risk Assessment</strong> button — every risk must be tied to a specific survey.
+                    </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">Email and WhatsApp integration for client and team communication.</p>
+                  <FieldTable rows={[
+                    ['Title', 'Risk name', 'Foundation settlement risk', 'Quick identifier'],
+                    ['Description', 'Details', 'Soil test shows loose soil at B-2', 'Full explanation'],
+                    ['Risk Level', 'How serious?', 'High', 'Critical / High / Medium / Low'],
+                    ['Survey', 'Which survey found this?', 'Foundation Inspection - Phase 1', 'Required — links the risk to site evidence'],
+                    ['Mitigation Plan', 'How to fix it (optional)', 'Increase depth, more soil tests', 'Action plan'],
+                  ]} />
+                  <p className="text-sm text-muted-foreground">
+                    The Risks page also shows a reference 5×5 Risk Matrix (Likelihood × Impact) and a filterable Risk Register of everything logged so far. Measurements and Material Requirements are captured separately, on a survey&apos;s own Check-out step.
+                  </p>
                 </CardContent>
               </Card>
             )}
 
-            {/* ADMIN */}
+            {/* SITE VISITS */}
+            {activeSection === 'site-visits' && (
+              <Card>
+                <CardContent className="p-6 space-y-6">
+                  <div>
+                    <h2 className="text-xl font-bold text-foreground mb-1">Step 8: Site Visits</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Once a project has an approved survey, a <strong className="text-foreground">Lead Engineer</strong> and a <strong className="text-foreground">start/end date</strong>, it becomes eligible for recurring <strong className="text-foreground">Site Visits</strong> — ongoing supervision for the length of the project, separate from the one-time Survey.
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 p-4 text-sm">
+                    <p className="font-medium text-foreground">Stricter than Survey check-in:</p>
+                    <p className="text-muted-foreground mt-1">
+                      Both check-in and check-out require a photo and GPS, and are <strong className="text-foreground">hard-blocked if you&apos;re off-site</strong> — there&apos;s no flag-and-continue option like Surveys have. One visit per engineer per project per day.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2 text-sm">
+                    <p className="text-muted-foreground">The Site Visits list shows every eligible project with its client, engineer, visit window, and today&apos;s status: <strong className="text-foreground">Visited</strong>, <strong className="text-foreground">In Progress</strong>, <strong className="text-foreground">Pending</strong>, <strong className="text-foreground">Holiday</strong>, or <strong className="text-foreground">Outside Window</strong>. Click a project to open its visit calendar.</p>
+                    <p className="text-muted-foreground">Instead of a checklist, checkout asks for a short <strong className="text-foreground">work summary</strong> — a quick note on what was done that visit.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* ATTENDANCE */}
+            {activeSection === 'attendance' && (
+              <Card>
+                <CardContent className="p-6 space-y-6">
+                  <div>
+                    <h2 className="text-xl font-bold text-foreground mb-1">Attendance</h2>
+                    <p className="text-sm text-muted-foreground">Runs in parallel to everything else — every internal employee marks their own attendance daily.</p>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-lg border border-border p-3 text-sm">
+                      <p className="font-medium text-foreground">My Attendance</p>
+                      <p className="text-muted-foreground mt-1">Take a photo and confirm GPS — you must be within 100m of the office (set in Settings → General). One record per day.</p>
+                    </div>
+                    <div className="rounded-lg border border-border p-3 text-sm">
+                      <p className="font-medium text-foreground">Team Attendance</p>
+                      <p className="text-muted-foreground mt-1">Visible to Super Admin/Admin/Manager only — date picker, search, Present/Not Marked stats, and a per-employee monthly calendar.</p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg bg-muted p-3 text-sm text-muted-foreground">
+                    Already checked in to a Survey or Site Visit today? Attendance is marked automatically as a <strong className="text-foreground">Field Visit</strong> — no separate office photo needed.
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* ADMIN / ROLES & PERMISSIONS */}
             {activeSection === 'admin' && (
               <Card>
                 <CardContent className="p-6 space-y-6">
-                  <h2 className="text-xl font-bold text-foreground">Administration</h2>
+                  <h2 className="text-xl font-bold text-foreground">Roles & Permissions</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Every employee has a <strong className="text-foreground">Role</strong> — a named bundle of permissions that decides which sections they can see, and whether they can view, create, edit or delete in each one.
+                  </p>
+
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">User Roles</h3>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">The 7 Built-in Roles</h3>
                     <div className="grid gap-2">
                       {[
-                        { role: 'Super Admin', access: 'Full system access, including settings' },
-                        { role: 'Admin', access: 'Most features, no system settings' },
-                        { role: 'Manager', access: 'Projects, surveys, team management' },
-                        { role: 'Engineer', access: 'Assigned projects and surveys only' },
-                        { role: 'Surveyor', access: 'Survey execution, checklists, media' },
-                        { role: 'Client', access: 'View-only their projects' },
-                        { role: 'Accountant', access: 'Finance, BOQ, invoices' },
+                        { role: 'Super Admin', access: 'Everything, always — including every permission added in the future. Can\'t be edited or deleted, so the system can never lock everyone out.' },
+                        { role: 'Admin', access: 'Nearly everything except managing roles/permissions' },
+                        { role: 'Manager', access: 'Leads, Clients, Projects, Surveys, Site Visits, BOQ, Invoices' },
+                        { role: 'Engineer', access: 'Projects they lead, Surveys, Site Visits, view-only BOQ' },
+                        { role: 'Surveyor', access: 'Assigned surveys, risk assessments' },
+                        { role: 'Client', access: 'Read-only view of their own projects, surveys and invoices' },
+                        { role: 'Accountant', access: 'BOQ, Invoices, payment status' },
                       ].map((r) => (
-                        <div key={r.role} className="flex items-center justify-between rounded-lg border border-border p-2">
-                          <span className="text-sm font-medium text-foreground">{r.role}</span>
-                          <span className="text-xs text-muted-foreground">{r.access}</span>
+                        <div key={r.role} className="flex items-center justify-between gap-4 rounded-lg border border-border p-2">
+                          <span className="text-sm font-medium text-foreground shrink-0">{r.role}</span>
+                          <span className="text-xs text-muted-foreground text-right">{r.access}</span>
                         </div>
                       ))}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            )}
 
-            {/* AI */}
-            {activeSection === 'ai' && (
-              <Card>
-                <CardContent className="p-6 space-y-6">
-                  <h2 className="text-xl font-bold text-foreground">AI Features</h2>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {[
-                      { title: 'OCR Scanner', desc: 'Extract text from construction documents' },
-                      { title: 'Image Analysis', desc: 'AI analysis of site photos' },
-                      { title: 'Risk Prediction', desc: 'Predict risks from historical data' },
-                      { title: 'Smart Scheduling', desc: 'AI-optimized survey scheduling' },
-                      { title: 'Cost Prediction', desc: 'Estimate costs from parameters' },
-                      { title: 'Quality Assessment', desc: 'Evaluate construction quality' },
-                    ].map((f) => (
-                      <div key={f.title} className="rounded-lg border border-border p-3">
-                        <p className="text-sm font-medium text-foreground">{f.title}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{f.desc}</p>
-                      </div>
-                    ))}
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Creating a Custom Role</h3>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Super Admins can go to <strong className="text-foreground">Roles & Permissions</strong> in the sidebar and click <strong className="text-foreground">Add Role</strong>. Give it a name, then check off exactly which permissions it should have — grouped by section (Leads, Clients, Projects, Surveys, Site Visits, Risks, BOQ, Invoices, Attendance, Employees, Settings), with a &quot;select all&quot; per group.
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      That role then shows up as a normal option on the Employees → Add/Edit Employee form, exactly like a built-in one. You can also come back and edit any role&apos;s permissions later — except Super Admin.
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg bg-muted p-3 text-sm text-muted-foreground">
+                    Role and permission changes take effect the <strong className="text-foreground">next time the employee logs in</strong> — not instantly if they&apos;re already signed in.
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Secondary Role</h3>
+                    <p className="text-sm text-muted-foreground">
+                      A separate, narrower setting on the Employee form: an Engineer can additionally be flagged as a Surveyor (or vice versa) for staff who genuinely do both jobs. This is unrelated to custom roles — it only ever grants Engineer or Surveyor capability on top of someone&apos;s primary role.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -754,14 +678,13 @@ export default function HelpPage() {
                   {/* Visual Flow */}
                   <div className="space-y-4">
                     {[
-                      { step: '1. LEAD', desc: 'Someone calls/email about your services', color: 'bg-blue-100 border-blue-300 text-blue-800 dark:bg-blue-900/40 dark:border-blue-800 dark:text-blue-400' },
-                      { step: '2. CLIENT', desc: 'Convert lead, fill GST/PAN, sign contract', color: 'bg-violet-100 border-violet-300 text-violet-800 dark:bg-violet-900/40 dark:border-violet-800 dark:text-violet-400' },
-                      { step: '3. PROJECT', desc: 'Create project, assign team, set budget & timeline', color: 'bg-emerald-100 border-emerald-300 text-emerald-800 dark:bg-emerald-900/40 dark:border-emerald-800 dark:text-emerald-400' },
-                      { step: '4. SURVEY', desc: 'Engineer visits site — 7-step inspection wizard', color: 'bg-amber-100 border-amber-300 text-amber-800 dark:bg-amber-900/40 dark:border-amber-800 dark:text-amber-400' },
+                      { step: '1. LEAD', desc: 'Someone calls/emails about your services', color: 'bg-blue-100 border-blue-300 text-blue-800 dark:bg-blue-900/40 dark:border-blue-800 dark:text-blue-400' },
+                      { step: '2. CLIENT', desc: 'Mark the lead Won — it converts to a client in the same step', color: 'bg-violet-100 border-violet-300 text-violet-800 dark:bg-violet-900/40 dark:border-violet-800 dark:text-violet-400' },
+                      { step: '3. PROJECT', desc: 'Create project, assign a Manager and Lead Engineer, set budget & timeline', color: 'bg-emerald-100 border-emerald-300 text-emerald-800 dark:bg-emerald-900/40 dark:border-emerald-800 dark:text-emerald-400' },
+                      { step: '4. SURVEY', desc: 'Engineer or Surveyor visits site — 5-step inspection wizard, checklist, check-in/out with photo + GPS', color: 'bg-amber-100 border-amber-300 text-amber-800 dark:bg-amber-900/40 dark:border-amber-800 dark:text-amber-400' },
                       { step: '5. BOQ', desc: 'Calculate costs item-by-item with quantities & rates', color: 'bg-blue-100 border-blue-300 text-blue-800 dark:bg-blue-900/40 dark:border-blue-800 dark:text-blue-400' },
-                      { step: '6. INVOICE', desc: 'Create & send formal price document to client', color: 'bg-pink-100 border-pink-300 text-pink-800 dark:bg-pink-900/40 dark:border-pink-800 dark:text-pink-400' },
-                      { step: '7. WORK', desc: 'Track risks, materials, media, documents', color: 'bg-orange-100 border-orange-300 text-orange-800 dark:bg-orange-900/40 dark:border-orange-800 dark:text-orange-400' },
-                      { step: '8. REPORT & SIGN', desc: 'Generate PDF, digital signature, client sign-off', color: 'bg-red-100 border-red-300 text-red-800 dark:bg-red-900/40 dark:border-red-800 dark:text-red-400' },
+                      { step: '6. INVOICE', desc: 'Generate an invoice straight from the BOQ, add GST & terms, send to client', color: 'bg-pink-100 border-pink-300 text-pink-800 dark:bg-pink-900/40 dark:border-pink-800 dark:text-pink-400' },
+                      { step: '7. SITE VISITS', desc: 'Once work starts, the Lead Engineer logs recurring on-site visits until the project is done', color: 'bg-orange-100 border-orange-300 text-orange-800 dark:bg-orange-900/40 dark:border-orange-800 dark:text-orange-400' },
                     ].map((s, i) => (
                       <div key={s.step} className="flex items-center gap-3">
                         <div className={cn('w-48 shrink-0 rounded-lg border p-3 text-center text-sm font-bold', s.color)}>
@@ -778,14 +701,10 @@ export default function HelpPage() {
                     <div className="grid gap-1 sm:grid-cols-2 text-muted-foreground">
                       <p>• <strong className="text-foreground">CRM</strong> → Leads, Clients</p>
                       <p>• <strong className="text-foreground">Projects</strong> → Budget, Timeline</p>
-                      <p>• <strong className="text-foreground">Surveys</strong> → 7-step wizard</p>
-                      <p>• <strong className="text-foreground">Finance</strong> → BOQ, Invoices</p>
-                      <p>• <strong className="text-foreground">Media</strong> → Photos, Videos, Voice</p>
-                      <p>• <strong className="text-foreground">Risk</strong> → Assessment & Mitigation</p>
-                      <p>• <strong className="text-foreground">Workflow</strong> → Approval chains</p>
-                      <p>• <strong className="text-foreground">Reports</strong> → PDF + Signatures</p>
-                      <p>• <strong className="text-foreground">Communication</strong> → Email, WhatsApp</p>
-                      <p>• <strong className="text-foreground">AI</strong> → OCR, Predictions</p>
+                      <p>• <strong className="text-foreground">Survey & Field</strong> → Surveys, Survey Check-ins, Site Visits</p>
+                      <p>• <strong className="text-foreground">Risk & Finance</strong> → Risk Assessment, BOQ, Invoices</p>
+                      <p>• <strong className="text-foreground">Workforce</strong> → Attendance, Employees</p>
+                      <p>• <strong className="text-foreground">Administration</strong> → Settings, Roles & Permissions</p>
                     </div>
                   </div>
                 </CardContent>
