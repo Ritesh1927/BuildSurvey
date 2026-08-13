@@ -417,10 +417,10 @@ export default function BOQPage() {
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <StatCard
-          label="Total Items"
-          value={items.length}
-          caption={`Across ${projectGroups.length} project${projectGroups.length === 1 ? '' : 's'}`}
-          icon={<FileText className="h-6 w-6" />}
+          label="Total Projects"
+          value={projectGroups.length}
+          caption={`${items.length} line item${items.length === 1 ? '' : 's'} total`}
+          icon={<FolderKanban className="h-6 w-6" />}
           color="default"
         />
         <StatCard
