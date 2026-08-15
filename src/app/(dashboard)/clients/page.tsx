@@ -101,13 +101,22 @@ export default function ClientsPage() {
     fetchClients()
   }, [fetchClients])
 
-  const cities = useMemo(
-    () => [...new Set(clients.map((c) => c.city).filter((c): c is string => !!c))].sort(),
-    [clients]
-  )
+  // Grouped case-insensitively so "ghaziabad" and "Ghaziabad" collapse
+  // into one filter option instead of showing as two different cities -
+  // new saves are normalized server-side, but older records may still
+  // have inconsistent casing.
+  const cities = useMemo(() => {
+    const byKey = new Map<string, string>()
+    for (const c of clients) {
+      if (!c.city) continue
+      const key = c.city.trim().toLowerCase()
+      if (!byKey.has(key)) byKey.set(key, c.city.trim())
+    }
+    return [...byKey.entries()].sort((a, b) => a[1].localeCompare(b[1]))
+  }, [clients])
 
   const filteredClients = useMemo(() => {
-    return clients.filter((client) => cityFilter === "all" || client.city === cityFilter)
+    return clients.filter((client) => cityFilter === "all" || client.city?.trim().toLowerCase() === cityFilter)
   }, [clients, cityFilter])
 
   const hasActiveFilters = !!searchQuery || cityFilter !== "all"
@@ -183,8 +192,8 @@ export default function ClientsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Cities</SelectItem>
-                {cities.map((city) => (
-                  <SelectItem key={city} value={city}>{city}</SelectItem>
+                {cities.map(([key, label]) => (
+                  <SelectItem key={key} value={key}>{label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

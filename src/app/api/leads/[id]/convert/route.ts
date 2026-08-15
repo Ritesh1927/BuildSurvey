@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { requireAuth, requirePermission } from '@/lib/api-auth'
+import { toTitleCase } from '@/lib/utils'
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth()
@@ -74,7 +75,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             phone: lead.phone,
             notes: lead.notes || null,
             address: address || null,
-            city: city || null,
+            city: city ? toTitleCase(city) : null,
             state: state || null,
             zipCode: zipCode || null,
             country: country || null,

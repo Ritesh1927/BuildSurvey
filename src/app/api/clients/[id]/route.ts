@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { requireAuth, requirePermission, hasPermission } from '@/lib/api-auth'
+import { toTitleCase } from '@/lib/utils'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth()
@@ -91,7 +92,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (email) updateData.email = email
     if (phone) updateData.phone = phone
     if (address !== undefined) updateData.address = address
-    if (city !== undefined) updateData.city = city
+    if (city !== undefined) updateData.city = city ? toTitleCase(city) : null
     if (state !== undefined) updateData.state = state
     if (zipCode !== undefined) updateData.zipCode = zipCode
     if (country !== undefined) updateData.country = country

@@ -56,6 +56,16 @@ export function slugify(text: string): string {
     .replace(/^-+|-+$/g, '')
 }
 
+// Normalizes free-text place names (city, etc.) so "ghaziabad" and
+// "GHAZIABAD" end up stored the same way instead of silently becoming
+// two different values wherever they're grouped/filtered on later.
+export function toTitleCase(text: string): string {
+  return text
+    .trim()
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
 export function getInitials(firstName: string, lastName: string): string {
   return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
 }
