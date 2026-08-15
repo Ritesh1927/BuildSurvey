@@ -95,7 +95,7 @@ export default function RoleDetailPage() {
         return
       }
       showSuccess('Role updated')
-      fetchAll()
+      router.push('/roles')
     } catch {
       showError('Network error while saving role')
     } finally {
