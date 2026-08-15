@@ -128,7 +128,7 @@ export default function LeadsPage() {
     return {
       total: leads.length,
       new: leads.filter((l) => l.status === 'NEW').length,
-      converted,
+      won: leads.filter((l) => l.status === 'WON').length,
       conversionRate: leads.length ? Math.round((converted / leads.length) * 100) : 0,
       inProgress: leads.filter((l) => l.status !== 'WON' && l.status !== 'LOST').length,
       lost: leads.filter((l) => l.status === 'LOST').length,
@@ -363,7 +363,7 @@ export default function LeadsPage() {
         <StatCard icon={<Users className="h-5 w-5" />} label="Total Leads" value={statusCounts.total} color="info" />
         <StatCard icon={<UserPlus className="h-5 w-5" />} label="New Leads" value={statusCounts.new} color="default" />
         <StatCard icon={<Activity className="h-5 w-5" />} label="In Progress" value={statusCounts.inProgress} color="warning" />
-        <StatCard icon={<ArrowUpRight className="h-5 w-5" />} label="Converted" value={statusCounts.converted} color="success" />
+        <StatCard icon={<ArrowUpRight className="h-5 w-5" />} label="Won" value={statusCounts.won} color="success" />
         <StatCard icon={<XCircle className="h-5 w-5" />} label="Lost" value={statusCounts.lost} color="danger" />
         <StatCard icon={<TrendingUp className="h-5 w-5" />} label="Conversion Rate" value={`${statusCounts.conversionRate}%`} color="success" />
       </div>
