@@ -8,10 +8,15 @@ export async function GET(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const permError = await requirePermission('leads:read')
+  // Full read, or - even without it - can at least see the leads
+  // assigned to them (e.g. a custom role that's only leads:assignable).
+  const permError = await requirePermission('leads:read', 'leads:assignable')
   if (permError) return permError
 
   try {
+    const session = await auth()
+    const canReadAll = hasPermission(session!.user!, 'leads:read')
+
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search') || ''
     const status = searchParams.get('status') || ''
@@ -31,7 +36,13 @@ export async function GET(request: NextRequest) {
     }
 
     if (status) where.status = status
-    if (assignedTo) where.assignedToId = assignedTo
+    if (canReadAll) {
+      if (assignedTo) where.assignedToId = assignedTo
+    } else {
+      // Only holds leads:assignable, not full read - always self-scoped,
+      // regardless of what assignedTo was requested.
+      where.assignedToId = session!.user!.id
+    }
 
     const [leads, total] = await Promise.all([
       db.lead.findMany({

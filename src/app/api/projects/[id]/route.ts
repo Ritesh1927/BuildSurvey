@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requirePermission, hasPermission, hasRole, userHasPermission } from '@/lib/api-auth'
+import { requireAuth, requirePermission, hasPermission, userHasPermission } from '@/lib/api-auth'
 import { ProjectStatus, ProjectType } from '@/generated/prisma/enums'
 
 // Allowlist, not a blocklist - an Engineer, even one leading the project,
@@ -15,7 +15,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const authError = await requireAuth()
   if (authError) return authError
 
-  const permError = await requirePermission('projects:read:all', 'projects:read:own')
+  const permError = await requirePermission(
+    'projects:read:all', 'projects:read:own',
+    'projects:assignable:manager', 'projects:assignable:engineer', 'surveys:assignable'
+  )
   if (permError) return permError
 
   try {
@@ -39,18 +42,19 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
     }
 
-    // Gated on holding read:own rather than a hardcoded role list, so a
-    // future custom role granted read:own is scoped the same way. A
-    // dual-capability Engineer/Surveyor passes if *either* path matches.
+    // Driven by permission rather than a hardcoded role list, so a
+    // custom role granted any of these is scoped the same way. A
+    // dual-capability user passes if *any* path matches.
     if (!hasPermission(session!.user!, 'projects:read:all')) {
       if (role === 'CLIENT') {
         if (project.clientId !== session!.user!.clientId) {
           return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
         }
       } else {
-        const engineerOk = hasRole(session!.user!, 'ENGINEER') && project.leadUserId === userId
-        const surveyorOk = hasRole(session!.user!, 'SURVEYOR') && project.surveys.some((s: any) => s.engineerId === userId)
-        if (!engineerOk && !surveyorOk) {
+        const managerOk = hasPermission(session!.user!, 'projects:assignable:manager') && project.managerId === userId
+        const engineerOk = hasPermission(session!.user!, 'projects:assignable:engineer') && project.leadUserId === userId
+        const surveyorOk = hasPermission(session!.user!, 'surveys:assignable') && project.surveys.some((s: any) => s.engineerId === userId)
+        if (!managerOk && !engineerOk && !surveyorOk) {
           return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
         }
       }

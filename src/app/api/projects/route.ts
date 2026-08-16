@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requirePermission, hasPermission, hasRole, userHasPermission } from '@/lib/api-auth'
+import { requireAuth, requirePermission, hasPermission, userHasPermission } from '@/lib/api-auth'
 import { ProjectType } from '@/generated/prisma/enums'
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  const permError = await requirePermission('projects:read:all', 'projects:read:own')
+  // Full read, or - even without it - can at least see their own assigned
+  // projects (Manager/Lead Engineer assignability, or a Surveyor's own
+  // assigned surveys' projects).
+  const permError = await requirePermission(
+    'projects:read:all', 'projects:read:own',
+    'projects:assignable:manager', 'projects:assignable:engineer', 'surveys:assignable'
+  )
   if (permError) return permError
 
   try {
@@ -43,26 +49,29 @@ export async function GET(request: NextRequest) {
     if (type) where.type = type
     if (clientId) where.clientId = clientId
 
-    // Engineer sees only projects they lead; Surveyor only projects they
-    // have an assigned survey on - a dual-capability user (secondaryRole)
-    // sees the union of both. Client only their own company's projects.
-    // None of these can be widened by query params. Gated on holding
-    // read:own rather than a hardcoded role list, so a future custom role
-    // granted read:own (without read:all) is scoped the same way.
+    // Whoever's assigned as Manager sees those projects; whoever's
+    // assignable as Lead Engineer sees those they lead; whoever's
+    // assignable to surveys sees projects they have an assigned survey
+    // on - a dual-capability user sees the union of all that apply.
+    // Client only their own company's projects. None of these can be
+    // widened by query params. Driven by permission, not a hardcoded
+    // role list, so a custom role granted any of these is scoped the
+    // same way.
     if (!hasPermission(session!.user!, 'projects:read:all')) {
       if (role === 'CLIENT') {
         where.clientId = session!.user!.clientId || '__no_client__'
       } else {
         const scopeConditions: any[] = []
-        if (hasRole(session!.user!, 'ENGINEER')) scopeConditions.push({ leadUserId: userId })
-        if (hasRole(session!.user!, 'SURVEYOR')) scopeConditions.push({ surveys: { some: { engineerId: userId, isDeleted: false } } })
+        if (hasPermission(session!.user!, 'projects:assignable:manager')) scopeConditions.push({ managerId: userId })
+        if (hasPermission(session!.user!, 'projects:assignable:engineer')) scopeConditions.push({ leadUserId: userId })
+        if (hasPermission(session!.user!, 'surveys:assignable')) scopeConditions.push({ surveys: { some: { engineerId: userId, isDeleted: false } } })
         if (scopeConditions.length === 1) {
           Object.assign(where, scopeConditions[0])
         } else if (scopeConditions.length > 1) {
           andConditions.push({ OR: scopeConditions })
         } else {
           // Holds read:own but isn't a recognized own-scoping identity
-          // (Client/Engineer/Surveyor) - e.g. a new custom role. Fail
+          // (Client, or one of the assignable permissions above) - fail
           // closed to no results rather than falling through unscoped,
           // which would grant de facto read:all.
           where.id = '__none__'

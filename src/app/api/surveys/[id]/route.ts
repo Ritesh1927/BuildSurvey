@@ -8,7 +8,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const authError = await requireAuth()
   if (authError) return authError
 
-  const permError = await requirePermission('surveys:read:all', 'surveys:read:own')
+  const permError = await requirePermission('surveys:read:all', 'surveys:read:own', 'surveys:assignable')
   if (permError) return permError
 
   try {

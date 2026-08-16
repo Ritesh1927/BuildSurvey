@@ -30,6 +30,24 @@ interface ProjectRow {
   createdAt: string
 }
 
+interface LeadRow {
+  id: string
+  name: string
+  company: string | null
+  status: string
+  estimatedValue: number | null
+  createdAt: string
+}
+
+interface SurveyRow {
+  id: string
+  title: string
+  status: string
+  projectName: string
+  scheduledDate: string | null
+  createdAt: string
+}
+
 const STATUS_META: Record<string, { label: string; variant: "success" | "info" | "warning" | "destructive" | "secondary" }> = {
   PLANNING: { label: "Planning", variant: "info" },
   IN_PROGRESS: { label: "In Progress", variant: "success" },
@@ -44,6 +62,24 @@ const STATUS_ICON_BG: Record<string, string> = {
   ON_HOLD: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   COMPLETED: "bg-slate-500/10 text-slate-600 dark:text-slate-400",
   CANCELLED: "bg-red-500/10 text-red-600 dark:text-red-400",
+}
+
+const LEAD_STATUS_META: Record<string, { label: string; variant: "success" | "info" | "warning" | "destructive" | "secondary" }> = {
+  NEW: { label: "New", variant: "info" },
+  CONTACTED: { label: "Contacted", variant: "secondary" },
+  QUALIFIED: { label: "Qualified", variant: "warning" },
+  PROPOSAL: { label: "Proposal Sent", variant: "warning" },
+  NEGOTIATION: { label: "Negotiation", variant: "warning" },
+  WON: { label: "Won", variant: "success" },
+  LOST: { label: "Lost", variant: "destructive" },
+}
+
+const SURVEY_STATUS_META: Record<string, { label: string; variant: "success" | "info" | "warning" | "destructive" | "secondary" }> = {
+  ASSIGNED: { label: "Assigned", variant: "secondary" },
+  IN_PROGRESS: { label: "In Progress", variant: "info" },
+  SUBMITTED: { label: "Submitted", variant: "warning" },
+  APPROVED: { label: "Approved", variant: "success" },
+  REJECTED: { label: "Rejected", variant: "destructive" },
 }
 
 
@@ -69,7 +105,18 @@ export default function DashboardPage() {
     projects: null, leads: null, surveys: null, clients: null,
   })
   const [recentProjects, setRecentProjects] = useState<ProjectRow[]>([])
+  const [recentLeads, setRecentLeads] = useState<LeadRow[]>([])
+  const [recentSurveys, setRecentSurveys] = useState<SurveyRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [leadsLoading, setLeadsLoading] = useState(true)
+  const [surveysLoading, setSurveysLoading] = useState(true)
+
+  const userId = session?.user?.id
+  // Whoever can be assigned a lead / a survey gets a dashboard section
+  // showing their own, even if they hold no general read access to that
+  // module at all (a custom role that's e.g. only leads:assignable).
+  const showAssignedLeads = hasPermission(session?.user, 'leads:assignable')
+  const showAssignedSurveys = hasPermission(session?.user, 'surveys:assignable')
 
   useEffect(() => {
     Promise.all([
@@ -87,6 +134,24 @@ export default function DashboardPage() {
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => {
+    if (!userId || !showAssignedLeads) { setLeadsLoading(false); return }
+    fetch(`/api/leads?assignedTo=${userId}&limit=5`)
+      .then((res) => res.json())
+      .then((data) => { if (data.success) setRecentLeads(data.data) })
+      .catch(() => {})
+      .finally(() => setLeadsLoading(false))
+  }, [userId, showAssignedLeads])
+
+  useEffect(() => {
+    if (!userId || !showAssignedSurveys) { setSurveysLoading(false); return }
+    fetch('/api/surveys?limit=5')
+      .then((res) => res.json())
+      .then((data) => { if (data.success) setRecentSurveys(data.data) })
+      .catch(() => {})
+      .finally(() => setSurveysLoading(false))
+  }, [userId, showAssignedSurveys])
 
   const today = useMemo(
     () => new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
@@ -202,6 +267,111 @@ export default function DashboardPage() {
           )}
         </CardContent>
       </Card>
+
+      {showAssignedLeads && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-base font-semibold">Recent Leads Assigned to Me</CardTitle>
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/leads">View All<ArrowUpRight className="ml-1 h-3 w-3" /></Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {leadsLoading ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">Loading...</p>
+            ) : recentLeads.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">No leads assigned to you yet</p>
+            ) : (
+              <div className="space-y-2.5">
+                {recentLeads.map((lead) => {
+                  const statusMeta = LEAD_STATUS_META[lead.status] || { label: lead.status, variant: 'secondary' as const }
+                  return (
+                    <Link
+                      key={lead.id}
+                      href={`/leads/${lead.id}`}
+                      className="group flex flex-col gap-3 rounded-xl border border-border/70 p-3.5 transition-all hover:border-primary/30 hover:bg-muted/40 hover:shadow-sm sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="flex min-w-0 flex-1 items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                          <Users className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="text-sm font-semibold break-words">{lead.name}</p>
+                            <Badge variant={statusMeta.variant} className="text-[10px] shrink-0">{statusMeta.label}</Badge>
+                          </div>
+                          {lead.company && <p className="mt-0.5 truncate text-xs text-muted-foreground">{lead.company}</p>}
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 items-center justify-between gap-3 pl-[52px] sm:justify-end sm:pl-0">
+                        <div className="text-left sm:text-right">
+                          {lead.estimatedValue != null && <p className="text-sm font-semibold">{formatCurrency(lead.estimatedValue)}</p>}
+                          <p className="flex items-center gap-1 text-xs text-muted-foreground sm:justify-end">
+                            <Clock className="h-3 w-3" />{formatDate(lead.createdAt)}
+                          </p>
+                        </div>
+                        <ChevronRight className="hidden h-4 w-4 shrink-0 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5 group-hover:text-muted-foreground sm:block" />
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {showAssignedSurveys && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-base font-semibold">Recent Surveys Assigned to Me</CardTitle>
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/surveys">View All<ArrowUpRight className="ml-1 h-3 w-3" /></Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {surveysLoading ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">Loading...</p>
+            ) : recentSurveys.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">No surveys assigned to you yet</p>
+            ) : (
+              <div className="space-y-2.5">
+                {recentSurveys.map((survey) => {
+                  const statusMeta = SURVEY_STATUS_META[survey.status] || { label: survey.status, variant: 'secondary' as const }
+                  return (
+                    <Link
+                      key={survey.id}
+                      href={`/surveys/${survey.id}`}
+                      className="group flex flex-col gap-3 rounded-xl border border-border/70 p-3.5 transition-all hover:border-primary/30 hover:bg-muted/40 hover:shadow-sm sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="flex min-w-0 flex-1 items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                          <ClipboardList className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="text-sm font-semibold break-words">{survey.title}</p>
+                            <Badge variant={statusMeta.variant} className="text-[10px] shrink-0">{statusMeta.label}</Badge>
+                          </div>
+                          <p className="mt-0.5 truncate text-xs text-muted-foreground">{survey.projectName}</p>
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 items-center justify-between gap-3 pl-[52px] sm:justify-end sm:pl-0">
+                        <div className="text-left sm:text-right">
+                          <p className="flex items-center gap-1 text-xs text-muted-foreground sm:justify-end">
+                            <Clock className="h-3 w-3" />{survey.scheduledDate ? formatDate(survey.scheduledDate) : formatDate(survey.createdAt)}
+                          </p>
+                        </div>
+                        <ChevronRight className="hidden h-4 w-4 shrink-0 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5 group-hover:text-muted-foreground sm:block" />
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
