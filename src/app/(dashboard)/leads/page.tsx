@@ -130,7 +130,7 @@ export default function LeadsPage() {
       new: leads.filter((l) => l.status === 'NEW').length,
       won: leads.filter((l) => l.status === 'WON').length,
       conversionRate: leads.length ? Math.round((converted / leads.length) * 100) : 0,
-      inProgress: leads.filter((l) => l.status !== 'WON' && l.status !== 'LOST').length,
+      inProgress: leads.filter((l) => l.status !== 'NEW' && l.status !== 'WON' && l.status !== 'LOST').length,
       lost: leads.filter((l) => l.status === 'LOST').length,
     }
   }, [leads])
