@@ -67,7 +67,7 @@ export const SIDEBAR_NAV_ITEMS: readonly {
   {
     group: 'Projects',
     items: [
-      { label: 'Projects', href: '/projects', icon: 'FolderKanban' },
+      { label: 'Projects', href: '/projects', icon: 'FolderKanban', permissions: ['projects:read:all', 'projects:read:own'] },
     ],
   },
   {
@@ -82,7 +82,7 @@ export const SIDEBAR_NAV_ITEMS: readonly {
     group: 'Risk & Finance',
     items: [
       { label: 'Risk Assessment', href: '/risks', icon: 'ShieldAlert', permissions: ['risks:read:all', 'risks:read:own'] },
-      { label: 'BOQ', href: '/boq', icon: 'Calculator' },
+      { label: 'BOQ', href: '/boq', icon: 'Calculator', permissions: ['boq:read:all', 'boq:read:own'] },
       { label: 'Invoices', href: '/quotations', icon: 'FileText', permissions: ['quotations:read:all', 'quotations:read:own'] },
     ],
   },
