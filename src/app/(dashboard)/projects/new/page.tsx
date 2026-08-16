@@ -88,7 +88,7 @@ interface FormData {
 }
 
 interface ClientOption { id: string; companyName: string }
-interface UserOption { id: string; firstName: string; lastName: string; role: string; secondaryRole?: string | null }
+interface UserOption { id: string; firstName: string; lastName: string; role: string; roleName?: string; secondaryRole?: string | null }
 
 export default function NewProjectPage() {
   const router = useRouter()
@@ -97,7 +97,8 @@ export default function NewProjectPage() {
   const [showSuccess, setShowSuccess] = useState(false)
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const [clientList, setClientList] = useState<ClientOption[]>([])
-  const [teamMembers, setTeamMembers] = useState<UserOption[]>([])
+  const [managerOptions, setManagerOptions] = useState<UserOption[]>([])
+  const [engineerOptions, setEngineerOptions] = useState<UserOption[]>([])
   const [clientsLoading, setClientsLoading] = useState(true)
   const [usersLoading, setUsersLoading] = useState(true)
   const [formData, setFormData] = useState<FormData>({
@@ -131,11 +132,13 @@ export default function NewProjectPage() {
       .catch(() => {})
       .finally(() => setClientsLoading(false))
 
-    fetch('/api/users')
-      .then((res) => res.json())
-      .then((data) => {
-        const list = Array.isArray(data) ? data : data.users || []
-        setTeamMembers(list)
+    Promise.all([
+      fetch('/api/users/assignable?permission=projects:assignable:manager').then((res) => res.json()),
+      fetch('/api/users/assignable?permission=projects:assignable:engineer').then((res) => res.json()),
+    ])
+      .then(([managers, engineers]) => {
+        if (managers.success && Array.isArray(managers.data)) setManagerOptions(managers.data)
+        if (engineers.success && Array.isArray(engineers.data)) setEngineerOptions(engineers.data)
       })
       .catch(() => {})
       .finally(() => setUsersLoading(false))
@@ -540,16 +543,14 @@ export default function NewProjectPage() {
                       <SelectContent>
                         {usersLoading ? (
                           <SelectItem value="__loading" disabled>Loading users...</SelectItem>
-                        ) : teamMembers.length === 0 ? (
+                        ) : managerOptions.length === 0 ? (
                           <SelectItem value="__none" disabled>No users found</SelectItem>
                         ) : (
-                          teamMembers
-                            .filter((m) => m.role === "MANAGER")
-                            .map((member) => (
-                              <SelectItem key={member.id} value={member.id}>
-                                {member.firstName} {member.lastName} - {member.role}
-                              </SelectItem>
-                            ))
+                          managerOptions.map((member) => (
+                            <SelectItem key={member.id} value={member.id}>
+                              {member.firstName} {member.lastName} - {member.roleName ?? member.role}
+                            </SelectItem>
+                          ))
                         )}
                       </SelectContent>
                     </Select>
@@ -568,16 +569,14 @@ export default function NewProjectPage() {
                       <SelectContent>
                         {usersLoading ? (
                           <SelectItem value="__loading" disabled>Loading users...</SelectItem>
-                        ) : teamMembers.filter((m) => m.role === "ENGINEER" || m.secondaryRole === "ENGINEER").length === 0 ? (
+                        ) : engineerOptions.length === 0 ? (
                           <SelectItem value="__none" disabled>No engineers found</SelectItem>
                         ) : (
-                          teamMembers
-                            .filter((m) => m.role === "ENGINEER" || m.secondaryRole === "ENGINEER")
-                            .map((member) => (
-                              <SelectItem key={member.id} value={member.id}>
-                                {member.firstName} {member.lastName}
-                              </SelectItem>
-                            ))
+                          engineerOptions.map((member) => (
+                            <SelectItem key={member.id} value={member.id}>
+                              {member.firstName} {member.lastName}
+                            </SelectItem>
+                          ))
                         )}
                       </SelectContent>
                     </Select>

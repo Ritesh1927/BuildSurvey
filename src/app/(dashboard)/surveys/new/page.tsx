@@ -37,7 +37,7 @@ const SURVEY_TYPES = [
 ]
 
 interface ProjectOption { id: string; name: string }
-interface EngineerOption { id: string; firstName: string; lastName: string; role: string }
+interface EngineerOption { id: string; firstName: string; lastName: string; role: string; roleName?: string }
 
 const defaultChecklistItems = [
   { id: 1, category: "Quality Check", item: "Before starting the work, check the material quality is up to the mark or not.", checked: true, notes: "" },
@@ -81,7 +81,7 @@ export default function NewSurveyPage() {
       .catch(() => {})
       .finally(() => setProjectsLoading(false))
 
-    fetch('/api/users/assignable?roles=ENGINEER,SURVEYOR')
+    fetch('/api/users/assignable?permission=surveys:assignable')
       .then((res) => res.json())
       .then((data) => {
         if (data.success && Array.isArray(data.data)) setEngineers(data.data)
@@ -306,7 +306,7 @@ export default function NewSurveyPage() {
                                   {e.firstName[0]}{e.lastName[0]}
                                 </div>
                                 <span>{e.firstName} {e.lastName}</span>
-                                <span className="text-xs text-muted-foreground">({e.role})</span>
+                                <span className="text-xs text-muted-foreground">({e.roleName ?? e.role})</span>
                               </div>
                             </SelectItem>
                           ))

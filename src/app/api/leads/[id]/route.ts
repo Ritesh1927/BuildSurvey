@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requirePermission } from '@/lib/api-auth'
+import { requireAuth, requirePermission, userHasPermission } from '@/lib/api-auth'
 import { LeadStatus, Priority } from '@/generated/prisma/enums'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -75,14 +75,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
 
     if (assignedToId) {
-      // Only a Manager owns a lead through its lifecycle (status changes,
-      // eventual conversion) - Admin/Super Admin can still create/manage
-      // leads, but aren't valid assignees themselves. Enforced here, not
-      // just hidden in the picker, so a stray API call can't bypass it.
+      // Only a role granted leads:assignable owns a lead through its
+      // lifecycle - enforced here, not just hidden in the picker, so a
+      // stray API call can't bypass it.
       const assignee = await db.user.findUnique({ where: { id: assignedToId } })
-      if (!assignee || assignee.isDeleted || assignee.role !== 'MANAGER') {
+      if (!assignee || assignee.isDeleted || !(await userHasPermission(assignedToId, 'leads:assignable'))) {
         return NextResponse.json(
-          { success: false, error: 'A lead can only be assigned to a Manager' },
+          { success: false, error: 'This lead can only be assigned to someone whose role allows it' },
           { status: 400 }
         )
       }

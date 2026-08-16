@@ -86,7 +86,7 @@ interface ProjectDetail {
   boqItems: { id: string; serialNumber: number; description: string; category: string; quantity: number; unitRate: number; amount: number }[]
 }
 
-interface UserOption { id: string; firstName: string; lastName: string; role: string; secondaryRole?: string | null }
+interface UserOption { id: string; firstName: string; lastName: string; role: string; roleName?: string; secondaryRole?: string | null }
 
 const STATUS_META: Record<string, { label: string; variant: "success" | "info" | "warning" | "destructive" | "secondary" }> = {
   PLANNING: { label: "Planning", variant: "info" },
@@ -118,7 +118,8 @@ export default function ProjectDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(searchParams.get('edit') === 'true')
   const [saving, setSaving] = useState(false)
-  const [users, setUsers] = useState<UserOption[]>([])
+  const [managerOptions, setManagerOptions] = useState<UserOption[]>([])
+  const [engineerOptions, setEngineerOptions] = useState<UserOption[]>([])
   const [form, setForm] = useState({
     name: '', description: '', type: 'RESIDENTIAL', status: 'PLANNING',
     address: '', city: '', state: '', latitude: '', longitude: '', area: '', floors: '',
@@ -174,11 +175,13 @@ export default function ProjectDetailPage() {
   }, [fetchProject])
 
   useEffect(() => {
-    fetch('/api/users')
-      .then((res) => res.json())
-      .then((data) => {
-        const list = Array.isArray(data) ? data : data.users || []
-        setUsers(list)
+    Promise.all([
+      fetch('/api/users/assignable?permission=projects:assignable:manager').then((res) => res.json()),
+      fetch('/api/users/assignable?permission=projects:assignable:engineer').then((res) => res.json()),
+    ])
+      .then(([managers, engineers]) => {
+        if (managers.success && Array.isArray(managers.data)) setManagerOptions(managers.data)
+        if (engineers.success && Array.isArray(engineers.data)) setEngineerOptions(engineers.data)
       })
       .catch(() => {})
   }, [])
@@ -406,7 +409,7 @@ export default function ProjectDetailPage() {
                       <SelectTrigger><SelectValue placeholder="Select project manager" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="__none">Unassigned</SelectItem>
-                        {users.filter((u) => u.role === 'MANAGER').map((u) => (
+                        {managerOptions.map((u) => (
                           <SelectItem key={u.id} value={u.id}>{u.firstName} {u.lastName}</SelectItem>
                         ))}
                       </SelectContent>
@@ -418,7 +421,7 @@ export default function ProjectDetailPage() {
                       <SelectTrigger><SelectValue placeholder="Select lead engineer" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="__none">Unassigned</SelectItem>
-                        {users.filter((u) => u.role === 'ENGINEER' || u.secondaryRole === 'ENGINEER').map((u) => (
+                        {engineerOptions.map((u) => (
                           <SelectItem key={u.id} value={u.id}>{u.firstName} {u.lastName}</SelectItem>
                         ))}
                       </SelectContent>

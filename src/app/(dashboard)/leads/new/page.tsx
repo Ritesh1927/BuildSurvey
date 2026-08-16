@@ -83,12 +83,8 @@ interface UserOption {
   firstName: string
   lastName: string
   role: string
+  roleName?: string
 }
-
-// Only a Manager owns a lead through its lifecycle (status changes,
-// eventual conversion to a client) - matches the assignedToId check in
-// POST/PATCH /api/leads, not just hidden here in the picker.
-const LEAD_ASSIGNABLE_ROLES = ['MANAGER']
 
 export default function NewLeadPage() {
   const router = useRouter()
@@ -103,11 +99,10 @@ export default function NewLeadPage() {
   const [usersLoading, setUsersLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/users')
+    fetch('/api/users/assignable?permission=leads:assignable')
       .then((res) => res.json())
       .then((data) => {
-        const list: UserOption[] = Array.isArray(data) ? data : data.users || []
-        setUsers(list.filter((u) => LEAD_ASSIGNABLE_ROLES.includes(u.role)))
+        if (data.success && Array.isArray(data.data)) setUsers(data.data)
       })
       .catch(() => {})
       .finally(() => setUsersLoading(false))
@@ -409,7 +404,7 @@ export default function NewLeadPage() {
               ) : (
                 users.map((u) => (
                   <SelectItem key={u.id} value={u.id}>
-                    {u.firstName} {u.lastName} ({u.role})
+                    {u.firstName} {u.lastName} ({u.roleName ?? u.role})
                   </SelectItem>
                 ))
               )}

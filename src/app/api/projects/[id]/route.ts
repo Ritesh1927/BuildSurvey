@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requirePermission, hasPermission, hasRole } from '@/lib/api-auth'
+import { requireAuth, requirePermission, hasPermission, hasRole, userHasPermission } from '@/lib/api-auth'
 import { ProjectStatus, ProjectType } from '@/generated/prisma/enums'
 
 // Allowlist, not a blocklist - an Engineer, even one leading the project,
@@ -107,6 +107,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     if (type && !Object.values(ProjectType).includes(type)) {
       return NextResponse.json({ success: false, error: 'Invalid project type' }, { status: 400 })
+    }
+
+    if (managerId && !(await userHasPermission(managerId, 'projects:assignable:manager'))) {
+      return NextResponse.json(
+        { success: false, error: 'This project can only be managed by someone whose role allows it' },
+        { status: 400 }
+      )
+    }
+    if (leadUserId && !(await userHasPermission(leadUserId, 'projects:assignable:engineer'))) {
+      return NextResponse.json(
+        { success: false, error: 'This project can only be led by someone whose role allows it' },
+        { status: 400 }
+      )
     }
 
     const updateData: any = { updatedBy: userId }

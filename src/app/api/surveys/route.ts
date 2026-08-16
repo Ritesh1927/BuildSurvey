@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requirePermission, hasPermission } from '@/lib/api-auth'
+import { requireAuth, requirePermission, hasPermission, userHasPermission } from '@/lib/api-auth'
 import { SurveyType } from '@/generated/prisma/enums'
 
 export async function GET(request: NextRequest) {
@@ -184,6 +184,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'You can only assign a survey to yourself' },
         { status: 403 }
+      )
+    }
+    if (canAssign && engineerId && !(await userHasPermission(engineerId, 'surveys:assignable'))) {
+      return NextResponse.json(
+        { success: false, error: 'This survey can only be assigned to someone whose role allows it' },
+        { status: 400 }
       )
     }
     const resolvedEngineerId = canAssign ? (engineerId || null) : userId

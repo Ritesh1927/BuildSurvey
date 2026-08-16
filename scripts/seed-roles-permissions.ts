@@ -124,6 +124,18 @@ const PERMISSIONS: PermissionDef[] = [
   // exposed as an editable checkbox in the Roles & Permissions panel,
   // since granting it is a privilege-escalation path.
   { key: 'roles:manage', resource: 'roles', action: 'manage', label: 'Manage roles & permissions', category: 'Administration', roles: [] },
+
+  // --- Assignability ---
+  // Distinct from read/write access to a resource - these control
+  // whether a role's members show up as *candidates* in an assignment
+  // picker (Lead "Assign To", Project Manager/Lead Engineer, Survey
+  // assignee). Previously hardcoded to literal role names in every
+  // picker and, for leads, enforced server-side too - now driven by
+  // these like everything else, so a custom role can opt in.
+  { key: 'leads:assignable', resource: 'leads', action: 'assignable', label: 'Can be assigned to own a lead', category: 'Assignability', roles: ['MANAGER'] },
+  { key: 'projects:assignable:manager', resource: 'projects', action: 'assignable:manager', label: 'Can be assigned as a project’s Manager', category: 'Assignability', roles: ['MANAGER'] },
+  { key: 'projects:assignable:engineer', resource: 'projects', action: 'assignable:engineer', label: 'Can be assigned as a project’s Lead Engineer (also drives Site Visit eligibility)', category: 'Assignability', roles: ['ENGINEER'] },
+  { key: 'surveys:assignable', resource: 'surveys', action: 'assignable', label: 'Can be assigned to a survey', category: 'Assignability', roles: ['ENGINEER', 'SURVEYOR'] },
 ]
 
 async function main() {

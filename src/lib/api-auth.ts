@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
+import { db } from '@/lib/db'
 import type { UserRole } from '@/generated/prisma/enums'
 
 export async function requireAuth() {
@@ -32,9 +33,7 @@ export function canManageRole(actingRole: UserRole, subjectRole: string): boolea
 // `session.user.permissions` is the resolved union of the user's primary
 // and secondary Role's permission keys, baked into the JWT at login (see
 // auth.ts) - same "changes take effect on next sign-in" tradeoff `role`
-// already has. This coexists with requireRole()/hasRole() above during
-// the migration from the fixed UserRole enum to admin-editable roles;
-// nothing calls these yet until routes are migrated one at a time.
+// already has.
 
 /** True if the session holds ANY of the given permission keys. */
 export function hasPermission(user: { permissions?: string[] }, ...keys: string[]): boolean {
@@ -52,4 +51,29 @@ export async function requirePermission(...keys: string[]) {
     return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
   }
   return null
+}
+
+/**
+ * Like hasPermission(), but resolves a target user's permissions fresh
+ * from the database rather than reading them off the current session -
+ * for validating who a resource is being ASSIGNED to (a lead's owner, a
+ * project's manager/lead engineer, a survey's assignee), which is a
+ * different user than whoever is making the request.
+ */
+export async function userHasPermission(userId: string, ...keys: string[]): Promise<boolean> {
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: {
+      roleRef: { select: { permissions: { select: { permission: { select: { key: true } } } } } },
+      secondaryRoleRef: { select: { permissions: { select: { permission: { select: { key: true } } } } } },
+    },
+  })
+  if (!user) return false
+  for (const rp of user.roleRef?.permissions ?? []) {
+    if (keys.includes(rp.permission.key)) return true
+  }
+  for (const rp of user.secondaryRoleRef?.permissions ?? []) {
+    if (keys.includes(rp.permission.key)) return true
+  }
+  return false
 }

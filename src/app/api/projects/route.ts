@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requirePermission, hasPermission, hasRole } from '@/lib/api-auth'
+import { requireAuth, requirePermission, hasPermission, hasRole, userHasPermission } from '@/lib/api-auth'
 import { ProjectType } from '@/generated/prisma/enums'
 
 export async function GET(request: NextRequest) {
@@ -189,6 +189,19 @@ export async function POST(request: NextRequest) {
     if (!client || client.isDeleted) {
       return NextResponse.json(
         { success: false, error: 'Client not found' },
+        { status: 400 }
+      )
+    }
+
+    if (managerId && !(await userHasPermission(managerId, 'projects:assignable:manager'))) {
+      return NextResponse.json(
+        { success: false, error: 'This project can only be managed by someone whose role allows it' },
+        { status: 400 }
+      )
+    }
+    if (leadUserId && !(await userHasPermission(leadUserId, 'projects:assignable:engineer'))) {
+      return NextResponse.json(
+        { success: false, error: 'This project can only be led by someone whose role allows it' },
         { status: 400 }
       )
     }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { requireAuth, requirePermission, hasPermission } from '@/lib/api-auth'
+import { requireAuth, requirePermission, hasPermission, userHasPermission } from '@/lib/api-auth'
 import { SurveyStatus, SurveyType } from '@/generated/prisma/enums'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -93,6 +93,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     if (type && !Object.values(SurveyType).includes(type)) {
       return NextResponse.json({ success: false, error: 'Invalid survey type' }, { status: 400 })
+    }
+
+    if (engineerId && !(await userHasPermission(engineerId, 'surveys:assignable'))) {
+      return NextResponse.json(
+        { success: false, error: 'This survey can only be assigned to someone whose role allows it' },
+        { status: 400 }
+      )
     }
 
     if (status) {
