@@ -138,7 +138,7 @@ export default function RoleDetailPage() {
     <div className="space-y-6">
       <PageHeader
         title={role.name}
-        description={isSuperAdmin ? 'Always has every permission — not editable' : 'Edit this role’s details and permissions'}
+        description="Edit this role’s details and permissions"
         breadcrumbs={[
           { label: 'Dashboard', href: '/' },
           { label: 'Roles & Permissions', href: '/roles' },
@@ -152,25 +152,21 @@ export default function RoleDetailPage() {
                 Back
               </Link>
             </Button>
-            {!isSuperAdmin && (
-              <>
-                {!role.isSystem && (
-                  <Button
-                    variant="destructive"
-                    onClick={handleDelete}
-                    disabled={role.userCount > 0}
-                    title={role.userCount > 0 ? 'Reassign employees off this role before deleting it' : undefined}
-                  >
-                    <Trash2 className="mr-1 h-4 w-4" />
-                    Delete
-                  </Button>
-                )}
-                <Button onClick={handleSave} disabled={saving}>
-                  <Save className="mr-1 h-4 w-4" />
-                  {saving ? 'Saving...' : 'Save'}
-                </Button>
-              </>
+            {!role.isSystem && (
+              <Button
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={role.userCount > 0}
+                title={role.userCount > 0 ? 'Reassign employees off this role before deleting it' : undefined}
+              >
+                <Trash2 className="mr-1 h-4 w-4" />
+                Delete
+              </Button>
             )}
+            <Button onClick={handleSave} disabled={saving}>
+              <Save className="mr-1 h-4 w-4" />
+              {saving ? 'Saving...' : 'Save'}
+            </Button>
           </div>
         }
       />
@@ -180,8 +176,9 @@ export default function RoleDetailPage() {
           <CardContent className="flex items-center gap-3 py-4">
             <Lock className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
             <p className="text-sm text-muted-foreground">
-              Super Admin always has full access to everything, including every permission added in the future.
-              This can&apos;t be changed here — it&apos;s what guarantees at least one account can never be locked out.
+              Super Admin holds every permission by default, including ones added in the future. Anything here can be
+              unchecked and rechecked freely — except the ability to manage roles itself, which always stays on so
+              there&apos;s never a way to lock every admin out of this panel.
             </p>
           </CardContent>
         </Card>
@@ -198,7 +195,7 @@ export default function RoleDetailPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Role Name</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} disabled={isSuperAdmin} />
+              <Input value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Employees with this role</Label>
@@ -206,7 +203,7 @@ export default function RoleDetailPage() {
             </div>
             <div className="space-y-2 sm:col-span-2">
               <Label>Description</Label>
-              <Textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} disabled={isSuperAdmin} />
+              <Textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
             </div>
           </div>
         </CardContent>
@@ -214,7 +211,7 @@ export default function RoleDetailPage() {
 
       <div>
         <h2 className="mb-3 text-sm font-semibold text-muted-foreground">Permissions</h2>
-        <PermissionEditor categories={categories} selected={selected} onChange={setSelected} disabled={isSuperAdmin} />
+        <PermissionEditor categories={categories} selected={selected} onChange={setSelected} />
       </div>
     </div>
   )

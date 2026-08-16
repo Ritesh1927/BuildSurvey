@@ -60,12 +60,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ success: false, error: 'Role not found' }, { status: 404 })
     }
 
-    // Super Admin always retains full access - not editable via the panel,
-    // so nobody can accidentally lock every admin out of the app.
-    if (existing.key === 'SUPER_ADMIN') {
-      return NextResponse.json({ success: false, error: 'The Super Admin role cannot be edited' }, { status: 403 })
-    }
-
     const updateData: any = {}
     if (name !== undefined) {
       if (!name.trim()) {
@@ -79,9 +73,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       if (!Array.isArray(permissionKeys)) {
         return NextResponse.json({ success: false, error: 'permissionKeys must be an array' }, { status: 400 })
       }
-      const requestedKeys: string[] = permissionKeys.filter(
+      let requestedKeys: string[] = permissionKeys.filter(
         (k: unknown): k is string => typeof k === 'string' && k !== PROTECTED_PERMISSION_KEY
       )
+      // Super Admin can have every other permission toggled off and back
+      // on at will, but roles:manage itself is pinned regardless of what
+      // was submitted - the one thing that can never be removed, so
+      // there's always a way back into this panel to undo a mistake.
+      if (existing.key === 'SUPER_ADMIN') {
+        requestedKeys = [...new Set([...requestedKeys, PROTECTED_PERMISSION_KEY])]
+      }
       let validPermissions: { id: string }[] = []
       if (requestedKeys.length > 0) {
         validPermissions = await db.permission.findMany({ where: { key: { in: requestedKeys } }, select: { id: true } })
