@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
@@ -23,11 +24,53 @@ interface PermissionEditorProps {
   disabled?: boolean
 }
 
+// "Assignable" permissions are deliberately self-contained - they grant a
+// role its own scoped view of items assigned to it without needing the
+// resource's general View permission, so they're exempt from the
+// View-gates-everything-else rule below.
+function isViewPermission(p: PermissionCatalogEntry) {
+  return p.action === 'read' || p.action.startsWith('read:')
+}
+function isExempt(p: PermissionCatalogEntry) {
+  return p.action.includes('assignable')
+}
+
 export function PermissionEditor({ categories, selected, onChange, disabled }: PermissionEditorProps) {
+  const allPermissions = useMemo(() => categories.flatMap((c) => c.permissions), [categories])
+
+  const viewKeysByResource = useMemo(() => {
+    const map = new Map<string, string[]>()
+    for (const p of allPermissions) {
+      if (isViewPermission(p)) {
+        if (!map.has(p.resource)) map.set(p.resource, [])
+        map.get(p.resource)!.push(p.key)
+      }
+    }
+    return map
+  }, [allPermissions])
+
+  const hasViewAccess = (resource: string, keys: Set<string>) =>
+    (viewKeysByResource.get(resource) || []).some((k) => keys.has(k))
+
   const toggle = (key: string, checked: boolean) => {
     const next = new Set(selected)
-    if (checked) next.add(key)
-    else next.delete(key)
+    if (checked) {
+      next.add(key)
+    } else {
+      next.delete(key)
+      const perm = allPermissions.find((p) => p.key === key)
+      // Unchecking the last View permission for a resource drops any
+      // dependent Edit/Create/etc permissions along with it, so the
+      // selection can never end up in a state the UI wouldn't let you
+      // create by checking boxes in order.
+      if (perm && isViewPermission(perm) && !hasViewAccess(perm.resource, next)) {
+        for (const p of allPermissions) {
+          if (p.resource === perm.resource && !isViewPermission(p) && !isExempt(p)) {
+            next.delete(p.key)
+          }
+        }
+      }
+    }
     onChange(next)
   }
 
@@ -65,20 +108,28 @@ export function PermissionEditor({ categories, selected, onChange, disabled }: P
             </CardHeader>
             <CardContent>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {category.permissions.map((p) => (
-                  <label
-                    key={p.key}
-                    className="flex items-start gap-2 rounded-md border border-transparent p-1.5 hover:border-border hover:bg-muted/40"
-                  >
-                    <Checkbox
-                      checked={selected.has(p.key)}
-                      onCheckedChange={(checked) => toggle(p.key, checked === true)}
-                      disabled={disabled}
-                      className="mt-0.5"
-                    />
-                    <span className="text-sm leading-tight">{p.label}</span>
-                  </label>
-                ))}
+                {category.permissions.map((p) => {
+                  const needsView =
+                    !isViewPermission(p) && !isExempt(p) && !selected.has(p.key) && !hasViewAccess(p.resource, selected)
+                  const isDisabled = disabled || needsView
+                  return (
+                    <label
+                      key={p.key}
+                      title={needsView ? 'Requires the View permission for this section to be checked first' : undefined}
+                      className={`flex items-start gap-2 rounded-md border border-transparent p-1.5 ${
+                        needsView ? 'opacity-50' : 'hover:border-border hover:bg-muted/40'
+                      }`}
+                    >
+                      <Checkbox
+                        checked={selected.has(p.key)}
+                        onCheckedChange={(checked) => toggle(p.key, checked === true)}
+                        disabled={isDisabled}
+                        className="mt-0.5"
+                      />
+                      <span className="text-sm leading-tight">{p.label}</span>
+                    </label>
+                  )
+                })}
               </div>
             </CardContent>
           </Card>
