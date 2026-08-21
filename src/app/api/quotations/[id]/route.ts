@@ -91,6 +91,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ success: false, error: 'Invalid quotationStatus value' }, { status: 400 })
     }
 
+    if (title !== undefined && !title.trim()) {
+      return NextResponse.json({ success: false, error: 'Title is required' }, { status: 400 })
+    }
+
     const updateData: any = { updatedBy: userId }
 
     if (title) updateData.title = title

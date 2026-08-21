@@ -102,9 +102,9 @@ export async function POST(request: NextRequest) {
 
     const parsedQuantity = parseFloat(quantity)
     const parsedRate = parseFloat(unitRate)
-    if (Number.isNaN(parsedQuantity) || parsedQuantity < 0 || Number.isNaN(parsedRate) || parsedRate < 0) {
+    if (Number.isNaN(parsedQuantity) || parsedQuantity <= 0 || Number.isNaN(parsedRate) || parsedRate <= 0) {
       return NextResponse.json(
-        { success: false, error: 'quantity and unitRate must be non-negative numbers' },
+        { success: false, error: 'quantity and unitRate must be positive numbers' },
         { status: 400 }
       )
     }

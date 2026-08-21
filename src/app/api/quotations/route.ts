@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth'
 import { requireAuth, requirePermission, hasPermission } from '@/lib/api-auth'
 import { QuotationStatus } from '@/generated/prisma/enums'
 import { getGstRate } from '@/lib/gst'
+import { isPositiveNumber } from '@/lib/validation'
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth()
@@ -113,6 +114,12 @@ export async function POST(request: NextRequest) {
       if (!item.description || !item.unit || item.quantity === undefined || item.unitRate === undefined) {
         return NextResponse.json(
           { success: false, error: 'Each item requires description, unit, quantity, and unitRate' },
+          { status: 400 }
+        )
+      }
+      if (!isPositiveNumber(item.quantity) || !isPositiveNumber(item.unitRate)) {
+        return NextResponse.json(
+          { success: false, error: 'Each item needs a positive quantity and rate' },
           { status: 400 }
         )
       }

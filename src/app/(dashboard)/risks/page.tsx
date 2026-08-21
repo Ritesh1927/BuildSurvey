@@ -94,6 +94,7 @@ export default function RisksPage() {
   const [formLevel, setFormLevel] = useState("")
   const [formMitigation, setFormMitigation] = useState("")
   const [formSurveyId, setFormSurveyId] = useState("")
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
   const fetchSurveys = useCallback(async () => {
     try {
@@ -150,13 +151,17 @@ export default function RisksPage() {
     setFormLevel("")
     setFormMitigation("")
     setFormSurveyId("")
+    setFormErrors({})
   }
 
   const handleAddRisk = async () => {
-    if (!formTitle || !formDescription || !formSurveyId || !formLevel) {
-      showError("Title, description, survey, and level are required")
-      return
-    }
+    const e: Record<string, string> = {}
+    if (!formTitle.trim()) e.title = "Title is required"
+    if (!formDescription.trim()) e.description = "Description is required"
+    if (!formLevel) e.level = "Risk level is required"
+    if (!formSurveyId) e.surveyId = "Survey is required"
+    setFormErrors(e)
+    if (Object.keys(e).length > 0) return
     try {
       setSubmitting(true)
       const res = await fetch("/api/risks", {
@@ -445,8 +450,9 @@ export default function RisksPage() {
             <Input
               placeholder="Risk title"
               value={formTitle}
-              onChange={(e) => setFormTitle(e.target.value)}
+              onChange={(e) => { setFormTitle(e.target.value); if (formErrors.title) setFormErrors((p) => { const n = { ...p }; delete n.title; return n }) }}
             />
+            {formErrors.title && <p className="text-sm text-destructive">{formErrors.title}</p>}
           </div>
           <div className="space-y-2">
             <Label>Description *</Label>
@@ -454,13 +460,14 @@ export default function RisksPage() {
               placeholder="Detailed description of the risk"
               rows={3}
               value={formDescription}
-              onChange={(e) => setFormDescription(e.target.value)}
+              onChange={(e) => { setFormDescription(e.target.value); if (formErrors.description) setFormErrors((p) => { const n = { ...p }; delete n.description; return n }) }}
             />
+            {formErrors.description && <p className="text-sm text-destructive">{formErrors.description}</p>}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Risk Level *</Label>
-              <Select value={formLevel} onValueChange={setFormLevel}>
+              <Select value={formLevel} onValueChange={(v) => { setFormLevel(v); if (formErrors.level) setFormErrors((p) => { const n = { ...p }; delete n.level; return n }) }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select level" />
                 </SelectTrigger>
@@ -470,10 +477,11 @@ export default function RisksPage() {
                   ))}
                 </SelectContent>
               </Select>
+              {formErrors.level && <p className="text-sm text-destructive">{formErrors.level}</p>}
             </div>
             <div className="space-y-2">
               <Label>Survey *</Label>
-              <Select value={formSurveyId} onValueChange={setFormSurveyId}>
+              <Select value={formSurveyId} onValueChange={(v) => { setFormSurveyId(v); if (formErrors.surveyId) setFormErrors((p) => { const n = { ...p }; delete n.surveyId; return n }) }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select survey" />
                 </SelectTrigger>
@@ -485,6 +493,7 @@ export default function RisksPage() {
                   ))}
                 </SelectContent>
               </Select>
+              {formErrors.surveyId && <p className="text-sm text-destructive">{formErrors.surveyId}</p>}
             </div>
           </div>
           <div className="space-y-2">

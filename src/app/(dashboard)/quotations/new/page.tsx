@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/select"
 import { PageHeader } from "@/components/ui/page-header"
 import { showSuccess, showError } from "@/components/ui/toast"
+import { isPositiveNumber } from "@/lib/validation"
 
 interface Project {
   id: string
@@ -157,6 +158,28 @@ export default function NewQuotationPage() {
     setLineItems((prev) => prev.filter((i) => i.id !== id))
   }
 
+  const validateForSave = (): boolean => {
+    if (!selectedProject || !title) {
+      showError("Project and title are required")
+      return false
+    }
+    const filledItems = lineItems.filter((li) => li.description.trim())
+    if (filledItems.length === 0) {
+      showError("Add at least one line item with a description")
+      return false
+    }
+    const invalidItem = filledItems.find((li) => !isPositiveNumber(li.qty) || !isPositiveNumber(li.rate))
+    if (invalidItem) {
+      showError("Every line item needs a positive quantity and rate")
+      return false
+    }
+    if (discount < 0 || discount > 100) {
+      showError("Discount must be between 0 and 100")
+      return false
+    }
+    return true
+  }
+
   const buildPayload = () => ({
     title,
     projectId: selectedProject,
@@ -171,14 +194,7 @@ export default function NewQuotationPage() {
   })
 
   const handleSaveDraft = async () => {
-    if (!selectedProject || !title) {
-      showError("Project and title are required")
-      return
-    }
-    if (lineItems.length === 0 || lineItems.every((li) => !li.description)) {
-      showError("Add at least one line item with a description")
-      return
-    }
+    if (!validateForSave()) return
     try {
       setSaving(true)
       const res = await fetch("/api/quotations", {
@@ -212,14 +228,7 @@ export default function NewQuotationPage() {
   }
 
   const handleSendQuotation = async () => {
-    if (!selectedProject || !title) {
-      showError("Project and title are required")
-      return
-    }
-    if (lineItems.length === 0 || lineItems.every((li) => !li.description)) {
-      showError("Add at least one line item with a description")
-      return
-    }
+    if (!validateForSave()) return
     try {
       setSaving(true)
       const res = await fetch("/api/quotations", {

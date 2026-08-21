@@ -84,14 +84,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     if (quantity !== undefined) {
       const parsed = parseFloat(quantity)
-      if (Number.isNaN(parsed) || parsed < 0) {
-        return NextResponse.json({ success: false, error: 'quantity must be a non-negative number' }, { status: 400 })
+      if (Number.isNaN(parsed) || parsed <= 0) {
+        return NextResponse.json({ success: false, error: 'quantity must be a positive number' }, { status: 400 })
       }
     }
     if (unitRate !== undefined) {
       const parsed = parseFloat(unitRate)
-      if (Number.isNaN(parsed) || parsed < 0) {
-        return NextResponse.json({ success: false, error: 'unitRate must be a non-negative number' }, { status: 400 })
+      if (Number.isNaN(parsed) || parsed <= 0) {
+        return NextResponse.json({ success: false, error: 'unitRate must be a positive number' }, { status: 400 })
       }
     }
 

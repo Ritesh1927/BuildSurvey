@@ -32,6 +32,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { PageHeader } from "@/components/ui/page-header"
+import { isNonNegativeNumber } from "@/lib/validation"
 
 interface QuotationDetail {
   id: string
@@ -78,6 +79,7 @@ export default function QuotationDetailPage() {
   const [isEditing, setIsEditing] = useState(searchParams.get('edit') === 'true')
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ title: '', validUntil: '', terms: '', notes: '', discountAmount: '' })
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   const canWrite = hasPermission(session?.user, 'quotations:write')
   const canDelete = hasPermission(session?.user, 'quotations:delete')
@@ -132,7 +134,18 @@ export default function QuotationDetailPage() {
     }
   }
 
+  const validate = (): boolean => {
+    const e: Record<string, string> = {}
+    if (!form.title.trim()) e.title = 'Title is required'
+    if (form.discountAmount !== '' && !isNonNegativeNumber(form.discountAmount)) {
+      e.discountAmount = 'Discount amount cannot be negative'
+    }
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
+
   const handleSave = async () => {
+    if (!validate()) return
     setSaving(true)
     const ok = await patchQuotation({
       title: form.title,
@@ -212,7 +225,7 @@ export default function QuotationDetailPage() {
             </Button>
             {isEditing ? (
               <>
-                <Button variant="outline" onClick={() => { setIsEditing(false); router.replace(`/quotations/${quotationId}`) }}>
+                <Button variant="outline" onClick={() => { setIsEditing(false); setErrors({}); router.replace(`/quotations/${quotationId}`) }}>
                   <X className="mr-2 h-4 w-4" />Cancel
                 </Button>
                 <Button onClick={handleSave} disabled={saving}>
@@ -317,10 +330,10 @@ export default function QuotationDetailPage() {
 
                 {isEditing ? (
                   <div className="space-y-3 border-t pt-4">
-                    <div className="space-y-2"><Label>Title</Label><Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} /></div>
+                    <div className="space-y-2"><Label>Title</Label><Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />{errors.title && <p className="text-sm text-destructive">{errors.title}</p>}</div>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="space-y-2"><Label>Valid Until</Label><Input type="date" value={form.validUntil} onChange={(e) => setForm((f) => ({ ...f, validUntil: e.target.value }))} /></div>
-                      <div className="space-y-2"><Label>Discount Amount</Label><Input type="number" value={form.discountAmount} onChange={(e) => setForm((f) => ({ ...f, discountAmount: e.target.value }))} /></div>
+                      <div className="space-y-2"><Label>Discount Amount</Label><Input type="number" value={form.discountAmount} onChange={(e) => setForm((f) => ({ ...f, discountAmount: e.target.value }))} />{errors.discountAmount && <p className="text-sm text-destructive">{errors.discountAmount}</p>}</div>
                     </div>
                     <div className="space-y-2"><Label>Terms & Conditions</Label><Textarea rows={4} value={form.terms} onChange={(e) => setForm((f) => ({ ...f, terms: e.target.value }))} /></div>
                     <div className="space-y-2"><Label>Notes</Label><Textarea rows={2} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} /></div>
