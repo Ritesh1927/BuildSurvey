@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { requireAuth, requirePermission, canManageRole } from '@/lib/api-auth'
+import { isValidEmail, isValidPhone } from '@/lib/validation'
 
 export async function GET(req: NextRequest) {
   const authError = await requireAuth()
@@ -153,10 +154,16 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
+    if (!isValidEmail(email)) {
       return NextResponse.json(
         { error: 'Invalid email format' },
+        { status: 400 }
+      )
+    }
+
+    if (phone && !isValidPhone(phone)) {
+      return NextResponse.json(
+        { error: 'Invalid phone number' },
         { status: 400 }
       )
     }

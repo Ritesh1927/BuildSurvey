@@ -42,6 +42,7 @@ import {
 import { PageHeader } from "@/components/ui/page-header"
 import { UserAvatar } from "@/components/shared/user-avatar"
 import { ResetPasswordDialog } from "@/components/shared/reset-password-dialog"
+import { isValidEmail, isValidPhone } from "@/lib/validation"
 
 interface UserDetail {
   id: string
@@ -92,6 +93,23 @@ export default function UserDetailPage() {
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', role: 'ENGINEER', secondaryRole: '', isActive: true })
   const [roleOptions, setRoleOptions] = useState<RoleOption[]>([])
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const updateField = (field: keyof typeof form, value: string | boolean) => {
+    setForm((f) => ({ ...f, [field]: value }))
+    if (typeof field === 'string' && errors[field]) setErrors((prev) => { const next = { ...prev }; delete next[field]; return next })
+  }
+
+  const validate = (): boolean => {
+    const e: Record<string, string> = {}
+    if (!form.firstName.trim()) e.firstName = 'First name is required'
+    if (!form.lastName.trim()) e.lastName = 'Last name is required'
+    if (!form.email.trim()) e.email = 'Email is required'
+    else if (!isValidEmail(form.email.trim())) e.email = 'Invalid email format'
+    if (form.phone.trim() && !isValidPhone(form.phone.trim())) e.phone = 'Invalid phone number'
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
 
   const [resetOpen, setResetOpen] = useState(false)
 
@@ -139,6 +157,7 @@ export default function UserDetailPage() {
   }, [fetchUser])
 
   const handleSave = async () => {
+    if (!validate()) return
     setSaving(true)
     try {
       const res = await fetch(`/api/users/${userId}`, {
@@ -240,10 +259,10 @@ export default function UserDetailPage() {
           <CardHeader><CardTitle>Edit Employee</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2"><Label>First Name</Label><Input value={form.firstName} onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))} /></div>
-              <div className="space-y-2"><Label>Last Name</Label><Input value={form.lastName} onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))} /></div>
-              <div className="space-y-2"><Label>Email</Label><Input type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} /></div>
-              <div className="space-y-2"><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} /></div>
+              <div className="space-y-2"><Label>First Name</Label><Input value={form.firstName} onChange={(e) => updateField('firstName', e.target.value)} />{errors.firstName && <p className="text-sm text-destructive">{errors.firstName}</p>}</div>
+              <div className="space-y-2"><Label>Last Name</Label><Input value={form.lastName} onChange={(e) => updateField('lastName', e.target.value)} />{errors.lastName && <p className="text-sm text-destructive">{errors.lastName}</p>}</div>
+              <div className="space-y-2"><Label>Email</Label><Input type="email" value={form.email} onChange={(e) => updateField('email', e.target.value)} />{errors.email && <p className="text-sm text-destructive">{errors.email}</p>}</div>
+              <div className="space-y-2"><Label>Phone</Label><Input value={form.phone} onChange={(e) => updateField('phone', e.target.value)} />{errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}</div>
               <div className="space-y-2">
                 <Label>Role</Label>
                 <Select
@@ -288,7 +307,7 @@ export default function UserDetailPage() {
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => { setIsEditing(false); router.replace(`/users/${userId}`); setForm({ firstName: user.firstName, lastName: user.lastName, email: user.email, phone: user.phone || '', role: user.roleKey, secondaryRole: user.secondaryRoleKey || '', isActive: user.isActive }) }} disabled={saving}>
+              <Button variant="outline" onClick={() => { setIsEditing(false); setErrors({}); router.replace(`/users/${userId}`); setForm({ firstName: user.firstName, lastName: user.lastName, email: user.email, phone: user.phone || '', role: user.roleKey, secondaryRole: user.secondaryRoleKey || '', isActive: user.isActive }) }} disabled={saving}>
                 <X className="mr-2 h-4 w-4" />Cancel
               </Button>
               <Button onClick={handleSave} disabled={saving}>
