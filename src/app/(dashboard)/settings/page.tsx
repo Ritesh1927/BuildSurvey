@@ -54,6 +54,10 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { showSuccess, showError } from "@/components/ui/toast"
+import {
+  isValidEmail, isValidPhone, isValidGST, isValidPAN, isValidTAN, isValidCIN,
+  isValidPIN, isValidUrl, isPositiveNumber, isNonNegativeNumber, isValidLatitude, isValidLongitude,
+} from "@/lib/validation"
 
 const tabs = [
   { id: "general", label: "General", icon: <Settings className="h-4 w-4" /> },
@@ -172,6 +176,87 @@ export default function SettingsPage() {
   })
 
   const [saving, setSaving] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const clearError = (key: string) => {
+    setErrors((prev) => { if (!prev[key]) return prev; const next = { ...prev }; delete next[key]; return next })
+  }
+
+  // Maps a namespaced error key (e.g. "company.email") to the tab it lives
+  // on, so an invalid field on a tab the user isn't currently viewing can
+  // still be surfaced instead of silently blocking Save.
+  const TAB_BY_ERROR_PREFIX: Record<string, string> = {
+    general: "general", company: "company", security: "security", storage: "storage",
+  }
+
+  const validateSettings = (): boolean => {
+    const e: Record<string, string> = {}
+
+    if (generalSettings.gstRate && !isNonNegativeNumber(generalSettings.gstRate)) {
+      e["general.gstRate"] = "GST rate must be a non-negative number"
+    } else if (generalSettings.gstRate && Number(generalSettings.gstRate) > 100) {
+      e["general.gstRate"] = "GST rate cannot exceed 100"
+    }
+    if (generalSettings.officeLatitude && !isValidLatitude(generalSettings.officeLatitude)) {
+      e["general.officeLatitude"] = "Latitude must be between -90 and 90"
+    }
+    if (generalSettings.officeLongitude && !isValidLongitude(generalSettings.officeLongitude)) {
+      e["general.officeLongitude"] = "Longitude must be between -180 and 180"
+    }
+
+    if (companySettings.email && !isValidEmail(companySettings.email)) {
+      e["company.email"] = "Invalid email format"
+    }
+    if (companySettings.phone && !isValidPhone(companySettings.phone)) {
+      e["company.phone"] = "Invalid phone number"
+    }
+    if (companySettings.website && !isValidUrl(companySettings.website)) {
+      e["company.website"] = "Website must start with http:// or https://"
+    }
+    if (companySettings.pincode && !isValidPIN(companySettings.pincode)) {
+      e["company.pincode"] = "PIN code must be 6 digits"
+    }
+    if (companySettings.gstNumber && !isValidGST(companySettings.gstNumber)) {
+      e["company.gstNumber"] = "Invalid GST format (e.g. 27AABCL1234F1ZP)"
+    }
+    if (companySettings.panNumber && !isValidPAN(companySettings.panNumber)) {
+      e["company.panNumber"] = "Invalid PAN format (e.g. ABCDE1234F)"
+    }
+    if (companySettings.tanNumber && !isValidTAN(companySettings.tanNumber)) {
+      e["company.tanNumber"] = "Invalid TAN format (e.g. MUMS12345B)"
+    }
+    if (companySettings.cinNumber && !isValidCIN(companySettings.cinNumber)) {
+      e["company.cinNumber"] = "Invalid CIN format (e.g. U45200MH2020PTC123456)"
+    }
+
+    if (securitySettings.minPasswordLength && !isPositiveNumber(securitySettings.minPasswordLength)) {
+      e["security.minPasswordLength"] = "Must be a positive number"
+    }
+    if (securitySettings.passwordExpiryDays && !isNonNegativeNumber(securitySettings.passwordExpiryDays)) {
+      e["security.passwordExpiryDays"] = "Must be a non-negative number"
+    }
+    if (securitySettings.sessionTimeout && !isPositiveNumber(securitySettings.sessionTimeout)) {
+      e["security.sessionTimeout"] = "Must be a positive number"
+    }
+    if (securitySettings.maxLoginAttempts && !isPositiveNumber(securitySettings.maxLoginAttempts)) {
+      e["security.maxLoginAttempts"] = "Must be a positive number"
+    }
+    if (securitySettings.lockoutDuration && !isNonNegativeNumber(securitySettings.lockoutDuration)) {
+      e["security.lockoutDuration"] = "Must be a non-negative number"
+    }
+
+    if (storageSettings.maxFileSize && !isPositiveNumber(storageSettings.maxFileSize)) {
+      e["storage.maxFileSize"] = "Must be a positive number"
+    }
+
+    setErrors(e)
+    const firstErrorKey = Object.keys(e)[0]
+    if (firstErrorKey) {
+      const prefix = firstErrorKey.split(".")[0]
+      setActiveTab(TAB_BY_ERROR_PREFIX[prefix] || activeTab)
+    }
+    return Object.keys(e).length === 0
+  }
 
   const [holidays, setHolidays] = useState<{ id: string; date: string; name: string }[]>([])
   const [holidaysLoading, setHolidaysLoading] = useState(true)
@@ -302,6 +387,10 @@ export default function SettingsPage() {
   useEffect(() => { fetchSettings() }, [fetchSettings])
 
   const handleSave = async () => {
+    if (!validateSettings()) {
+      showError("Fix the highlighted fields before saving")
+      return
+    }
     setSaving(true)
     try {
       const settings = [
@@ -497,11 +586,13 @@ export default function SettingsPage() {
                     min="0"
                     step="0.01"
                     value={generalSettings.gstRate}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setGeneralSettings({ ...generalSettings, gstRate: e.target.value })
-                    }
+                      clearError("general.gstRate")
+                    }}
                   />
                   <p className="text-xs text-muted-foreground">Applied to BOQ and Invoice totals across the app</p>
+                  {errors["general.gstRate"] && <p className="text-sm text-destructive">{errors["general.gstRate"]}</p>}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium flex items-center gap-2">
@@ -513,10 +604,12 @@ export default function SettingsPage() {
                     step="any"
                     placeholder="e.g. 19.0760"
                     value={generalSettings.officeLatitude}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setGeneralSettings({ ...generalSettings, officeLatitude: e.target.value })
-                    }
+                      clearError("general.officeLatitude")
+                    }}
                   />
+                  {errors["general.officeLatitude"] && <p className="text-sm text-destructive">{errors["general.officeLatitude"]}</p>}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Office Longitude</label>
@@ -525,11 +618,13 @@ export default function SettingsPage() {
                     step="any"
                     placeholder="e.g. 72.8777"
                     value={generalSettings.officeLongitude}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setGeneralSettings({ ...generalSettings, officeLongitude: e.target.value })
-                    }
+                      clearError("general.officeLongitude")
+                    }}
                   />
                   <p className="text-xs text-muted-foreground">Used to verify employee attendance is marked from within office premises</p>
+                  {errors["general.officeLongitude"] && <p className="text-sm text-destructive">{errors["general.officeLongitude"]}</p>}
                 </div>
               </div>
               <Separator />
@@ -590,10 +685,12 @@ export default function SettingsPage() {
                   <label className="text-sm font-medium">Website</label>
                   <Input
                     value={companySettings.website}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setCompanySettings({ ...companySettings, website: e.target.value })
-                    }
+                      clearError("company.website")
+                    }}
                   />
+                  {errors["company.website"] && <p className="text-sm text-destructive">{errors["company.website"]}</p>}
                 </div>
                 <div className="space-y-2 sm:col-span-2">
                   <label className="text-sm font-medium">Address</label>
@@ -626,10 +723,12 @@ export default function SettingsPage() {
                   <label className="text-sm font-medium">PIN Code</label>
                   <Input
                     value={companySettings.pincode}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setCompanySettings({ ...companySettings, pincode: e.target.value })
-                    }
+                      clearError("company.pincode")
+                    }}
                   />
+                  {errors["company.pincode"] && <p className="text-sm text-destructive">{errors["company.pincode"]}</p>}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium flex items-center gap-2">
@@ -638,20 +737,24 @@ export default function SettingsPage() {
                   </label>
                   <Input
                     value={companySettings.phone}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setCompanySettings({ ...companySettings, phone: e.target.value })
-                    }
+                      clearError("company.phone")
+                    }}
                   />
+                  {errors["company.phone"] && <p className="text-sm text-destructive">{errors["company.phone"]}</p>}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Email</label>
                   <Input
                     type="email"
                     value={companySettings.email}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setCompanySettings({ ...companySettings, email: e.target.value })
-                    }
+                      clearError("company.email")
+                    }}
                   />
+                  {errors["company.email"] && <p className="text-sm text-destructive">{errors["company.email"]}</p>}
                 </div>
               </div>
               <Separator />
@@ -660,37 +763,49 @@ export default function SettingsPage() {
                   <label className="text-sm font-medium">GST Number</label>
                   <Input
                     value={companySettings.gstNumber}
-                    onChange={(e) =>
-                      setCompanySettings({ ...companySettings, gstNumber: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setCompanySettings({ ...companySettings, gstNumber: e.target.value.toUpperCase() })
+                      clearError("company.gstNumber")
+                    }}
+                    className="font-mono"
                   />
+                  {errors["company.gstNumber"] && <p className="text-sm text-destructive">{errors["company.gstNumber"]}</p>}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">PAN Number</label>
                   <Input
                     value={companySettings.panNumber}
-                    onChange={(e) =>
-                      setCompanySettings({ ...companySettings, panNumber: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setCompanySettings({ ...companySettings, panNumber: e.target.value.toUpperCase() })
+                      clearError("company.panNumber")
+                    }}
+                    className="font-mono"
                   />
+                  {errors["company.panNumber"] && <p className="text-sm text-destructive">{errors["company.panNumber"]}</p>}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">TAN Number</label>
                   <Input
                     value={companySettings.tanNumber}
-                    onChange={(e) =>
-                      setCompanySettings({ ...companySettings, tanNumber: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setCompanySettings({ ...companySettings, tanNumber: e.target.value.toUpperCase() })
+                      clearError("company.tanNumber")
+                    }}
+                    className="font-mono"
                   />
+                  {errors["company.tanNumber"] && <p className="text-sm text-destructive">{errors["company.tanNumber"]}</p>}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">CIN Number</label>
                   <Input
                     value={companySettings.cinNumber}
-                    onChange={(e) =>
-                      setCompanySettings({ ...companySettings, cinNumber: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setCompanySettings({ ...companySettings, cinNumber: e.target.value.toUpperCase() })
+                      clearError("company.cinNumber")
+                    }}
+                    className="font-mono"
                   />
+                  {errors["company.cinNumber"] && <p className="text-sm text-destructive">{errors["company.cinNumber"]}</p>}
                 </div>
               </div>
             </CardContent>
@@ -872,52 +987,60 @@ export default function SettingsPage() {
                     <Input
                       type="number"
                       value={securitySettings.minPasswordLength}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setSecuritySettings({
                           ...securitySettings,
                           minPasswordLength: e.target.value,
                         })
-                      }
+                        clearError("security.minPasswordLength")
+                      }}
                     />
+                    {errors["security.minPasswordLength"] && <p className="text-sm text-destructive">{errors["security.minPasswordLength"]}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Expiry (Days)</label>
                     <Input
                       type="number"
                       value={securitySettings.passwordExpiryDays}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setSecuritySettings({
                           ...securitySettings,
                           passwordExpiryDays: e.target.value,
                         })
-                      }
+                        clearError("security.passwordExpiryDays")
+                      }}
                     />
+                    {errors["security.passwordExpiryDays"] && <p className="text-sm text-destructive">{errors["security.passwordExpiryDays"]}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Max Login Attempts</label>
                     <Input
                       type="number"
                       value={securitySettings.maxLoginAttempts}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setSecuritySettings({
                           ...securitySettings,
                           maxLoginAttempts: e.target.value,
                         })
-                      }
+                        clearError("security.maxLoginAttempts")
+                      }}
                     />
+                    {errors["security.maxLoginAttempts"] && <p className="text-sm text-destructive">{errors["security.maxLoginAttempts"]}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Lockout (Min)</label>
                     <Input
                       type="number"
                       value={securitySettings.lockoutDuration}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setSecuritySettings({
                           ...securitySettings,
                           lockoutDuration: e.target.value,
                         })
-                      }
+                        clearError("security.lockoutDuration")
+                      }}
                     />
+                    {errors["security.lockoutDuration"] && <p className="text-sm text-destructive">{errors["security.lockoutDuration"]}</p>}
                   </div>
                 </div>
                 <div className="mt-4 space-y-3">
@@ -992,13 +1115,15 @@ export default function SettingsPage() {
                     <Input
                       type="number"
                       value={securitySettings.sessionTimeout}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setSecuritySettings({
                           ...securitySettings,
                           sessionTimeout: e.target.value,
                         })
-                      }
+                        clearError("security.sessionTimeout")
+                      }}
                     />
+                    {errors["security.sessionTimeout"] && <p className="text-sm text-destructive">{errors["security.sessionTimeout"]}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">IP Whitelist</label>
@@ -1389,10 +1514,12 @@ export default function SettingsPage() {
                   <Input
                     type="number"
                     value={storageSettings.maxFileSize}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setStorageSettings({ ...storageSettings, maxFileSize: e.target.value })
-                    }
+                      clearError("storage.maxFileSize")
+                    }}
                   />
+                  {errors["storage.maxFileSize"] && <p className="text-sm text-destructive">{errors["storage.maxFileSize"]}</p>}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Allowed File Types</label>

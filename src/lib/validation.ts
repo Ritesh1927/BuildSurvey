@@ -5,6 +5,8 @@ export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 export const PHONE_REGEX = /^\+?[\d\s-]{10,15}$/
 export const GST_REGEX = /^\d{2}[A-Z]{5}\d{4}[A-Z]{1}\d{1}Z[A-Z\d]{1}$/
 export const PAN_REGEX = /^[A-Z]{5}\d{4}[A-Z]{1}$/
+export const TAN_REGEX = /^[A-Z]{4}\d{5}[A-Z]{1}$/
+export const CIN_REGEX = /^[LU]\d{5}[A-Z]{2}\d{4}[A-Z]{3}\d{6}$/
 export const PIN_REGEX = /^\d{6}$/
 export const URL_REGEX = /^https?:\/\/.+\..+/
 
@@ -22,6 +24,14 @@ export function isValidGST(value: string): boolean {
 
 export function isValidPAN(value: string): boolean {
   return PAN_REGEX.test(value)
+}
+
+export function isValidTAN(value: string): boolean {
+  return TAN_REGEX.test(value)
+}
+
+export function isValidCIN(value: string): boolean {
+  return CIN_REGEX.test(value)
 }
 
 export function isValidPIN(value: string): boolean {

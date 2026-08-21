@@ -2,6 +2,34 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { requireAuth, requirePermission } from '@/lib/api-auth'
+import {
+  isValidEmail, isValidPhone, isValidGST, isValidPAN, isValidTAN, isValidCIN,
+  isValidPIN, isValidUrl, isPositiveNumber, isNonNegativeNumber, isValidLatitude, isValidLongitude,
+} from '@/lib/validation'
+
+// Only settings keys with a real, checkable format are validated here -
+// free-text/opaque fields (API keys, SMTP host, etc) have nothing
+// meaningful to validate. Keyed by the flat Setting.key the client sends,
+// same names as the settings page's per-group state.
+const SETTING_VALIDATORS: Record<string, (v: string) => boolean> = {
+  gstRate: (v) => isNonNegativeNumber(v) && Number(v) <= 100,
+  officeLatitude: isValidLatitude,
+  officeLongitude: isValidLongitude,
+  email: isValidEmail,
+  phone: isValidPhone,
+  website: isValidUrl,
+  pincode: isValidPIN,
+  gstNumber: isValidGST,
+  panNumber: isValidPAN,
+  tanNumber: isValidTAN,
+  cinNumber: isValidCIN,
+  minPasswordLength: isPositiveNumber,
+  passwordExpiryDays: isNonNegativeNumber,
+  sessionTimeout: isPositiveNumber,
+  maxLoginAttempts: isPositiveNumber,
+  lockoutDuration: isNonNegativeNumber,
+  maxFileSize: isPositiveNumber,
+}
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth()
@@ -55,6 +83,17 @@ export async function POST(request: NextRequest) {
     }
 
     const validItems = settings.filter((item: any) => item?.key && item.value !== undefined)
+
+    for (const item of validItems) {
+      const validator = SETTING_VALIDATORS[item.key]
+      const value = String(item.value)
+      if (validator && value !== '' && !validator(value)) {
+        return NextResponse.json(
+          { success: false, error: `Invalid value for setting "${item.key}"` },
+          { status: 400 }
+        )
+      }
+    }
 
     const results = await db.$transaction(
       validItems.map((item: any) =>
