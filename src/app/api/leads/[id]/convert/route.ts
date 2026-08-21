@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { requireAuth, requirePermission } from '@/lib/api-auth'
 import { toTitleCase } from '@/lib/utils'
+import { isValidGST, isValidPAN, isValidPIN, isValidUrl } from '@/lib/validation'
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth()
@@ -64,6 +65,19 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           },
           { status: 400 }
         )
+      }
+
+      if (gstNumber && !isValidGST(gstNumber)) {
+        return NextResponse.json({ success: false, error: 'Invalid GST format' }, { status: 400 })
+      }
+      if (panNumber && !isValidPAN(panNumber)) {
+        return NextResponse.json({ success: false, error: 'Invalid PAN format' }, { status: 400 })
+      }
+      if (zipCode && !isValidPIN(zipCode)) {
+        return NextResponse.json({ success: false, error: 'PIN code must be 6 digits' }, { status: 400 })
+      }
+      if (website && !isValidUrl(website)) {
+        return NextResponse.json({ success: false, error: 'Website must start with http:// or https://' }, { status: 400 })
       }
 
       try {

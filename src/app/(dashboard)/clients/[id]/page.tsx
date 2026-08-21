@@ -23,6 +23,7 @@ import {
 
 import { cn, formatDate } from "@/lib/utils"
 import { hasPermission } from "@/lib/permissions"
+import { isValidEmail, isValidPhone, isValidGST, isValidPAN, isValidPIN, isValidUrl } from "@/lib/validation"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -86,6 +87,30 @@ export default function ClientDetailPage() {
     city: '', state: '', zipCode: '', country: '', gstNumber: '', panNumber: '',
     website: '', clientType: '', notes: '',
   })
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const updateField = (field: keyof typeof form, value: string) => {
+    setForm((f) => ({ ...f, [field]: value }))
+    if (errors[field]) setErrors((prev) => { const next = { ...prev }; delete next[field]; return next })
+  }
+
+  const validate = (): boolean => {
+    const e: Record<string, string> = {}
+    if (!form.companyName.trim()) e.companyName = 'Company name is required'
+    if (!form.contactPerson.trim()) e.contactPerson = 'Contact person is required'
+    if (!form.email.trim()) e.email = 'Email is required'
+    else if (!isValidEmail(form.email.trim())) e.email = 'Invalid email format'
+    if (!form.phone.trim()) e.phone = 'Phone number is required'
+    else if (!isValidPhone(form.phone.trim())) e.phone = 'Invalid phone number'
+    if (!form.city.trim()) e.city = 'City is required'
+    if (!form.state.trim()) e.state = 'State is required'
+    if (form.gstNumber.trim() && !isValidGST(form.gstNumber.trim())) e.gstNumber = 'Invalid GST format (e.g. 27AABCL1234F1ZP)'
+    if (form.panNumber.trim() && !isValidPAN(form.panNumber.trim())) e.panNumber = 'Invalid PAN format (e.g. ABCDE1234F)'
+    if (form.zipCode.trim() && !isValidPIN(form.zipCode.trim())) e.zipCode = 'PIN code must be 6 digits'
+    if (form.website.trim() && !isValidUrl(form.website.trim())) e.website = 'Website must start with http:// or https://'
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
 
   const canWrite = hasPermission(session?.user, 'clients:write')
   const canDelete = hasPermission(session?.user, 'clients:delete')
@@ -129,6 +154,7 @@ export default function ClientDetailPage() {
   }, [fetchClient])
 
   const handleSave = async () => {
+    if (!validate()) return
     setSaving(true)
     try {
       const res = await fetch(`/api/clients/${clientId}`, {
@@ -136,6 +162,10 @@ export default function ClientDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          companyName: form.companyName.trim(),
+          contactPerson: form.contactPerson.trim(),
+          email: form.email.trim().toLowerCase(),
+          phone: form.phone.trim(),
           address: form.address || null,
           city: form.city || null,
           state: form.state || null,
@@ -212,7 +242,7 @@ export default function ClientDetailPage() {
             </Button>
             {isEditing ? (
               <>
-                <Button variant="outline" onClick={() => { setIsEditing(false); router.replace(`/clients/${clientId}`) }}>
+                <Button variant="outline" onClick={() => { setIsEditing(false); setErrors({}); router.replace(`/clients/${clientId}`) }}>
                   <X className="mr-2 h-4 w-4" />Cancel
                 </Button>
                 <Button onClick={handleSave} disabled={saving}>
@@ -255,20 +285,20 @@ export default function ClientDetailPage() {
           <CardContent className="space-y-6">
             {isEditing ? (
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2"><Label>Company Name</Label><Input value={form.companyName} onChange={(e) => setForm((f) => ({ ...f, companyName: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>Contact Person</Label><Input value={form.contactPerson} onChange={(e) => setForm((f) => ({ ...f, contactPerson: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>Email</Label><Input type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} /></div>
-                <div className="space-y-2 sm:col-span-2"><Label>Address</Label><Input value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>City</Label><Input value={form.city} onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>State</Label><Input value={form.state} onChange={(e) => setForm((f) => ({ ...f, state: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>ZIP Code</Label><Input value={form.zipCode} onChange={(e) => setForm((f) => ({ ...f, zipCode: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>Country</Label><Input value={form.country} onChange={(e) => setForm((f) => ({ ...f, country: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>GST Number</Label><Input value={form.gstNumber} onChange={(e) => setForm((f) => ({ ...f, gstNumber: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>PAN Number</Label><Input value={form.panNumber} onChange={(e) => setForm((f) => ({ ...f, panNumber: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>Website</Label><Input value={form.website} onChange={(e) => setForm((f) => ({ ...f, website: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>Client Type</Label><Input value={form.clientType} onChange={(e) => setForm((f) => ({ ...f, clientType: e.target.value }))} /></div>
-                <div className="space-y-2 sm:col-span-2"><Label>Notes</Label><Textarea rows={3} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>Company Name</Label><Input value={form.companyName} onChange={(e) => updateField('companyName', e.target.value)} />{errors.companyName && <p className="text-sm text-destructive">{errors.companyName}</p>}</div>
+                <div className="space-y-2"><Label>Contact Person</Label><Input value={form.contactPerson} onChange={(e) => updateField('contactPerson', e.target.value)} />{errors.contactPerson && <p className="text-sm text-destructive">{errors.contactPerson}</p>}</div>
+                <div className="space-y-2"><Label>Email</Label><Input type="email" value={form.email} onChange={(e) => updateField('email', e.target.value)} />{errors.email && <p className="text-sm text-destructive">{errors.email}</p>}</div>
+                <div className="space-y-2"><Label>Phone</Label><Input value={form.phone} onChange={(e) => updateField('phone', e.target.value)} />{errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}</div>
+                <div className="space-y-2 sm:col-span-2"><Label>Address</Label><Input value={form.address} onChange={(e) => updateField('address', e.target.value)} /></div>
+                <div className="space-y-2"><Label>City</Label><Input value={form.city} onChange={(e) => updateField('city', e.target.value)} />{errors.city && <p className="text-sm text-destructive">{errors.city}</p>}</div>
+                <div className="space-y-2"><Label>State</Label><Input value={form.state} onChange={(e) => updateField('state', e.target.value)} />{errors.state && <p className="text-sm text-destructive">{errors.state}</p>}</div>
+                <div className="space-y-2"><Label>ZIP Code</Label><Input value={form.zipCode} onChange={(e) => updateField('zipCode', e.target.value)} />{errors.zipCode && <p className="text-sm text-destructive">{errors.zipCode}</p>}</div>
+                <div className="space-y-2"><Label>Country</Label><Input value={form.country} onChange={(e) => updateField('country', e.target.value)} /></div>
+                <div className="space-y-2"><Label>GST Number</Label><Input value={form.gstNumber} onChange={(e) => updateField('gstNumber', e.target.value.toUpperCase())} className="font-mono" />{errors.gstNumber && <p className="text-sm text-destructive">{errors.gstNumber}</p>}</div>
+                <div className="space-y-2"><Label>PAN Number</Label><Input value={form.panNumber} onChange={(e) => updateField('panNumber', e.target.value.toUpperCase())} className="font-mono" />{errors.panNumber && <p className="text-sm text-destructive">{errors.panNumber}</p>}</div>
+                <div className="space-y-2"><Label>Website</Label><Input value={form.website} onChange={(e) => updateField('website', e.target.value)} />{errors.website && <p className="text-sm text-destructive">{errors.website}</p>}</div>
+                <div className="space-y-2"><Label>Client Type</Label><Input value={form.clientType} onChange={(e) => updateField('clientType', e.target.value)} /></div>
+                <div className="space-y-2 sm:col-span-2"><Label>Notes</Label><Textarea rows={3} value={form.notes} onChange={(e) => updateField('notes', e.target.value)} /></div>
               </div>
             ) : (
               <>

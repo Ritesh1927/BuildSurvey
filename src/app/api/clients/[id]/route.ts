@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { requireAuth, requirePermission, hasPermission } from '@/lib/api-auth'
 import { toTitleCase } from '@/lib/utils'
+import { isValidEmail, isValidPhone, isValidGST, isValidPAN, isValidPIN, isValidUrl } from '@/lib/validation'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth()
@@ -72,9 +73,26 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ success: false, error: 'Client not found' }, { status: 404 })
     }
 
+    if (companyName !== undefined && !companyName.trim()) {
+      return NextResponse.json({ success: false, error: 'Company name is required' }, { status: 400 })
+    }
+    if (contactPerson !== undefined && !contactPerson.trim()) {
+      return NextResponse.json({ success: false, error: 'Contact person is required' }, { status: 400 })
+    }
+    if (phone !== undefined) {
+      if (!phone.trim()) {
+        return NextResponse.json({ success: false, error: 'Phone number is required' }, { status: 400 })
+      }
+      if (!isValidPhone(phone)) {
+        return NextResponse.json({ success: false, error: 'Invalid phone number' }, { status: 400 })
+      }
+    }
+
     if (email !== undefined) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!emailRegex.test(email)) {
+      if (!email.trim()) {
+        return NextResponse.json({ success: false, error: 'Email is required' }, { status: 400 })
+      }
+      if (!isValidEmail(email)) {
         return NextResponse.json({ success: false, error: 'Invalid email format' }, { status: 400 })
       }
       if (email !== existing.email) {
@@ -83,6 +101,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           return NextResponse.json({ success: false, error: 'A client with this email already exists' }, { status: 409 })
         }
       }
+    }
+
+    if (gstNumber && !isValidGST(gstNumber)) {
+      return NextResponse.json({ success: false, error: 'Invalid GST format' }, { status: 400 })
+    }
+    if (panNumber && !isValidPAN(panNumber)) {
+      return NextResponse.json({ success: false, error: 'Invalid PAN format' }, { status: 400 })
+    }
+    if (zipCode && !isValidPIN(zipCode)) {
+      return NextResponse.json({ success: false, error: 'PIN code must be 6 digits' }, { status: 400 })
+    }
+    if (website && !isValidUrl(website)) {
+      return NextResponse.json({ success: false, error: 'Website must start with http:// or https://' }, { status: 400 })
     }
 
     const updateData: any = { updatedBy: session!.user!.id }

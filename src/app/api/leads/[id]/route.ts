@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { requireAuth, requirePermission, hasPermission, userHasPermission } from '@/lib/api-auth'
 import { LeadStatus, Priority } from '@/generated/prisma/enums'
+import { isValidEmail, isValidPhone } from '@/lib/validation'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth()
@@ -59,6 +60,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const existing = await db.lead.findUnique({ where: { id } })
     if (!existing || existing.isDeleted) {
       return NextResponse.json({ success: false, error: 'Lead not found' }, { status: 404 })
+    }
+
+    if (name !== undefined && !name.trim()) {
+      return NextResponse.json({ success: false, error: 'Lead name is required' }, { status: 400 })
+    }
+
+    if (email && !isValidEmail(email)) {
+      return NextResponse.json({ success: false, error: 'Invalid email format' }, { status: 400 })
+    }
+
+    if (phone && !isValidPhone(phone)) {
+      return NextResponse.json({ success: false, error: 'Invalid phone number' }, { status: 400 })
     }
 
     if (status && !Object.values(LeadStatus).includes(status)) {

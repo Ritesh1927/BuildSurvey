@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { PageHeader } from '@/components/ui/page-header'
+import { isValidEmail, isValidPhone, isValidGST, isValidPAN, isValidPIN, isValidUrl } from '@/lib/validation'
 
 const indianStates = [
   'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana',
@@ -59,10 +60,15 @@ export default function NewClientPage() {
     if (!formData.companyName.trim()) e.companyName = 'Company name is required'
     if (!formData.contactPerson.trim()) e.contactPerson = 'Contact person is required'
     if (!formData.email.trim()) e.email = 'Email is required'
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) e.email = 'Invalid email format'
+    else if (!isValidEmail(formData.email.trim())) e.email = 'Invalid email format'
     if (!formData.phone.trim()) e.phone = 'Phone number is required'
+    else if (!isValidPhone(formData.phone.trim())) e.phone = 'Invalid phone number'
     if (!formData.city.trim()) e.city = 'City is required'
     if (!formData.state) e.state = 'State is required'
+    if (formData.gstNumber.trim() && !isValidGST(formData.gstNumber.trim())) e.gstNumber = 'Invalid GST format (e.g. 27AABCL1234F1ZP)'
+    if (formData.panNumber.trim() && !isValidPAN(formData.panNumber.trim())) e.panNumber = 'Invalid PAN format (e.g. ABCDE1234F)'
+    if (formData.zip.trim() && !isValidPIN(formData.zip.trim())) e.zip = 'PIN code must be 6 digits'
+    if (formData.website.trim() && !isValidUrl(formData.website.trim())) e.website = 'Website must start with http:// or https://'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -165,6 +171,7 @@ export default function NewClientPage() {
                   <div className="space-y-2">
                     <Label>Website</Label>
                     <Input placeholder="https://www.example.com" value={formData.website} onChange={(e) => updateField('website', e.target.value)} />
+                    {errors.website && <p className="text-sm text-destructive">{errors.website}</p>}
                   </div>
                 </div>
               </CardContent>
@@ -222,6 +229,7 @@ export default function NewClientPage() {
                   <div className="space-y-2">
                     <Label>PIN Code</Label>
                     <Input placeholder="e.g., 400001" value={formData.zip} onChange={(e) => updateField('zip', e.target.value)} />
+                    {errors.zip && <p className="text-sm text-destructive">{errors.zip}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label>Country</Label>
@@ -243,11 +251,13 @@ export default function NewClientPage() {
                   <Label>GST Number</Label>
                   <Input placeholder="27AABCL1234F1ZP" value={formData.gstNumber} onChange={(e) => updateField('gstNumber', e.target.value.toUpperCase())} className="font-mono" />
                   <p className="text-xs text-muted-foreground">Format: 2 digits + 5 letters + 4 digits + 1 letter + Z + 1 alphanumeric</p>
+                  {errors.gstNumber && <p className="text-sm text-destructive">{errors.gstNumber}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label>PAN Number</Label>
                   <Input placeholder="ABCDE1234F" value={formData.panNumber} onChange={(e) => updateField('panNumber', e.target.value.toUpperCase())} className="font-mono" />
                   <p className="text-xs text-muted-foreground">Format: 5 letters + 4 digits + 1 letter</p>
+                  {errors.panNumber && <p className="text-sm text-destructive">{errors.panNumber}</p>}
                 </div>
               </CardContent>
             </Card>

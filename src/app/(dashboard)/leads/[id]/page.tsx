@@ -38,6 +38,7 @@ import {
 import { showSuccess, showError } from '@/components/ui/toast'
 import { cn, formatCurrency, formatDate, getInitials } from '@/lib/utils'
 import { hasPermission } from '@/lib/permissions'
+import { isValidEmail, isValidPhone, isValidGST, isValidPAN, isValidPIN, isValidUrl } from '@/lib/validation'
 
 const indianStates = [
   'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana',
@@ -122,6 +123,16 @@ export default function LeadDetailPage() {
     address: '', city: '', state: '', zipCode: '', country: 'India',
     gstNumber: '', panNumber: '', website: '', clientType: '',
   })
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const updateField = (field: keyof typeof form, value: string) => {
+    setForm((f) => ({ ...f, [field]: value }))
+    if (errors[field]) setErrors((prev) => { const next = { ...prev }; delete next[field]; return next })
+  }
+  const updateConvertField = (field: keyof typeof convertForm, value: string) => {
+    setConvertForm((f) => ({ ...f, [field]: value }))
+    if (errors[field]) setErrors((prev) => { const next = { ...prev }; delete next[field]; return next })
+  }
 
   const canWrite = hasPermission(session?.user, 'leads:write')
   const canDelete = hasPermission(session?.user, 'leads:delete')
@@ -141,6 +152,26 @@ export default function LeadDetailPage() {
       ].filter((v): v is string => !!v)
     : []
   const convertBlocked = missingConvertFields.length > 0
+
+  const validate = (): boolean => {
+    const e: Record<string, string> = {}
+    if (!form.name.trim()) e.name = 'Name is required'
+    if (form.email.trim() && !isValidEmail(form.email.trim())) e.email = 'Invalid email format'
+    if (form.phone.trim() && !isValidPhone(form.phone.trim())) e.phone = 'Invalid phone number'
+    if (form.estimatedValue) {
+      const n = Number(form.estimatedValue)
+      if (isNaN(n)) e.estimatedValue = 'Please enter a valid number'
+      else if (n < 0) e.estimatedValue = 'Estimated value cannot be negative'
+    }
+    if (willConvertOnSave) {
+      if (convertForm.gstNumber.trim() && !isValidGST(convertForm.gstNumber.trim())) e.gstNumber = 'Invalid GST format (e.g. 27AABCL1234F1ZP)'
+      if (convertForm.panNumber.trim() && !isValidPAN(convertForm.panNumber.trim())) e.panNumber = 'Invalid PAN format (e.g. ABCDE1234F)'
+      if (convertForm.zipCode.trim() && !isValidPIN(convertForm.zipCode.trim())) e.zipCode = 'PIN code must be 6 digits'
+      if (convertForm.website.trim() && !isValidUrl(convertForm.website.trim())) e.website = 'Website must start with http:// or https://'
+    }
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
 
   const fetchLead = useCallback(async () => {
     setLoading(true)
@@ -187,6 +218,7 @@ export default function LeadDetailPage() {
   }, [canWrite])
 
   const handleSave = async () => {
+    if (!validate()) return
     setSaving(true)
     try {
       const res = await fetch(`/api/leads/${leadId}`, {
@@ -315,7 +347,7 @@ export default function LeadDetailPage() {
             </Button>
             {isEditing ? (
               <>
-                <Button variant="outline" onClick={() => { setIsEditing(false); router.replace(`/leads/${leadId}`) }}>
+                <Button variant="outline" onClick={() => { setIsEditing(false); setErrors({}); router.replace(`/leads/${leadId}`) }}>
                   <X className="mr-1 h-4 w-4" />
                   Cancel
                 </Button>
@@ -371,19 +403,22 @@ export default function LeadDetailPage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label>Name</Label>
-                    <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
+                    <Input value={form.name} onChange={(e) => updateField('name', e.target.value)} />
+                    {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label>Company</Label>
-                    <Input value={form.company} onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))} />
+                    <Input value={form.company} onChange={(e) => updateField('company', e.target.value)} />
                   </div>
                   <div className="space-y-2">
                     <Label>Email</Label>
-                    <Input type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
+                    <Input type="email" value={form.email} onChange={(e) => updateField('email', e.target.value)} />
+                    {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label>Phone</Label>
-                    <Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
+                    <Input value={form.phone} onChange={(e) => updateField('phone', e.target.value)} />
+                    {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label>Status</Label>
@@ -409,7 +444,8 @@ export default function LeadDetailPage() {
                   </div>
                   <div className="space-y-2">
                     <Label>Estimated Value (INR)</Label>
-                    <Input type="number" value={form.estimatedValue} onChange={(e) => setForm((f) => ({ ...f, estimatedValue: e.target.value }))} />
+                    <Input type="number" value={form.estimatedValue} onChange={(e) => updateField('estimatedValue', e.target.value)} />
+                    {errors.estimatedValue && <p className="text-sm text-destructive">{errors.estimatedValue}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label>Source</Label>
@@ -464,24 +500,25 @@ export default function LeadDetailPage() {
                       </div>
                       <div className="space-y-2">
                         <Label>Website</Label>
-                        <Input placeholder="https://www.example.com" value={convertForm.website} onChange={(e) => setConvertForm((f) => ({ ...f, website: e.target.value }))} />
+                        <Input placeholder="https://www.example.com" value={convertForm.website} onChange={(e) => updateConvertField('website', e.target.value)} />
+                        {errors.website && <p className="text-xs text-destructive">{errors.website}</p>}
                       </div>
                     </div>
 
                     <div className="space-y-2">
                       <Label>Street Address</Label>
-                      <Input placeholder="e.g., 123, Brigade Road" value={convertForm.address} onChange={(e) => setConvertForm((f) => ({ ...f, address: e.target.value }))} />
+                      <Input placeholder="e.g., 123, Brigade Road" value={convertForm.address} onChange={(e) => updateConvertField('address', e.target.value)} />
                     </div>
 
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="space-y-2">
                         <Label>City <span className="text-destructive">*</span></Label>
-                        <Input placeholder="e.g., Mumbai" value={convertForm.city} onChange={(e) => setConvertForm((f) => ({ ...f, city: e.target.value }))} />
+                        <Input placeholder="e.g., Mumbai" value={convertForm.city} onChange={(e) => updateConvertField('city', e.target.value)} />
                         {!convertForm.city.trim() && <p className="text-xs text-destructive">City is required</p>}
                       </div>
                       <div className="space-y-2">
                         <Label>State <span className="text-destructive">*</span></Label>
-                        <Select value={convertForm.state} onValueChange={(v) => setConvertForm((f) => ({ ...f, state: v }))}>
+                        <Select value={convertForm.state} onValueChange={(v) => updateConvertField('state', v)}>
                           <SelectTrigger><SelectValue placeholder="Select state" /></SelectTrigger>
                           <SelectContent>
                             {indianStates.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -494,22 +531,25 @@ export default function LeadDetailPage() {
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="space-y-2">
                         <Label>PIN Code</Label>
-                        <Input placeholder="e.g., 400001" value={convertForm.zipCode} onChange={(e) => setConvertForm((f) => ({ ...f, zipCode: e.target.value }))} />
+                        <Input placeholder="e.g., 400001" value={convertForm.zipCode} onChange={(e) => updateConvertField('zipCode', e.target.value)} />
+                        {errors.zipCode && <p className="text-xs text-destructive">{errors.zipCode}</p>}
                       </div>
                       <div className="space-y-2">
                         <Label>Country</Label>
-                        <Input value={convertForm.country} onChange={(e) => setConvertForm((f) => ({ ...f, country: e.target.value }))} />
+                        <Input value={convertForm.country} onChange={(e) => updateConvertField('country', e.target.value)} />
                       </div>
                     </div>
 
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="space-y-2">
                         <Label>GST Number</Label>
-                        <Input placeholder="27AABCL1234F1ZP" className="font-mono" value={convertForm.gstNumber} onChange={(e) => setConvertForm((f) => ({ ...f, gstNumber: e.target.value.toUpperCase() }))} />
+                        <Input placeholder="27AABCL1234F1ZP" className="font-mono" value={convertForm.gstNumber} onChange={(e) => updateConvertField('gstNumber', e.target.value.toUpperCase())} />
+                        {errors.gstNumber && <p className="text-xs text-destructive">{errors.gstNumber}</p>}
                       </div>
                       <div className="space-y-2">
                         <Label>PAN Number</Label>
-                        <Input placeholder="ABCDE1234F" className="font-mono" value={convertForm.panNumber} onChange={(e) => setConvertForm((f) => ({ ...f, panNumber: e.target.value.toUpperCase() }))} />
+                        <Input placeholder="ABCDE1234F" className="font-mono" value={convertForm.panNumber} onChange={(e) => updateConvertField('panNumber', e.target.value.toUpperCase())} />
+                        {errors.panNumber && <p className="text-xs text-destructive">{errors.panNumber}</p>}
                       </div>
                     </div>
                   </div>

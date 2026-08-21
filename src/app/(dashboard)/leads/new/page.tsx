@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { hasPermission } from '@/lib/permissions'
+import { isValidEmail, isValidPhone } from '@/lib/validation'
 
 interface StepConfig {
   id: number
@@ -126,12 +127,12 @@ export default function NewLeadPage() {
       if (!formData.name.trim()) newErrors.name = 'Name is required'
       if (!formData.email.trim()) {
         newErrors.email = 'Email is required'
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      } else if (!isValidEmail(formData.email)) {
         newErrors.email = 'Please enter a valid email address'
       }
       if (!formData.phone.trim()) {
         newErrors.phone = 'Phone number is required'
-      } else if (!/^\+?[\d\s-]{10,}$/.test(formData.phone)) {
+      } else if (!isValidPhone(formData.phone)) {
         newErrors.phone = 'Please enter a valid phone number'
       }
       if (!formData.company.trim()) newErrors.company = 'Company name is required'
@@ -139,8 +140,10 @@ export default function NewLeadPage() {
 
     if (step === 2) {
       if (!formData.source) newErrors.source = 'Lead source is required'
-      if (formData.estimatedValue && isNaN(Number(formData.estimatedValue))) {
-        newErrors.estimatedValue = 'Please enter a valid number'
+      if (formData.estimatedValue) {
+        const n = Number(formData.estimatedValue)
+        if (isNaN(n)) newErrors.estimatedValue = 'Please enter a valid number'
+        else if (n < 0) newErrors.estimatedValue = 'Estimated value cannot be negative'
       }
     }
 

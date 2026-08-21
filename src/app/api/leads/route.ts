@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { requireAuth, requirePermission, hasPermission, userHasPermission } from '@/lib/api-auth'
 import { LeadStatus, Priority } from '@/generated/prisma/enums'
+import { isValidEmail, isValidPhone } from '@/lib/validation'
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth()
@@ -108,6 +109,20 @@ export async function POST(request: NextRequest) {
     if (!name) {
       return NextResponse.json(
         { success: false, error: 'Lead name is required' },
+        { status: 400 }
+      )
+    }
+
+    if (email && !isValidEmail(email)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid email format' },
+        { status: 400 }
+      )
+    }
+
+    if (phone && !isValidPhone(phone)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid phone number' },
         { status: 400 }
       )
     }
