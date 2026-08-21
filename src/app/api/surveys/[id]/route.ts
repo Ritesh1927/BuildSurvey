@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { requireAuth, requirePermission, hasPermission, userHasPermission } from '@/lib/api-auth'
 import { SurveyStatus, SurveyType } from '@/generated/prisma/enums'
+import { isPastDate } from '@/lib/validation'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth()
@@ -93,6 +94,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     if (type && !Object.values(SurveyType).includes(type)) {
       return NextResponse.json({ success: false, error: 'Invalid survey type' }, { status: 400 })
+    }
+
+    if (
+      scheduledDate &&
+      (!existing.scheduledDate || scheduledDate !== existing.scheduledDate.toISOString().slice(0, 10)) &&
+      isPastDate(scheduledDate)
+    ) {
+      return NextResponse.json(
+        { success: false, error: 'Scheduled date cannot be in the past' },
+        { status: 400 }
+      )
     }
 
     if (engineerId && !(await userHasPermission(engineerId, 'surveys:assignable'))) {

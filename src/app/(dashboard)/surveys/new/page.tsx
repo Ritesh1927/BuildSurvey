@@ -19,6 +19,7 @@ import { Progress } from "@/components/ui/progress"
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
+import { isPastDate } from "@/lib/validation"
 
 const steps = [
   { id: 1, title: "Project & Type", icon: Building2 },
@@ -126,7 +127,7 @@ export default function NewSurveyPage() {
   const canProceed = () => {
     switch (currentStep) {
       case 1: return !!(formData.project && formData.surveyType && formData.title)
-      case 2: return !!(formData.scheduledDate && formData.engineer)
+      case 2: return !!(formData.scheduledDate && formData.engineer) && !isPastDate(formData.scheduledDate)
       default: return true
     }
   }
@@ -288,6 +289,9 @@ export default function NewSurveyPage() {
                   <div className="space-y-2">
                     <Label>Scheduled Date *</Label>
                     <Input type="date" min={todayKey} value={formData.scheduledDate} onChange={(e) => updateFormData("scheduledDate", e.target.value)} />
+                    {formData.scheduledDate && isPastDate(formData.scheduledDate) && (
+                      <p className="text-sm text-destructive">Scheduled date cannot be in the past</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label>Assign Surveyor / Engineer *</Label>

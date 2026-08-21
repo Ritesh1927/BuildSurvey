@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { requireAuth, requirePermission, hasPermission, userHasPermission } from '@/lib/api-auth'
 import { ProjectStatus, ProjectType } from '@/generated/prisma/enums'
+import { isPositiveNumber, isValidLatitude, isValidLongitude, isEndDateBeforeStart } from '@/lib/validation'
 
 // Allowlist, not a blocklist - an Engineer, even one leading the project,
 // can only touch these day-to-day operational fields. Everything else
@@ -126,6 +127,28 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       )
     }
 
+    if (budget !== undefined && budget !== null && budget !== '' && !isPositiveNumber(budget)) {
+      return NextResponse.json({ success: false, error: 'Budget must be a positive number' }, { status: 400 })
+    }
+    if (area !== undefined && area !== null && area !== '' && !isPositiveNumber(area)) {
+      return NextResponse.json({ success: false, error: 'Area must be a positive number' }, { status: 400 })
+    }
+    if (floors !== undefined && floors !== null && floors !== '' && !isPositiveNumber(floors)) {
+      return NextResponse.json({ success: false, error: 'Floors must be a positive number' }, { status: 400 })
+    }
+    if (latitude !== undefined && latitude !== null && latitude !== '' && !isValidLatitude(latitude)) {
+      return NextResponse.json({ success: false, error: 'Latitude must be between -90 and 90' }, { status: 400 })
+    }
+    if (longitude !== undefined && longitude !== null && longitude !== '' && !isValidLongitude(longitude)) {
+      return NextResponse.json({ success: false, error: 'Longitude must be between -180 and 180' }, { status: 400 })
+    }
+
+    const resolvedStartDate = startDate !== undefined ? (startDate ? new Date(startDate) : null) : existing.startDate
+    const resolvedEndDate = endDate !== undefined ? (endDate ? new Date(endDate) : null) : existing.endDate
+    if (resolvedStartDate && resolvedEndDate && resolvedEndDate < resolvedStartDate) {
+      return NextResponse.json({ success: false, error: 'End date cannot be before start date' }, { status: 400 })
+    }
+
     const updateData: any = { updatedBy: userId }
 
     if (name) updateData.name = name
@@ -142,7 +165,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (latitude !== undefined) updateData.latitude = latitude !== null && latitude !== '' ? parseFloat(latitude) : null
     if (longitude !== undefined) updateData.longitude = longitude !== null && longitude !== '' ? parseFloat(longitude) : null
     if (area !== undefined) updateData.area = area ? parseFloat(area) : null
-    if (floors !== undefined) updateData.floors = parseInt(floors, 10)
+    if (floors !== undefined) updateData.floors = floors ? parseInt(floors, 10) : null
     if (managerId !== undefined) updateData.managerId = managerId
     if (leadUserId !== undefined) updateData.leadUserId = leadUserId
 

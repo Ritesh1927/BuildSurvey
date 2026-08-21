@@ -5,6 +5,7 @@ import { requireAuth, requirePermission } from '@/lib/api-auth'
 import { uploadPhotoDataUrl } from '@/lib/photo-upload'
 import { siteStatus } from '@/lib/geo'
 import { formatDistance } from '@/lib/utils'
+import { isNonNegativeNumber } from '@/lib/validation'
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth()
@@ -70,6 +71,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       if (!m?.category || typeof m.category !== 'string') {
         return NextResponse.json({ success: false, error: 'Each measurement requires a category' }, { status: 400 })
       }
+      for (const dim of [m.length, m.width, m.height]) {
+        if (dim !== undefined && dim !== '' && dim !== null && !isNonNegativeNumber(dim)) {
+          return NextResponse.json({ success: false, error: 'Measurement length, width, and height must be non-negative numbers' }, { status: 400 })
+        }
+      }
     }
 
     const materialList = Array.isArray(materials) ? materials : []
@@ -80,6 +86,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       const qty = parseFloat(mat.quantity)
       if (Number.isNaN(qty) || qty < 0) {
         return NextResponse.json({ success: false, error: 'Material quantity must be a non-negative number' }, { status: 400 })
+      }
+      if (mat.estimatedCost !== undefined && mat.estimatedCost !== '' && mat.estimatedCost !== null && !isNonNegativeNumber(mat.estimatedCost)) {
+        return NextResponse.json({ success: false, error: 'Estimated cost cannot be negative' }, { status: 400 })
       }
     }
 

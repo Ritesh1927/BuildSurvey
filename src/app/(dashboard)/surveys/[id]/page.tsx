@@ -29,6 +29,7 @@ import { formatDate, formatDistance } from "@/lib/utils"
 import { hasPermission } from "@/lib/permissions"
 import { siteStatus } from "@/lib/geo"
 import { compressImage, getCurrentPosition } from "@/lib/image-compress"
+import { isPastDate, isPositiveNumber, isNonNegativeNumber } from "@/lib/validation"
 
 interface SurveyDetail {
   id: string
@@ -118,6 +119,8 @@ export default function SurveyDetailPage() {
   const [saving, setSaving] = useState(false)
   const [approving, setApproving] = useState(false)
   const [form, setForm] = useState({ title: '', description: '', status: 'ASSIGNED', scheduledDate: '' })
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [originalScheduledDate, setOriginalScheduledDate] = useState('')
 
   const canWrite = hasPermission(session?.user, 'surveys:write:all', 'surveys:write:own')
   const canDelete = hasPermission(session?.user, 'surveys:delete')
@@ -158,12 +161,14 @@ export default function SurveyDetailPage() {
         return
       }
       setSurvey(data.data)
+      const scheduledDate = data.data.scheduledDate ? data.data.scheduledDate.slice(0, 10) : ''
       setForm({
         title: data.data.title || '',
         description: data.data.description || '',
         status: data.data.status,
-        scheduledDate: data.data.scheduledDate ? data.data.scheduledDate.slice(0, 10) : '',
+        scheduledDate,
       })
+      setOriginalScheduledDate(scheduledDate)
     } catch {
       setError('Network error while loading survey')
     } finally {
@@ -182,7 +187,18 @@ export default function SurveyDetailPage() {
       .catch(() => {})
   }, [surveyId])
 
+  const validate = (): boolean => {
+    const e: Record<string, string> = {}
+    if (!form.title.trim()) e.title = 'Title is required'
+    if (form.scheduledDate && form.scheduledDate !== originalScheduledDate && isPastDate(form.scheduledDate)) {
+      e.scheduledDate = 'Scheduled date cannot be in the past'
+    }
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
+
   const handleSave = async () => {
+    if (!validate()) return
     setSaving(true)
     try {
       const res = await fetch(`/api/surveys/${surveyId}`, {
@@ -327,9 +343,23 @@ export default function SurveyDetailPage() {
       showError('Every measurement needs a category')
       return
     }
+    const invalidMeasurement = measurementDrafts.find((m) =>
+      [m.length, m.width, m.height].some((v) => v && !isPositiveNumber(v))
+    )
+    if (invalidMeasurement) {
+      showError('Measurement length, width, and height must be positive numbers')
+      return
+    }
     const incompleteMaterial = materialDrafts.find((m) => !m.materialName.trim() || !m.quantity || !m.unit.trim())
     if (incompleteMaterial) {
       showError('Every material needs a name, quantity, and unit')
+      return
+    }
+    const invalidMaterial = materialDrafts.find((m) =>
+      !isPositiveNumber(m.quantity) || (m.estimatedCost && !isNonNegativeNumber(m.estimatedCost))
+    )
+    if (invalidMaterial) {
+      showError('Material quantity must be positive, and estimated cost cannot be negative')
       return
     }
     setCheckingOut(true)
@@ -492,7 +522,7 @@ export default function SurveyDetailPage() {
             </Button>
             {isEditing ? (
               <>
-                <Button variant="outline" onClick={() => { setIsEditing(false); router.replace(`/surveys/${surveyId}`) }}>
+                <Button variant="outline" onClick={() => { setIsEditing(false); setErrors({}); router.replace(`/surveys/${surveyId}`) }}>
                   <X className="mr-2 h-4 w-4" />Cancel
                 </Button>
                 <Button onClick={handleSave} disabled={saving}>
@@ -527,7 +557,7 @@ export default function SurveyDetailPage() {
         <Card>
           <CardHeader><CardTitle>Edit Survey</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2"><Label>Title</Label><Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} /></div>
+            <div className="space-y-2"><Label>Title</Label><Input value={form.title} onChange={(e) => { setForm((f) => ({ ...f, title: e.target.value })); if (errors.title) setErrors((prev) => { const next = { ...prev }; delete next.title; return next }) }} />{errors.title && <p className="text-sm text-destructive">{errors.title}</p>}</div>
             <div className="space-y-2"><Label>Description</Label><Textarea rows={3} value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} /></div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
@@ -543,7 +573,7 @@ export default function SurveyDetailPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2"><Label>Scheduled Date</Label><Input type="date" value={form.scheduledDate} onChange={(e) => setForm((f) => ({ ...f, scheduledDate: e.target.value }))} /></div>
+              <div className="space-y-2"><Label>Scheduled Date</Label><Input type="date" value={form.scheduledDate} onChange={(e) => { setForm((f) => ({ ...f, scheduledDate: e.target.value })); if (errors.scheduledDate) setErrors((prev) => { const next = { ...prev }; delete next.scheduledDate; return next }) }} />{errors.scheduledDate && <p className="text-sm text-destructive">{errors.scheduledDate}</p>}</div>
             </div>
           </CardContent>
         </Card>

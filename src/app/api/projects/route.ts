@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { requireAuth, requirePermission, hasPermission, userHasPermission } from '@/lib/api-auth'
 import { ProjectType } from '@/generated/prisma/enums'
+import { isPositiveNumber, isValidLatitude, isValidLongitude, isEndDateBeforeStart } from '@/lib/validation'
 
 export async function GET(request: NextRequest) {
   const authError = await requireAuth()
@@ -213,6 +214,25 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'This project can only be led by someone whose role allows it' },
         { status: 400 }
       )
+    }
+
+    if (budget !== undefined && budget !== null && budget !== '' && !isPositiveNumber(budget)) {
+      return NextResponse.json({ success: false, error: 'Budget must be a positive number' }, { status: 400 })
+    }
+    if (area !== undefined && area !== null && area !== '' && !isPositiveNumber(area)) {
+      return NextResponse.json({ success: false, error: 'Area must be a positive number' }, { status: 400 })
+    }
+    if (floors !== undefined && floors !== null && floors !== '' && !isPositiveNumber(floors)) {
+      return NextResponse.json({ success: false, error: 'Floors must be a positive number' }, { status: 400 })
+    }
+    if (latitude !== undefined && latitude !== null && latitude !== '' && !isValidLatitude(latitude)) {
+      return NextResponse.json({ success: false, error: 'Latitude must be between -90 and 90' }, { status: 400 })
+    }
+    if (longitude !== undefined && longitude !== null && longitude !== '' && !isValidLongitude(longitude)) {
+      return NextResponse.json({ success: false, error: 'Longitude must be between -180 and 180' }, { status: 400 })
+    }
+    if (startDate && endDate && isEndDateBeforeStart(startDate, endDate)) {
+      return NextResponse.json({ success: false, error: 'End date cannot be before start date' }, { status: 400 })
     }
 
     // Manager creating a project defaults to leading it themselves unless

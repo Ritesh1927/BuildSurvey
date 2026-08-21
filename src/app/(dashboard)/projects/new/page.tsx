@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/select"
 import { PageHeader } from "@/components/ui/page-header"
 import { INDIAN_STATES } from "@/lib/constants"
+import { isPositiveNumber, isValidLatitude, isValidLongitude, isEndDateBeforeStart } from "@/lib/validation"
 
 const steps = [
   { id: 1, title: "Basic Info", icon: FileText },
@@ -146,6 +147,7 @@ export default function NewProjectPage() {
 
   const updateField = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
+    if (errors[field]) setErrors((prev) => { const next = { ...prev }; delete next[field]; return next })
   }
 
   const canProceed = (): boolean => {
@@ -161,7 +163,30 @@ export default function NewProjectPage() {
     }
   }
 
+  const validateStep = (step: number): boolean => {
+    const e: { [key: string]: string } = {}
+    if (step === 2) {
+      if (formData.latitude && !isValidLatitude(formData.latitude)) e.latitude = 'Latitude must be between -90 and 90'
+      if (formData.longitude && !isValidLongitude(formData.longitude)) e.longitude = 'Longitude must be between -180 and 180'
+      if (formData.area && !isPositiveNumber(formData.area)) e.area = 'Area must be a positive number'
+      if (formData.floors && !isPositiveNumber(formData.floors)) e.floors = 'Floors must be a positive number'
+    }
+    if (step === 3) {
+      if (formData.budget && !isPositiveNumber(formData.budget)) e.budget = 'Budget must be a positive number'
+      if (formData.startDate && formData.endDate && isEndDateBeforeStart(formData.startDate, formData.endDate)) {
+        e.endDate = 'End date cannot be before start date'
+      }
+    }
+    setErrors((prev) => ({ ...prev, ...e }))
+    return Object.keys(e).length === 0
+  }
+
+  const handleNext = () => {
+    if (validateStep(currentStep)) setCurrentStep((prev) => prev + 1)
+  }
+
   const handleSubmit = async () => {
+    if (!validateStep(2) || !validateStep(3)) return
     setIsSubmitting(true)
     try {
       const res = await fetch('/api/projects', {
@@ -447,6 +472,7 @@ export default function NewProjectPage() {
                         value={formData.latitude}
                         onChange={(e) => updateField("latitude", e.target.value)}
                       />
+                      {errors.latitude && <p className="text-sm text-destructive">{errors.latitude}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="longitude">Longitude</Label>
@@ -456,6 +482,7 @@ export default function NewProjectPage() {
                         value={formData.longitude}
                         onChange={(e) => updateField("longitude", e.target.value)}
                       />
+                      {errors.longitude && <p className="text-sm text-destructive">{errors.longitude}</p>}
                     </div>
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
@@ -468,6 +495,7 @@ export default function NewProjectPage() {
                         value={formData.area}
                         onChange={(e) => updateField("area", e.target.value)}
                       />
+                      {errors.area && <p className="text-sm text-destructive">{errors.area}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="floors">Number of Floors</Label>
@@ -478,6 +506,7 @@ export default function NewProjectPage() {
                         value={formData.floors}
                         onChange={(e) => updateField("floors", e.target.value)}
                       />
+                      {errors.floors && <p className="text-sm text-destructive">{errors.floors}</p>}
                     </div>
                   </div>
                 </div>
@@ -499,6 +528,7 @@ export default function NewProjectPage() {
                     <p className="text-xs text-muted-foreground">
                       Total approved budget for the project
                     </p>
+                    {errors.budget && <p className="text-sm text-destructive">{errors.budget}</p>}
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
@@ -522,6 +552,7 @@ export default function NewProjectPage() {
                         value={formData.endDate}
                         onChange={(e) => updateField("endDate", e.target.value)}
                       />
+                      {errors.endDate && <p className="text-sm text-destructive">{errors.endDate}</p>}
                     </div>
                   </div>
                 </div>
@@ -607,7 +638,7 @@ export default function NewProjectPage() {
                   <Button
                     className="w-full"
                     size="lg"
-                    onClick={() => setCurrentStep((prev) => prev + 1)}
+                    onClick={handleNext}
                     disabled={!canProceed()}
                   >
                     Continue

@@ -57,6 +57,7 @@ import {
 } from "@/components/ui/table"
 import { showSuccess, showError } from "@/components/ui/toast"
 import { SiteVisitTab } from "./site-visit-tab"
+import { isPositiveNumber, isValidLatitude, isValidLongitude, isEndDateBeforeStart } from "@/lib/validation"
 
 interface ProjectDetail {
   id: string
@@ -125,6 +126,27 @@ export default function ProjectDetailPage() {
     address: '', city: '', state: '', latitude: '', longitude: '', area: '', floors: '',
     budget: '', startDate: '', endDate: '', managerId: '', leadUserId: '',
   })
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const updateField = (field: keyof typeof form, value: string) => {
+    setForm((f) => ({ ...f, [field]: value }))
+    if (errors[field]) setErrors((prev) => { const next = { ...prev }; delete next[field]; return next })
+  }
+
+  const validate = (): boolean => {
+    const e: Record<string, string> = {}
+    if (!form.name.trim()) e.name = 'Project name is required'
+    if (form.latitude && !isValidLatitude(form.latitude)) e.latitude = 'Latitude must be between -90 and 90'
+    if (form.longitude && !isValidLongitude(form.longitude)) e.longitude = 'Longitude must be between -180 and 180'
+    if (form.area && !isPositiveNumber(form.area)) e.area = 'Area must be a positive number'
+    if (form.floors && !isPositiveNumber(form.floors)) e.floors = 'Floors must be a positive number'
+    if (form.budget && !isPositiveNumber(form.budget)) e.budget = 'Budget must be a positive number'
+    if (form.startDate && form.endDate && isEndDateBeforeStart(form.startDate, form.endDate)) {
+      e.endDate = 'End date cannot be before start date'
+    }
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
 
   const canWrite = hasPermission(session?.user, 'projects:write:all', 'projects:write:own')
   const canDelete = hasPermission(session?.user, 'projects:delete')
@@ -187,6 +209,7 @@ export default function ProjectDetailPage() {
   }, [])
 
   const handleSave = async () => {
+    if (!validate()) return
     setSaving(true)
     try {
       const res = await fetch(`/api/projects/${projectId}`, {
@@ -282,7 +305,7 @@ export default function ProjectDetailPage() {
             </Button>
             {isEditing ? (
               <>
-                <Button variant="outline" onClick={() => { setIsEditing(false); router.replace(`/projects/${projectId}`) }}>
+                <Button variant="outline" onClick={() => { setIsEditing(false); setErrors({}); router.replace(`/projects/${projectId}`) }}>
                   <X className="mr-2 h-4 w-4" />Cancel
                 </Button>
                 <Button onClick={handleSave} disabled={saving}>
@@ -331,7 +354,7 @@ export default function ProjectDetailPage() {
             <CardHeader><CardTitle>Basic Info</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2 sm:col-span-2"><Label>Name</Label><Input value={form.name} disabled={!canEditRestricted} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} /></div>
+                <div className="space-y-2 sm:col-span-2"><Label>Name</Label><Input value={form.name} disabled={!canEditRestricted} onChange={(e) => updateField('name', e.target.value)} />{errors.name && <p className="text-sm text-destructive">{errors.name}</p>}</div>
                 <div className="space-y-2 sm:col-span-2"><Label>Description</Label><Textarea rows={3} value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} /></div>
                 <div className="space-y-2">
                   <Label>Type</Label>
@@ -376,10 +399,10 @@ export default function ProjectDetailPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2"><Label>Latitude</Label><Input type="number" step="any" value={form.latitude} disabled={!canEditRestricted} onChange={(e) => setForm((f) => ({ ...f, latitude: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>Longitude</Label><Input type="number" step="any" value={form.longitude} disabled={!canEditRestricted} onChange={(e) => setForm((f) => ({ ...f, longitude: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>Total Area (sq.ft)</Label><Input type="number" value={form.area} onChange={(e) => setForm((f) => ({ ...f, area: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>Number of Floors</Label><Input type="number" value={form.floors} onChange={(e) => setForm((f) => ({ ...f, floors: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>Latitude</Label><Input type="number" step="any" value={form.latitude} disabled={!canEditRestricted} onChange={(e) => updateField('latitude', e.target.value)} />{errors.latitude && <p className="text-sm text-destructive">{errors.latitude}</p>}</div>
+                <div className="space-y-2"><Label>Longitude</Label><Input type="number" step="any" value={form.longitude} disabled={!canEditRestricted} onChange={(e) => updateField('longitude', e.target.value)} />{errors.longitude && <p className="text-sm text-destructive">{errors.longitude}</p>}</div>
+                <div className="space-y-2"><Label>Total Area (sq.ft)</Label><Input type="number" value={form.area} onChange={(e) => updateField('area', e.target.value)} />{errors.area && <p className="text-sm text-destructive">{errors.area}</p>}</div>
+                <div className="space-y-2"><Label>Number of Floors</Label><Input type="number" value={form.floors} onChange={(e) => updateField('floors', e.target.value)} />{errors.floors && <p className="text-sm text-destructive">{errors.floors}</p>}</div>
               </div>
               <p className="text-xs text-muted-foreground">Latitude/longitude are the geofence center used to judge whether a surveyor's check-in/check-out is on-site.</p>
             </CardContent>
@@ -390,10 +413,10 @@ export default function ProjectDetailPage() {
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 {canEditRestricted && (
-                  <div className="space-y-2"><Label>Budget (INR)</Label><Input type="number" value={form.budget} onChange={(e) => setForm((f) => ({ ...f, budget: e.target.value }))} /></div>
+                  <div className="space-y-2"><Label>Budget (INR)</Label><Input type="number" value={form.budget} onChange={(e) => updateField('budget', e.target.value)} />{errors.budget && <p className="text-sm text-destructive">{errors.budget}</p>}</div>
                 )}
-                <div className="space-y-2"><Label>Start Date</Label><Input type="date" value={form.startDate} disabled={!canEditRestricted} onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>End Date</Label><Input type="date" value={form.endDate} disabled={!canEditRestricted} onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>Start Date</Label><Input type="date" value={form.startDate} disabled={!canEditRestricted} onChange={(e) => updateField('startDate', e.target.value)} /></div>
+                <div className="space-y-2"><Label>End Date</Label><Input type="date" value={form.endDate} disabled={!canEditRestricted} onChange={(e) => updateField('endDate', e.target.value)} />{errors.endDate && <p className="text-sm text-destructive">{errors.endDate}</p>}</div>
               </div>
             </CardContent>
           </Card>
