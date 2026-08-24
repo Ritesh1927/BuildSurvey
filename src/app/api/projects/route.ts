@@ -91,6 +91,7 @@ export async function GET(request: NextRequest) {
         include: {
           client: { select: { companyName: true, contactPerson: true } },
           manager: { select: { firstName: true, lastName: true } },
+          boqItems: { where: { isDeleted: false }, select: { amount: true } },
           _count: {
             select: {
               surveys: { where: { isDeleted: false } },
@@ -104,36 +105,42 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: projects.map((p: any) => ({
-        id: p.id,
-        name: p.name,
-        code: p.code,
-        description: p.description,
-        type: p.type,
-        status: p.status,
-        budget: p.budget,
-        actualCost: p.actualCost,
-        startDate: p.startDate,
-        endDate: p.endDate,
-        address: p.address,
-        city: p.city,
-        state: p.state,
-        clientId: p.clientId,
-        clientName: p.client?.companyName || '',
-        managerId: p.managerId,
-        managerName: p.manager
-          ? `${p.manager.firstName} ${p.manager.lastName}`
-          : 'Unassigned',
-        progress:
-          p.status === 'COMPLETED'
-            ? 100
-            : p.status === 'PLANNING'
-              ? 5
-              : Math.min(90, Math.round(((p.actualCost || 0) / (p.budget || 1)) * 100)),
-        surveyCount: p._count.surveys,
-        boqCount: p._count.boqItems,
-        createdAt: p.createdAt,
-      })),
+      data: projects.map((p: any) => {
+        // "Spent" is derived from the BOQ's own line items rather than the
+        // separate actualCost column - BOQ is the only real cost data that
+        // exists anywhere in the app, and nothing has ever populated actualCost.
+        const boqTotal = p.boqItems.reduce((sum: number, item: any) => sum + item.amount, 0)
+        return {
+          id: p.id,
+          name: p.name,
+          code: p.code,
+          description: p.description,
+          type: p.type,
+          status: p.status,
+          budget: p.budget,
+          actualCost: boqTotal,
+          startDate: p.startDate,
+          endDate: p.endDate,
+          address: p.address,
+          city: p.city,
+          state: p.state,
+          clientId: p.clientId,
+          clientName: p.client?.companyName || '',
+          managerId: p.managerId,
+          managerName: p.manager
+            ? `${p.manager.firstName} ${p.manager.lastName}`
+            : 'Unassigned',
+          progress:
+            p.status === 'COMPLETED'
+              ? 100
+              : p.status === 'PLANNING'
+                ? 5
+                : Math.min(90, Math.round((boqTotal / (p.budget || 1)) * 100)),
+          surveyCount: p._count.surveys,
+          boqCount: p._count.boqItems,
+          createdAt: p.createdAt,
+        }
+      }),
       total,
       page,
       limit,

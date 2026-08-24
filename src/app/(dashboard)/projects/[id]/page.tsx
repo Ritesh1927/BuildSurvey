@@ -281,11 +281,14 @@ export default function ProjectDetailPage() {
   }
 
   const budget = project.budget ?? 0
-  const budgetPercentage = budget > 0 ? Math.round((project.actualCost / budget) * 100) : 0
-  const remaining = budget - project.actualCost
+  // "Spent" is derived from the BOQ's own line items rather than the
+  // separate actualCost column - BOQ is the only real cost data that
+  // exists anywhere in the app, and nothing has ever populated actualCost.
+  const boqTotal = project.boqItems.reduce((sum, item) => sum + item.amount, 0)
+  const budgetPercentage = budget > 0 ? Math.round((boqTotal / budget) * 100) : 0
+  const remaining = budget - boqTotal
   const daysLeft = project.endDate ? Math.ceil((new Date(project.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null
   const surveysCompleted = project.surveys.filter((s) => s.status === 'APPROVED').length
-  const boqTotal = project.boqItems.reduce((sum, item) => sum + item.amount, 0)
   const statusMeta = STATUS_META[project.status] || { label: project.status, variant: 'secondary' as const }
 
   return (
@@ -340,7 +343,7 @@ export default function ProjectDetailPage() {
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             <MetricCard icon={<DollarSign className="h-5 w-5" />} label="Budget" value={project.budget != null ? formatCurrency(project.budget) : 'Not set'} color="text-blue-600 bg-blue-50" />
-            <MetricCard icon={<Coins className="h-5 w-5" />} label="Spent" value={formatCurrency(project.actualCost)} subtext={project.budget ? `${budgetPercentage}% utilized` : undefined} color="text-amber-600 bg-amber-50" />
+            <MetricCard icon={<Coins className="h-5 w-5" />} label="Spent" value={formatCurrency(boqTotal)} subtext={project.budget ? `${budgetPercentage}% utilized` : undefined} color="text-amber-600 bg-amber-50" />
             <MetricCard icon={<TrendingUp className="h-5 w-5" />} label="Remaining" value={formatCurrency(remaining)} color="text-emerald-600 bg-emerald-50" />
             <MetricCard icon={<Clock className="h-5 w-5" />} label="Days Left" value={daysLeft != null ? String(daysLeft) : '—'} color="text-rose-600 bg-rose-50" />
             <MetricCard icon={<Target className="h-5 w-5" />} label="Surveys" value={`${surveysCompleted}/${project.surveys.length}`} subtext={`${project.surveys.length - surveysCompleted} pending`} color="text-teal-600 bg-teal-50" />
@@ -559,7 +562,7 @@ export default function ProjectDetailPage() {
                     </div>
                     <div className="rounded-lg border p-4">
                       <p className="text-xs text-muted-foreground">Amount Spent</p>
-                      <p className="text-lg font-bold mt-1">{formatCurrency(project.actualCost)}</p>
+                      <p className="text-lg font-bold mt-1">{formatCurrency(boqTotal)}</p>
                     </div>
                   </div>
                 </CardContent>
