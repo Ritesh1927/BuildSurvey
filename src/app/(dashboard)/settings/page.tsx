@@ -57,6 +57,7 @@ import { showSuccess, showError } from "@/components/ui/toast"
 import {
   isValidEmail, isValidPhone, isValidGST, isValidPAN, isValidTAN, isValidCIN,
   isValidPIN, isValidUrl, isPositiveNumber, isNonNegativeNumber, isValidLatitude, isValidLongitude,
+  sanitizePhoneInput,
 } from "@/lib/validation"
 
 const tabs = [
@@ -738,7 +739,7 @@ export default function SettingsPage() {
                   <Input
                     value={companySettings.phone}
                     onChange={(e) => {
-                      setCompanySettings({ ...companySettings, phone: e.target.value })
+                      setCompanySettings({ ...companySettings, phone: sanitizePhoneInput(e.target.value) })
                       clearError("company.phone")
                     }}
                   />

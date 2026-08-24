@@ -38,7 +38,7 @@ import {
 import { showSuccess, showError } from '@/components/ui/toast'
 import { cn, formatCurrency, formatDate, getInitials } from '@/lib/utils'
 import { hasPermission } from '@/lib/permissions'
-import { isValidEmail, isValidPhone, isValidGST, isValidPAN, isValidPIN, isValidUrl } from '@/lib/validation'
+import { isValidEmail, isValidPhone, isValidGST, isValidPAN, isValidPIN, isValidUrl, sanitizePhoneInput } from '@/lib/validation'
 
 const indianStates = [
   'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana',
@@ -417,7 +417,7 @@ export default function LeadDetailPage() {
                   </div>
                   <div className="space-y-2">
                     <Label>Phone</Label>
-                    <Input value={form.phone} onChange={(e) => updateField('phone', e.target.value)} />
+                    <Input value={form.phone} onChange={(e) => updateField('phone', sanitizePhoneInput(e.target.value))} />
                     {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
                   </div>
                   <div className="space-y-2">

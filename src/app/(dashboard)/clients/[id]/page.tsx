@@ -23,7 +23,7 @@ import {
 
 import { cn, formatDate } from "@/lib/utils"
 import { hasPermission } from "@/lib/permissions"
-import { isValidEmail, isValidPhone, isValidGST, isValidPAN, isValidPIN, isValidUrl } from "@/lib/validation"
+import { isValidEmail, isValidPhone, isValidGST, isValidPAN, isValidPIN, isValidUrl, sanitizePhoneInput } from "@/lib/validation"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -288,7 +288,7 @@ export default function ClientDetailPage() {
                 <div className="space-y-2"><Label>Company Name</Label><Input value={form.companyName} onChange={(e) => updateField('companyName', e.target.value)} />{errors.companyName && <p className="text-sm text-destructive">{errors.companyName}</p>}</div>
                 <div className="space-y-2"><Label>Contact Person</Label><Input value={form.contactPerson} onChange={(e) => updateField('contactPerson', e.target.value)} />{errors.contactPerson && <p className="text-sm text-destructive">{errors.contactPerson}</p>}</div>
                 <div className="space-y-2"><Label>Email</Label><Input type="email" value={form.email} onChange={(e) => updateField('email', e.target.value)} />{errors.email && <p className="text-sm text-destructive">{errors.email}</p>}</div>
-                <div className="space-y-2"><Label>Phone</Label><Input value={form.phone} onChange={(e) => updateField('phone', e.target.value)} />{errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}</div>
+                <div className="space-y-2"><Label>Phone</Label><Input value={form.phone} onChange={(e) => updateField('phone', sanitizePhoneInput(e.target.value))} />{errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}</div>
                 <div className="space-y-2 sm:col-span-2"><Label>Address</Label><Input value={form.address} onChange={(e) => updateField('address', e.target.value)} /></div>
                 <div className="space-y-2"><Label>City</Label><Input value={form.city} onChange={(e) => updateField('city', e.target.value)} />{errors.city && <p className="text-sm text-destructive">{errors.city}</p>}</div>
                 <div className="space-y-2"><Label>State</Label><Input value={form.state} onChange={(e) => updateField('state', e.target.value)} />{errors.state && <p className="text-sm text-destructive">{errors.state}</p>}</div>

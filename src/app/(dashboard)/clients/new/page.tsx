@@ -21,7 +21,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { PageHeader } from '@/components/ui/page-header'
-import { isValidEmail, isValidPhone, isValidGST, isValidPAN, isValidPIN, isValidUrl } from '@/lib/validation'
+import { isValidEmail, isValidPhone, isValidGST, isValidPAN, isValidPIN, isValidUrl, sanitizePhoneInput } from '@/lib/validation'
 
 const indianStates = [
   'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana',
@@ -191,7 +191,7 @@ export default function NewClientPage() {
                   </div>
                   <div className="space-y-2">
                     <Label>Phone Number <span className="text-destructive">*</span></Label>
-                    <Input placeholder="+91 98765 43210" value={formData.phone} onChange={(e) => updateField('phone', e.target.value)} />
+                    <Input placeholder="+91 98765 43210" value={formData.phone} onChange={(e) => updateField('phone', sanitizePhoneInput(e.target.value))} />
                     {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
                   </div>
                 </div>

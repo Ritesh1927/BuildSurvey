@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { APP_NAME } from '@/lib/constants'
+import { isValidPhone, sanitizePhoneInput } from '@/lib/validation'
 
 const features = [
   { icon: MapPin, title: 'Digital Site Surveys', desc: 'GPS-verified inspections by our field team' },
@@ -37,7 +38,7 @@ export default function ContactPage() {
   const validate = () => {
     if (!form.name.trim()) { setError('Name is required'); return false }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { setError('Please enter a valid email address'); return false }
-    if (!/^\+?[\d\s-]{10,}$/.test(form.phone)) { setError('Please enter a valid phone number'); return false }
+    if (!isValidPhone(form.phone)) { setError('Please enter a valid phone number'); return false }
     return true
   }
 
@@ -162,7 +163,7 @@ export default function ContactPage() {
 
               <div className="space-y-2">
                 <Label>Phone Number *</Label>
-                <Input type="tel" placeholder="+91 98765 43210" value={form.phone} onChange={(e) => update('phone', e.target.value)} disabled={isLoading} />
+                <Input type="tel" placeholder="+91 98765 43210" value={form.phone} onChange={(e) => update('phone', sanitizePhoneInput(e.target.value))} disabled={isLoading} />
               </div>
 
               <div className="space-y-2">

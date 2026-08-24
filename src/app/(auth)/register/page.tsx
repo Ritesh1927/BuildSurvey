@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { APP_NAME } from '@/lib/constants'
+import { sanitizePhoneInput } from '@/lib/validation'
 
 const features = [
   { icon: MapPin, title: 'Digital Surveys', desc: 'GPS-enabled site inspections' },
@@ -230,7 +231,7 @@ export default function RegisterPage() {
 
               <div className="space-y-2">
                 <Label>Phone Number</Label>
-                <Input type="tel" placeholder="+91 98765 43210" value={form.phone} onChange={(e) => update('phone', e.target.value)} disabled={isLoading} />
+                <Input type="tel" placeholder="+91 98765 43210" value={form.phone} onChange={(e) => update('phone', sanitizePhoneInput(e.target.value))} disabled={isLoading} />
               </div>
 
               {mode === 'register' && (

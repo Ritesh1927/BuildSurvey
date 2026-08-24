@@ -42,7 +42,7 @@ import {
 import { PageHeader } from "@/components/ui/page-header"
 import { UserAvatar } from "@/components/shared/user-avatar"
 import { ResetPasswordDialog } from "@/components/shared/reset-password-dialog"
-import { isValidEmail, isValidPhone } from "@/lib/validation"
+import { isValidEmail, isValidPhone, sanitizePhoneInput } from "@/lib/validation"
 
 interface UserDetail {
   id: string
@@ -262,7 +262,7 @@ export default function UserDetailPage() {
               <div className="space-y-2"><Label>First Name</Label><Input value={form.firstName} onChange={(e) => updateField('firstName', e.target.value)} />{errors.firstName && <p className="text-sm text-destructive">{errors.firstName}</p>}</div>
               <div className="space-y-2"><Label>Last Name</Label><Input value={form.lastName} onChange={(e) => updateField('lastName', e.target.value)} />{errors.lastName && <p className="text-sm text-destructive">{errors.lastName}</p>}</div>
               <div className="space-y-2"><Label>Email</Label><Input type="email" value={form.email} onChange={(e) => updateField('email', e.target.value)} />{errors.email && <p className="text-sm text-destructive">{errors.email}</p>}</div>
-              <div className="space-y-2"><Label>Phone</Label><Input value={form.phone} onChange={(e) => updateField('phone', e.target.value)} />{errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}</div>
+              <div className="space-y-2"><Label>Phone</Label><Input value={form.phone} onChange={(e) => updateField('phone', sanitizePhoneInput(e.target.value))} />{errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}</div>
               <div className="space-y-2">
                 <Label>Role</Label>
                 <Select

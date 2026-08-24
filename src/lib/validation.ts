@@ -18,6 +18,14 @@ export function isValidPhone(value: string): boolean {
   return PHONE_REGEX.test(value)
 }
 
+// Strips anything that isn't a digit, +, space, or hyphen - keeps the
+// leading "+" and grouping punctuation phone numbers are normally typed
+// with, while blocking letters at the keystroke level rather than only
+// catching them on submit.
+export function sanitizePhoneInput(value: string): string {
+  return value.replace(/[^\d+\s-]/g, '')
+}
+
 export function isValidGST(value: string): boolean {
   return GST_REGEX.test(value)
 }

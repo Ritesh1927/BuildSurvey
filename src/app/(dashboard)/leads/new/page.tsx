@@ -34,7 +34,7 @@ import {
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { hasPermission } from '@/lib/permissions'
-import { isValidEmail, isValidPhone } from '@/lib/validation'
+import { isValidEmail, isValidPhone, sanitizePhoneInput } from '@/lib/validation'
 
 interface StepConfig {
   id: number
@@ -253,7 +253,7 @@ export default function NewLeadPage() {
               id="phone"
               placeholder="+91 98765 43210"
               value={formData.phone}
-              onChange={(e) => updateField('phone', e.target.value)}
+              onChange={(e) => updateField('phone', sanitizePhoneInput(e.target.value))}
               className="pl-9"
               error={!!errors.phone}
             />
