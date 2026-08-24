@@ -26,6 +26,12 @@ export function sanitizePhoneInput(value: string): string {
   return value.replace(/[^\d+\s-]/g, '')
 }
 
+// PIN codes are digits only, capped at 6 - blocks letters at the
+// keystroke level the same way sanitizePhoneInput does for phone fields.
+export function sanitizePinInput(value: string): string {
+  return value.replace(/\D/g, '').slice(0, 6)
+}
+
 export function isValidGST(value: string): boolean {
   return GST_REGEX.test(value)
 }

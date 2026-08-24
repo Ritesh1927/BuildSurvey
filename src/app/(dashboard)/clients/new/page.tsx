@@ -21,7 +21,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { PageHeader } from '@/components/ui/page-header'
-import { isValidEmail, isValidPhone, isValidGST, isValidPAN, isValidPIN, isValidUrl, sanitizePhoneInput } from '@/lib/validation'
+import { isValidEmail, isValidPhone, isValidGST, isValidPAN, isValidPIN, isValidUrl, sanitizePhoneInput, sanitizePinInput } from '@/lib/validation'
 
 const indianStates = [
   'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana',
@@ -228,7 +228,7 @@ export default function NewClientPage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label>PIN Code</Label>
-                    <Input placeholder="e.g., 400001" value={formData.zip} onChange={(e) => updateField('zip', e.target.value)} />
+                    <Input placeholder="e.g., 400001" value={formData.zip} onChange={(e) => updateField('zip', sanitizePinInput(e.target.value))} />
                     {errors.zip && <p className="text-sm text-destructive">{errors.zip}</p>}
                   </div>
                   <div className="space-y-2">

@@ -57,7 +57,7 @@ import { showSuccess, showError } from "@/components/ui/toast"
 import {
   isValidEmail, isValidPhone, isValidGST, isValidPAN, isValidTAN, isValidCIN,
   isValidPIN, isValidUrl, isPositiveNumber, isNonNegativeNumber, isValidLatitude, isValidLongitude,
-  sanitizePhoneInput,
+  sanitizePhoneInput, sanitizePinInput,
 } from "@/lib/validation"
 
 const tabs = [
@@ -725,7 +725,7 @@ export default function SettingsPage() {
                   <Input
                     value={companySettings.pincode}
                     onChange={(e) => {
-                      setCompanySettings({ ...companySettings, pincode: e.target.value })
+                      setCompanySettings({ ...companySettings, pincode: sanitizePinInput(e.target.value) })
                       clearError("company.pincode")
                     }}
                   />

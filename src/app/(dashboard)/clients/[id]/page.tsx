@@ -23,7 +23,7 @@ import {
 
 import { cn, formatDate } from "@/lib/utils"
 import { hasPermission } from "@/lib/permissions"
-import { isValidEmail, isValidPhone, isValidGST, isValidPAN, isValidPIN, isValidUrl, sanitizePhoneInput } from "@/lib/validation"
+import { isValidEmail, isValidPhone, isValidGST, isValidPAN, isValidPIN, isValidUrl, sanitizePhoneInput, sanitizePinInput } from "@/lib/validation"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -292,7 +292,7 @@ export default function ClientDetailPage() {
                 <div className="space-y-2 sm:col-span-2"><Label>Address</Label><Input value={form.address} onChange={(e) => updateField('address', e.target.value)} /></div>
                 <div className="space-y-2"><Label>City</Label><Input value={form.city} onChange={(e) => updateField('city', e.target.value)} />{errors.city && <p className="text-sm text-destructive">{errors.city}</p>}</div>
                 <div className="space-y-2"><Label>State</Label><Input value={form.state} onChange={(e) => updateField('state', e.target.value)} />{errors.state && <p className="text-sm text-destructive">{errors.state}</p>}</div>
-                <div className="space-y-2"><Label>ZIP Code</Label><Input value={form.zipCode} onChange={(e) => updateField('zipCode', e.target.value)} />{errors.zipCode && <p className="text-sm text-destructive">{errors.zipCode}</p>}</div>
+                <div className="space-y-2"><Label>ZIP Code</Label><Input value={form.zipCode} onChange={(e) => updateField('zipCode', sanitizePinInput(e.target.value))} />{errors.zipCode && <p className="text-sm text-destructive">{errors.zipCode}</p>}</div>
                 <div className="space-y-2"><Label>Country</Label><Input value={form.country} onChange={(e) => updateField('country', e.target.value)} /></div>
                 <div className="space-y-2"><Label>GST Number</Label><Input value={form.gstNumber} onChange={(e) => updateField('gstNumber', e.target.value.toUpperCase())} className="font-mono" />{errors.gstNumber && <p className="text-sm text-destructive">{errors.gstNumber}</p>}</div>
                 <div className="space-y-2"><Label>PAN Number</Label><Input value={form.panNumber} onChange={(e) => updateField('panNumber', e.target.value.toUpperCase())} className="font-mono" />{errors.panNumber && <p className="text-sm text-destructive">{errors.panNumber}</p>}</div>

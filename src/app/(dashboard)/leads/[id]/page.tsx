@@ -38,7 +38,7 @@ import {
 import { showSuccess, showError } from '@/components/ui/toast'
 import { cn, formatCurrency, formatDate, getInitials } from '@/lib/utils'
 import { hasPermission } from '@/lib/permissions'
-import { isValidEmail, isValidPhone, isValidGST, isValidPAN, isValidPIN, isValidUrl, sanitizePhoneInput } from '@/lib/validation'
+import { isValidEmail, isValidPhone, isValidGST, isValidPAN, isValidPIN, isValidUrl, sanitizePhoneInput, sanitizePinInput } from '@/lib/validation'
 
 const indianStates = [
   'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana',
@@ -531,7 +531,7 @@ export default function LeadDetailPage() {
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="space-y-2">
                         <Label>PIN Code</Label>
-                        <Input placeholder="e.g., 400001" value={convertForm.zipCode} onChange={(e) => updateConvertField('zipCode', e.target.value)} />
+                        <Input placeholder="e.g., 400001" value={convertForm.zipCode} onChange={(e) => updateConvertField('zipCode', sanitizePinInput(e.target.value))} />
                         {errors.zipCode && <p className="text-xs text-destructive">{errors.zipCode}</p>}
                       </div>
                       <div className="space-y-2">
