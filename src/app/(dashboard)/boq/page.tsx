@@ -623,7 +623,7 @@ export default function BOQPage() {
         onOpenChange={setShowAddModal}
         title="Add BOQ Items"
         description="Add one or more line items to a project's Bill of Quantities"
-        maxWidth="2xl"
+        maxWidth="4xl"
         onCancel={() => setShowAddModal(false)}
         onConfirm={handleAddItems}
         confirmLabel={submitting ? "Adding..." : `Add ${boqDrafts.length} Item${boqDrafts.length > 1 ? "s" : ""}`}

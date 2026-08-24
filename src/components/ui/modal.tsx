@@ -28,7 +28,7 @@ interface ModalProps {
   confirmVariant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
   loading?: boolean
   className?: string
-  maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl"
+  maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl"
 }
 
 function Modal({
@@ -53,6 +53,9 @@ function Modal({
     lg: "sm:max-w-lg",
     xl: "sm:max-w-xl",
     "2xl": "sm:max-w-2xl",
+    "3xl": "sm:max-w-3xl",
+    "4xl": "sm:max-w-4xl",
+    "5xl": "sm:max-w-5xl",
   }
 
   return (
