@@ -75,6 +75,7 @@ export default function ClientsPage() {
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [cityFilter, setCityFilter] = useState("all")
+  const [sourceFilter, setSourceFilter] = useState("all")
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 10
 
@@ -116,13 +117,19 @@ export default function ClientsPage() {
   }, [clients])
 
   const filteredClients = useMemo(() => {
-    return clients.filter((client) => cityFilter === "all" || client.city?.trim().toLowerCase() === cityFilter)
-  }, [clients, cityFilter])
+    return clients.filter((client) => {
+      if (cityFilter !== "all" && client.city?.trim().toLowerCase() !== cityFilter) return false
+      if (sourceFilter === "direct" && client.totalLeads > 0) return false
+      if (sourceFilter === "converted" && client.totalLeads === 0) return false
+      return true
+    })
+  }, [clients, cityFilter, sourceFilter])
 
-  const hasActiveFilters = !!searchQuery || cityFilter !== "all"
+  const hasActiveFilters = !!searchQuery || cityFilter !== "all" || sourceFilter !== "all"
   const clearFilters = () => {
     setSearchQuery("")
     setCityFilter("all")
+    setSourceFilter("all")
   }
 
   const totalPages = Math.ceil(filteredClients.length / pageSize)
@@ -195,6 +202,16 @@ export default function ClientsPage() {
                 {cities.map(([key, label]) => (
                   <SelectItem key={key} value={key}>{label}</SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+            <Select value={sourceFilter} onValueChange={setSourceFilter}>
+              <SelectTrigger className="w-full sm:w-[170px]">
+                <SelectValue placeholder="All Sources" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Sources</SelectItem>
+                <SelectItem value="direct">Direct Clients</SelectItem>
+                <SelectItem value="converted">Converted Leads</SelectItem>
               </SelectContent>
             </Select>
             <div className="flex-1" />
