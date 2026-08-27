@@ -15,6 +15,9 @@ import {
   MoreVertical,
   FolderKanban,
   Receipt,
+  Upload,
+  Download,
+  AlertCircle,
 } from "lucide-react"
 
 import { cn, formatCurrency } from "@/lib/utils"
@@ -49,6 +52,7 @@ import {
 import { PageHeader } from "@/components/ui/page-header"
 import { StatCard } from "@/components/ui/stat-card"
 import { showSuccess, showError } from "@/components/ui/toast"
+import { isPositiveNumber } from "@/lib/validation"
 
 interface Project {
   id: string
@@ -96,6 +100,35 @@ const categories = [
 ]
 const emptyDraft: BOQDraft = { description: "", category: "", unit: "", quantity: "", unitRate: "" }
 
+interface ImportRow {
+  description: string
+  category: string
+  unit: string
+  quantity: string
+  unitRate: string
+  error: string
+}
+
+// Maps a normalized (lowercased, alphanumeric-only) header name to the
+// draft field it fills - lets the sheet use any of a few common header
+// spellings rather than forcing an exact match.
+const IMPORT_HEADER_ALIASES: Record<string, keyof BOQDraft> = {
+  description: "description",
+  itemdescription: "description",
+  desc: "description",
+  category: "category",
+  cat: "category",
+  unit: "unit",
+  uom: "unit",
+  quantity: "quantity",
+  qty: "quantity",
+  rate: "unitRate",
+  unitrate: "unitRate",
+  rateinr: "unitRate",
+  price: "unitRate",
+}
+const normalizeHeader = (h: string) => h.trim().toLowerCase().replace(/[^a-z0-9]/g, "")
+
 // Cycled by index across project clusters purely for visual variety - not
 // tied to any status/meaning, just so a page full of clusters doesn't read
 // as one monotone block.
@@ -133,6 +166,13 @@ export default function BOQPage() {
   const [formUnit, setFormUnit] = useState("")
   const [formQty, setFormQty] = useState("")
   const [formRate, setFormRate] = useState("")
+
+  const [showImportModal, setShowImportModal] = useState(false)
+  const [importProjectId, setImportProjectId] = useState("")
+  const [importFileName, setImportFileName] = useState("")
+  const [importRows, setImportRows] = useState<ImportRow[]>([])
+  const [parsingFile, setParsingFile] = useState(false)
+  const [importing, setImporting] = useState(false)
 
   const [showQuoteModal, setShowQuoteModal] = useState(false)
   const [quoteProject, setQuoteProject] = useState<Project | null>(null)
@@ -275,6 +315,158 @@ export default function BOQPage() {
     }
   }
 
+  const openImportModal = () => {
+    setImportProjectId("")
+    setImportFileName("")
+    setImportRows([])
+    setShowImportModal(true)
+  }
+
+  const handleDownloadTemplate = async () => {
+    const ExcelJS = (await import("exceljs")).default
+    const workbook = new ExcelJS.Workbook()
+    const sheet = workbook.addWorksheet("BOQ Items")
+    sheet.columns = [
+      { header: "Description", key: "description", width: 40 },
+      { header: "Category", key: "category", width: 22 },
+      { header: "Unit", key: "unit", width: 10 },
+      { header: "Quantity", key: "quantity", width: 12 },
+      { header: "Rate", key: "unitRate", width: 12 },
+    ]
+    sheet.addRow({ description: "Excavation for foundation", category: "Earthwork", unit: "Cum", quantity: 120, unitRate: 350 })
+    const buffer = await workbook.xlsx.writeBuffer()
+    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "boq-import-template.xlsx"
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleImportFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ""
+    if (!file) return
+
+    setImportFileName(file.name)
+    setImportRows([])
+    setParsingFile(true)
+    try {
+      const ExcelJS = (await import("exceljs")).default
+      const buffer = await file.arrayBuffer()
+      const workbook = new ExcelJS.Workbook()
+      await workbook.xlsx.load(buffer)
+      const worksheet = workbook.worksheets[0]
+      if (!worksheet) {
+        showError("The file has no worksheet")
+        return
+      }
+
+      const colByField = {} as Record<keyof BOQDraft, number>
+      worksheet.getRow(1).eachCell((cell, colNumber) => {
+        const field = IMPORT_HEADER_ALIASES[normalizeHeader(String(cell.value ?? ""))]
+        if (field) colByField[field] = colNumber
+      })
+      const missing = (["description", "category", "unit", "quantity", "unitRate"] as const).filter((f) => !colByField[f])
+      if (missing.length > 0) {
+        showError(`Couldn't find column(s): ${missing.join(", ")}. Expected headers: Description, Category, Unit, Quantity, Rate.`)
+        return
+      }
+
+      const cellText = (row: import("exceljs").Row, col: number) => {
+        const v = row.getCell(col).value
+        if (v == null) return ""
+        if (typeof v === "object" && "text" in (v as any)) return String((v as any).text)
+        if (typeof v === "object" && "result" in (v as any)) return String((v as any).result ?? "")
+        return String(v).trim()
+      }
+
+      const rows: ImportRow[] = []
+      worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) return
+        const description = cellText(row, colByField.description)
+        const category = cellText(row, colByField.category)
+        const unit = cellText(row, colByField.unit)
+        const quantity = cellText(row, colByField.quantity)
+        const unitRate = cellText(row, colByField.unitRate)
+        if (!description && !category && !unit && !quantity && !unitRate) return
+
+        let error = ""
+        if (!description) error = "Missing description"
+        else if (!category) error = "Missing category"
+        else if (!unit) error = "Missing unit"
+        else if (!isPositiveNumber(quantity)) error = "Quantity must be a positive number"
+        else if (!isPositiveNumber(unitRate)) error = "Rate must be a positive number"
+
+        rows.push({ description, category, unit, quantity, unitRate, error })
+      })
+
+      if (rows.length === 0) {
+        showError("No data rows found in the sheet")
+        return
+      }
+      setImportRows(rows)
+    } catch {
+      showError("Failed to read the file — make sure it's a valid .xlsx file")
+    } finally {
+      setParsingFile(false)
+    }
+  }
+
+  const validImportRows = importRows.filter((r) => !r.error)
+
+  const handleConfirmImport = async () => {
+    if (!importProjectId) {
+      showError("Please select a project")
+      return
+    }
+    if (validImportRows.length === 0) {
+      showError("No valid rows to import")
+      return
+    }
+
+    const existingForProject = items.filter((i) => i.projectId === importProjectId)
+    let nextSno = existingForProject.length > 0 ? Math.max(...existingForProject.map((i) => i.serialNumber)) + 1 : 1
+
+    setImporting(true)
+    let successCount = 0
+    try {
+      for (const r of validImportRows) {
+        const res = await fetch("/api/boq", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            projectId: importProjectId,
+            serialNumber: nextSno,
+            description: r.description,
+            category: r.category,
+            unit: r.unit,
+            quantity: parseFloat(r.quantity),
+            unitRate: parseFloat(r.unitRate),
+          }),
+        })
+        const data = await res.json()
+        if (data.success) {
+          successCount += 1
+          nextSno += 1
+        }
+      }
+      if (successCount === validImportRows.length) {
+        showSuccess(`${successCount} BOQ item${successCount === 1 ? "" : "s"} imported successfully`)
+      } else {
+        showError(`Imported ${successCount} of ${validImportRows.length} items — some rows failed, please retry those`)
+      }
+      setShowImportModal(false)
+      setExpandedProjects((prev) => ({ ...prev, [importProjectId]: true }))
+      fetchItems()
+    } catch {
+      showError("Failed to import BOQ items")
+    } finally {
+      setImporting(false)
+    }
+  }
+
   const openEditModal = (item: BOQItem) => {
     setEditingItem(item)
     setFormDescription(item.description)
@@ -407,10 +599,16 @@ export default function BOQPage() {
         ]}
         actions={
           canCreate ? (
-            <Button onClick={() => openAddModal()}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add BOQ Items
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={openImportModal}>
+                <Upload className="mr-2 h-4 w-4" />
+                Import from Excel
+              </Button>
+              <Button onClick={() => openAddModal()}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add BOQ Items
+              </Button>
+            </div>
           ) : undefined
         }
       />
@@ -695,6 +893,113 @@ export default function BOQPage() {
           <Button variant="outline" size="sm" onClick={addDraftRow}>
             <Plus className="mr-1 h-3.5 w-3.5" />Add Another Item
           </Button>
+        </div>
+      </Modal>
+
+      <Modal
+        open={showImportModal}
+        onOpenChange={setShowImportModal}
+        title="Import BOQ Items from Excel"
+        description="Choose a project, then upload a single .xlsx sheet of line items"
+        maxWidth="4xl"
+        footer={
+          <div className="flex w-full items-center justify-between">
+            <Button variant="ghost" onClick={handleDownloadTemplate}>
+              <Download className="mr-2 h-4 w-4" />
+              Download Template
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setShowImportModal(false)} disabled={importing}>Cancel</Button>
+              <Button onClick={handleConfirmImport} disabled={importing || validImportRows.length === 0 || !importProjectId}>
+                {importing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {importing ? "Importing..." : `Import ${validImportRows.length} Item${validImportRows.length === 1 ? "" : "s"}`}
+              </Button>
+            </div>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Project *</Label>
+            <Select value={importProjectId} onValueChange={setImportProjectId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select project" />
+              </SelectTrigger>
+              <SelectContent>
+                {projects.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Excel File *</Label>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={() => document.getElementById("boq-import-file-input")?.click()} disabled={parsingFile}>
+                <Upload className="mr-2 h-4 w-4" />
+                {parsingFile ? "Reading..." : "Choose File"}
+              </Button>
+              <input
+                id="boq-import-file-input"
+                type="file"
+                accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                className="hidden"
+                onChange={handleImportFileSelect}
+              />
+              {importFileName && <span className="text-sm text-muted-foreground truncate">{importFileName}</span>}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Expected columns: Description, Category, Unit, Quantity, Rate — in any order. Not sure of the format? Download the template below.
+            </p>
+          </div>
+
+          {importRows.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">Preview</p>
+                <p className="text-xs text-muted-foreground">
+                  {validImportRows.length} of {importRows.length} row{importRows.length === 1 ? "" : "s"} valid
+                  {validImportRows.length < importRows.length && " — invalid rows will be skipped"}
+                </p>
+              </div>
+              <div className="max-h-72 overflow-y-auto rounded-lg border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Unit</TableHead>
+                      <TableHead className="text-right">Qty</TableHead>
+                      <TableHead className="text-right">Rate</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {importRows.map((r, i) => (
+                      <TableRow key={i} className={r.error ? "bg-destructive/5" : undefined}>
+                        <TableCell className="max-w-[220px] truncate text-sm">{r.description || "—"}</TableCell>
+                        <TableCell className="text-sm">{r.category || "—"}</TableCell>
+                        <TableCell className="text-sm">{r.unit || "—"}</TableCell>
+                        <TableCell className="text-right text-sm">{r.quantity || "—"}</TableCell>
+                        <TableCell className="text-right text-sm">{r.unitRate || "—"}</TableCell>
+                        <TableCell className="text-sm">
+                          {r.error ? (
+                            <span className="flex items-center gap-1 text-destructive">
+                              <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                              {r.error}
+                            </span>
+                          ) : (
+                            <span className="text-emerald-600">Ready</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
         </div>
       </Modal>
 
